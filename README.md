@@ -19,7 +19,7 @@
 
 ## Introduction
 
-**nf-core/nanorepertoire** is a bioinformatics pipeline that ...
+**nf-core/nanorepertoire** is built using Nextflow, a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. It comes with docker containers making installation trivial and results highly reproducible.
 
 <!-- TODO nf-core:
    Complete this sentence with a 2-3 sentence summary of what types of data the pipeline ingests, a brief overview of the
