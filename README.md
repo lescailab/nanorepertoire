@@ -38,7 +38,6 @@
 
 A graphical view of the pipeline can be seen below.
 
-
 <p align="center">
 <img src="docs/images/nanorep.drawio.png" alt="nf-core/nanorep" width="70%">
 </p>
