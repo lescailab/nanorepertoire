@@ -34,6 +34,17 @@
 1. Read QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/))
 2. Present QC for raw reads ([`MultiQC`](http://multiqc.info/))
 
+## Functionality overview
+
+A graphical view of the pipeline can be seen below.
+
+
+<p align="center">
+<img src="docs/images/nanorep.drawio.png" alt="nf-core/nanorep" width="70%">
+</p>
+
+
+
 ## Usage
 
 > [!NOTE]
