@@ -1,0 +1,37 @@
+Unable to find image 'biocontainers/cutadapt:v1.18-1-deb-py3_cv1' locally
+v1.18-1-deb-py3_cv1: Pulling from biocontainers/cutadapt
+478cd0aa93c0: Pulling fs layer
+94d6a239eb0e: Pulling fs layer
+e8e87313e9cb: Pulling fs layer
+1badce2e48be: Pulling fs layer
+732b6ad56c57: Pulling fs layer
+f464fdba1cc8: Pulling fs layer
+0a2a1eff2d68: Pulling fs layer
+732b6ad56c57: Waiting
+f464fdba1cc8: Waiting
+0a2a1eff2d68: Waiting
+1badce2e48be: Waiting
+e8e87313e9cb: Download complete
+94d6a239eb0e: Verifying Checksum
+94d6a239eb0e: Download complete
+732b6ad56c57: Verifying Checksum
+732b6ad56c57: Download complete
+1badce2e48be: Verifying Checksum
+1badce2e48be: Download complete
+f464fdba1cc8: Verifying Checksum
+f464fdba1cc8: Download complete
+0a2a1eff2d68: Verifying Checksum
+0a2a1eff2d68: Download complete
+478cd0aa93c0: Verifying Checksum
+478cd0aa93c0: Download complete
+478cd0aa93c0: Pull complete
+94d6a239eb0e: Pull complete
+e8e87313e9cb: Pull complete
+1badce2e48be: Pull complete
+732b6ad56c57: Pull complete
+f464fdba1cc8: Pull complete
+0a2a1eff2d68: Pull complete
+Digest: sha256:c0886664ef24a6f24d24ff929c0086ea0d8cd04e03a2eecd8704d6a4bca042ba
+Status: Downloaded newer image for biocontainers/cutadapt:v1.18-1-deb-py3_cv1
+WARNING: The requested image's platform (linux/amd64) does not match the detected host platform (linux/arm64/v8) and no specific platform was requested
+/Users/bagordo/Desktop/all_bioinformatics/nf-core-nanorepertoire/data/work/50/7f771cea083ade520efb149461480d/.command.sh: line 3: cutadapt: command not found
