@@ -1,0 +1,35 @@
+2024-05-15 11:46:51	1.1s	festering_banach	OK	00000000000000000000000000000000	9c843523-c7bd-49be-a586-a1732e6a7d4b	nextflow run test.nf
+2024-05-15 11:47:04	965ms	compassionate_becquerel	OK	00000000000000000000000000000000	f27141b4-e042-4055-9711-de60661b21d0	nextflow run test.nf
+2024-05-15 11:47:29	-	soggy_fourier	-	86f9b04f756cb831a6fe557511ab505a	88e10ebb-58ff-47eb-b979-0d1decf6be22	nextflow run test.nf
+2024-05-15 11:47:48	-	loving_plateau	-	4043733fc792533dd8099ecbddb144ac	47d8c016-fefc-4cad-a6a0-756c9e643efa	nextflow run test.nf
+2024-05-15 11:48:03	-	thirsty_pare	-	b296e48ad8bc93896d8dbf6725d065fd	783cc491-5c03-40dd-b205-a7052a3f09c7	nextflow run test.nf
+2024-05-15 11:49:30	1.3s	extravagant_galileo	OK	619c7f29e60e824115f43fe07dda7cc9	34b0f7d8-738e-4e6d-9515-211ee0c9f88c	nextflow run test.nf
+2024-05-15 11:49:55	649ms	peaceful_laplace	OK	984596df3a99b26f66eaa5890cb52d83	1d3f2e50-e7bd-4f1f-a303-f589e6b27fcd	nextflow run test.nf
+2024-05-15 11:50:11	1.2s	wise_lalande	OK	619c7f29e60e824115f43fe07dda7cc9	f05d8deb-508b-4ad5-8640-8781ea281e76	nextflow run test.nf
+2024-05-15 11:53:15	-	shrivelled_watson	-	f8c5063bda456cff1c4bc608bdfac61a	17054cf1-5793-43f8-b35f-31be750d28be	nextflow run test.nf
+2024-05-15 11:53:43	-	compassionate_venter	-	41a35edf5e71ea77d022e92c8be2eef9	7402299b-4f1d-4fee-bf19-07331c9f8594	nextflow run test.nf
+2024-05-15 11:53:59	-	shrivelled_angela	-	41a35edf5e71ea77d022e92c8be2eef9	8fab71a4-199e-449c-8f27-483bff2573fb	nextflow run test.nf
+2024-05-15 11:54:05	-	nauseous_borg	-	9ee7247b6ab014590a8d16b963723810	5e138cc9-92bd-47e8-8a7b-c97403988085	nextflow run test.nf
+2024-05-15 11:54:31	-	admiring_euler	-	3f9cd4a08d2bbeb381071674593e1a69	764d1cf1-36a6-40e0-8037-d672bcb58b6d	nextflow run test.nf
+2024-05-15 11:59:41	-	soggy_mendel	-	55079f5c79caad4ded6f2ab3242c2f47	a9412bf4-6a4e-4349-af27-de8297000958	nextflow run test.nf
+2024-05-15 11:59:59	-	curious_thompson	-	27aa14f6e5edcc711c279e693fb3d587	8b674493-b529-4abe-ab94-ec2aa5550808	nextflow run test.nf
+2024-05-15 12:00:32	-	goofy_newton	-	a5616d83560c9533271850d2385495b8	22fbbed9-a8a7-41f0-afce-32545d17ceb1	nextflow run test.nf
+2024-05-15 12:03:52	-	determined_becquerel	-	e2a5fbb6fc5d837493948fb42c750f45	55a0f7e6-a91e-4c99-98c4-6bafa63a4eef	nextflow run test.nf
+2024-05-15 12:04:52	-	thirsty_shaw	-	3e77b2115246ce3c536937ee58b5a9d1	ffc6f4bf-e202-400a-9760-cb62c44e7a1d	nextflow run test.nf
+2024-05-15 12:05:12	927ms	special_noyce	ERR	ea2fc9df2e4fea922cb502bd3f7fc5ab	14bcdd28-c47e-49f0-adcf-c85a2f7b1cf0	nextflow run test.nf
+2024-05-15 12:05:52	1.2s	fabulous_sanger	ERR	eadf8341f818284acf1dd572c0afc96f	8295a87e-895f-4b28-8c08-87af25a3e5be	nextflow run test.nf
+2024-05-15 12:09:38	1.7s	naughty_becquerel	ERR	ea2fc9df2e4fea922cb502bd3f7fc5ab	c390f778-0d85-4191-8347-ccc1b299a76a	nextflow run test.nf
+2024-05-15 12:11:19	1.3s	intergalactic_williams	OK	a0d9af90f4f23b81d02d1a7ce71af78e	c45557d5-7e09-456d-8ecc-20916df16279	nextflow run test.nf
+2024-05-15 14:52:43	1.4s	high_cray	OK	c3d6dfc2a8e12453020656d64127d085	17fe0e72-6b62-4980-b616-3b9023110da4	nextflow run test.nf
+2024-05-15 14:55:33	1.2s	stoic_mayer	OK	5cf198cf664622333196f804c8d5ed74	c2dcc3fd-ce0f-425f-9193-bd5f57d3a619	nextflow run test.nf -dump-channels
+2024-05-15 14:56:32	-	insane_faraday	-	b875335b1dcfde52a6cffd1025bd0b4c	52f5bfbb-7079-4d99-b4f1-b3b3d0f12539	nextflow run test.nf -dump-channels
+2024-05-15 14:57:40	-	goofy_ritchie	-	5ec13d6a4e7c5a2339e9657b3436ffb0	8d88f4b2-59bc-43aa-b31a-a98b17fffd94	nextflow run test.nf -dump-channels
+2024-05-15 14:58:00	1.6s	sleepy_kirch	ERR	4a83308614ee93d39be8b778515f9692	10775796-1615-421a-8abb-a5fb5a12dbf2	nextflow run test.nf -dump-channels
+2024-05-15 14:59:37	1.2s	ridiculous_sanger	ERR	4a83308614ee93d39be8b778515f9692	7f7db747-4c0f-418c-9b5d-0f344a3ff1d2	nextflow run test.nf -dump-channels -with-docker 'biocontainers/cutadapt:4.6--py39hf95cd2a_1'
+2024-05-15 14:59:50	3.1s	maniac_panini	ERR	4a83308614ee93d39be8b778515f9692	f8d84946-c739-40b8-b479-2ffef328fa31	nextflow run test.nf -dump-channels -with-docker 'biocontainers/cutadapt:4.6--py39hf95cd2a_1'
+2024-05-15 15:00:09	3.4s	dreamy_poincare	ERR	4a83308614ee93d39be8b778515f9692	b23dd624-8940-4820-a332-11971d191d21	nextflow run test.nf -dump-channels -with-docker biocontainers/cutadapt
+2024-05-15 15:02:31	3.2s	grave_ride	ERR	cd657dc36562ea9657c20fe333c188cc	cbe095bc-96cb-4956-8024-910c63200a6e	nextflow run test.nf -dump-channels input_ch -with-docker biocontainers/cutadapt
+2024-05-15 15:04:40	2.4s	naughty_chandrasekhar	ERR	cd657dc36562ea9657c20fe333c188cc	0c2cc0dc-902f-4294-9d69-1949db2f2087	nextflow run test.nf -dump-channels input_ch
+2024-05-15 15:13:07	8.5s	compassionate_goldberg	ERR	cd657dc36562ea9657c20fe333c188cc	e7469257-f663-4d6e-a8e9-0c72b8df8f36	nextflow run test.nf -dump-channels input_ch
+2024-05-16 10:29:07	2.4s	angry_gates	ERR	cd657dc36562ea9657c20fe333c188cc	4e42d499-ec90-4c4d-892b-882203f73272	nextflow run test.nf -dump-channels input_ch
+2024-05-16 10:42:56	1.6s	curious_pasteur	ERR	92fd6d479271698dc19c4598594ca25d	1268c4ae-3e90-4f9e-9dd5-f10cf7f1913a	nextflow run test.nf -dump-channels input_ch
