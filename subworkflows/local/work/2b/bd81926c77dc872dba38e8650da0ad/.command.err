@@ -1,0 +1,3 @@
+Unable to find image 'quay.io/biocontainers/cutadapt:latest' locally
+docker: Error response from daemon: manifest for quay.io/biocontainers/cutadapt:latest not found: manifest unknown: manifest unknown.
+See 'docker run --help'.
