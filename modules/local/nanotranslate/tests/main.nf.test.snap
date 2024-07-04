@@ -3,53 +3,29 @@
         "content": [
             {
                 "0": [
-                    [
-                        {
-                            "id": "test1",
-                            "single_end": false
-                        },
-                        "test1_AA_translated.fasta:md5,26e557a6d2d6472bea3b2c46dbd44cec"
-                    ]
+                    
                 ],
                 "1": [
-                    [
-                        {
-                            "id": "test1",
-                            "single_end": false
-                        },
-                        "test1_AA_translated.log:md5,a2e8326704f6640cdd2b69c7bb6e3e36"
-                    ]
+                    
                 ],
                 "2": [
-                    "versions.yml:md5,8b1c036b46795ec5f9f5986280401944"
+                    
                 ],
                 "fasta": [
-                    [
-                        {
-                            "id": "test1",
-                            "single_end": false
-                        },
-                        "test1_AA_translated.fasta:md5,26e557a6d2d6472bea3b2c46dbd44cec"
-                    ]
+                    
                 ],
                 "log": [
-                    [
-                        {
-                            "id": "test1",
-                            "single_end": false
-                        },
-                        "test1_AA_translated.log:md5,a2e8326704f6640cdd2b69c7bb6e3e36"
-                    ]
+                    
                 ],
                 "versions": [
-                    "versions.yml:md5,8b1c036b46795ec5f9f5986280401944"
+                    
                 ]
             }
         ],
         "meta": {
             "nf-test": "0.8.4",
-            "nextflow": "23.10.1"
+            "nextflow": "24.04.2"
         },
-        "timestamp": "2024-04-18T14:29:23.042704286"
+        "timestamp": "2024-07-04T15:00:41.193115"
     }
 }

@@ -24,7 +24,7 @@ process NANOTRANSLATE {
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
     gzip -cd ${mergedfq} >sequences.fastq
-    python ${moduleDir}/translate.py \
+    python "${moduleDir}/translate.py" \
     sequences.fastq \
     ${meta.id}_AA_translated.fasta \
     >${meta.id}_AA_translated.log
