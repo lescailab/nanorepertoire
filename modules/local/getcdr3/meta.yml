@@ -50,7 +50,7 @@ input:
       type: string
       description: Sample identifier
   - translated:
-      type: file
+      type: path
       description: |
         FASTA file of aminoacid sequences as translated by in-house script and
         clustered by CD-HIT
@@ -65,8 +65,15 @@ output:
           Metadata map (meta) together with histogram calculated from
           clusters (type: file)
       pattern: "*_cdr3.hist"
+  - tsv:
+      type: tuple
+  - histonly:
+  - tsvonly:
+  - metaonly:
+  - version: 
+
 
 authors:
-  - "@davidebag"
+  - "@DavideBag"
 maintainers:
-  - "@davidebag"
+  - "@DavideBag"
