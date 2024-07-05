@@ -8,14 +8,14 @@
                             "id": "test1",
                             "single_end": false
                         },
-                        "test1_clusters.summary:md5,e79147ef0b91e56c0dbd206f4d45c88f"
+                        "test1_clusters.summary:md5,c65475d280e6c93dfad97004225a9c7d"
                     ]
                 ],
                 "1": [
-                    "test1_clusters.summary:md5,e79147ef0b91e56c0dbd206f4d45c88f"
+                    "test1_clusters.summary:md5,c65475d280e6c93dfad97004225a9c7d"
                 ],
                 "2": [
-                    "versions.yml:md5,67cb59bec2e65dd365339b6ee45ee2d0"
+                    "versions.yml:md5,dda93af047b2ef8b3e5dd648b6772255"
                 ],
                 "summary": [
                     [
@@ -23,21 +23,21 @@
                             "id": "test1",
                             "single_end": false
                         },
-                        "test1_clusters.summary:md5,e79147ef0b91e56c0dbd206f4d45c88f"
+                        "test1_clusters.summary:md5,c65475d280e6c93dfad97004225a9c7d"
                     ]
                 ],
                 "summaryonly": [
-                    "test1_clusters.summary:md5,e79147ef0b91e56c0dbd206f4d45c88f"
+                    "test1_clusters.summary:md5,c65475d280e6c93dfad97004225a9c7d"
                 ],
                 "versions": [
-                    "versions.yml:md5,67cb59bec2e65dd365339b6ee45ee2d0"
+                    "versions.yml:md5,dda93af047b2ef8b3e5dd648b6772255"
                 ]
             }
         ],
         "meta": {
             "nf-test": "0.8.4",
-            "nextflow": "23.10.1"
+            "nextflow": "24.04.2"
         },
-        "timestamp": "2024-04-22T08:32:19.847762315"
+        "timestamp": "2024-07-04T16:27:48.231144"
     }
 }

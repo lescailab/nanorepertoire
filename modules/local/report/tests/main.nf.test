@@ -15,10 +15,10 @@ nextflow_process {
                 """
                 // input_ch
                 input[0] = [
-                    file('/workspace/nanorepertoire/modules/nf-core/report/analysis_report.qmd')
+                    file("${moduleDir}/analysis_report.qmd")
                 ]
                 input[1] = [
-                    file('/workspace/nanorepertoire/modules/nf-core/report/loop_tree.qmd')
+                    file("${moduleDir}/loop_tree.qmd")
                 ]
                 input[2] = [
                     file('/workspace/nanorepertoire/.nf-test/tests/9b7bcb08d25bcc630df61136bfa4169a/work/aa/ff026bc963fce799c9f64e8e0a2f4e/test_clusters.summary', checkIfExists: true)

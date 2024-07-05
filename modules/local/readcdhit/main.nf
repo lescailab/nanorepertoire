@@ -25,7 +25,7 @@ process READCDHIT {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    python ${moduleDir}/readcdout.py \
+    python "${moduleDir}/readcdout.py" \
     ${clusters} \
     ${meta.id}_clusters.summary
 
