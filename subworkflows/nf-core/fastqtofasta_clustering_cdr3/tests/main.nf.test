@@ -1,0 +1,38 @@
+// nf-core subworkflows test fastqtofasta_clustering_cdr3
+nextflow_workflow {
+
+    name "Test Subworkflow FASTQTOFASTA_CLUSTERING_CDR3"
+    script "../main.nf"
+    workflow "FASTQTOFASTA_CLUSTERING_CDR3"
+    tag "subworkflows"
+    tag "subworkflows_nfcore"
+    tag "subworkflows/fastqtofasta_clustering_cdr3"
+    tag "cdhit"
+    tag "readcdhit"
+    tag "getcdr4"
+
+
+    test("translate-clustering-reading-cdr3") {
+
+        when {
+            workflow {
+                """
+                // input_ch
+                input[0] = [
+                    [id:'test'],
+                    file('/workspace/nanorepertoire/data/test_AA*', checkIfExists: true)
+                ]
+                input[1] = true
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success},
+                { assert snapshot(workflow.out).match()}
+                //TODO nf-core: Add all required assertions to verify the test output.
+            )
+        }
+    }
+}

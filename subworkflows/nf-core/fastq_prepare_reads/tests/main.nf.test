@@ -1,0 +1,41 @@
+// nf-core subworkflows test fastq_prepare_reads
+nextflow_workflow {
+
+    name "Test Subworkflow FASTQ_PREPARE_READS"
+    script "../main.nf"
+    workflow "FASTQ_PREPARE_READS"
+    config "./nextflow.config"
+    tag "subworkflows"
+    tag "subworkflows_nfcore"
+    tag "subworkflows/fastq_prepare_reads"
+    tag "cutadapt"
+    tag "flash"
+    tag "rename"
+    tag "nanotranslate"
+    tag "fastqc"
+
+
+    test("preprocessing - fastqc - both_end") {
+
+        when {
+            workflow {
+                """
+                // input_ch
+                input[0] = Channel
+                            .fromfilePairs("../../TESTDATA/test01_raw_R*.fastq", checkIfExists: true)
+                            .map{ name, reads ->
+                                [[id:'test'], [reads[0], reads[1]]]}
+                input[1] = Channel.fromPath("https://github.com/lescailab/testdata/blob/master/nanobodies/adapters.fa", checkIfExists: true)
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success},
+                { assert snapshot(workflow.out).match()}
+                //TODO nf-core: Add all required assertions to verify the test output.
+            )
+        }
+    }
+}

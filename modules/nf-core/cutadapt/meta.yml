@@ -23,6 +23,10 @@ input:
       description: |
         List of input FastQ files of size 1 and 2 for single-end and paired-end data,
         respectively.
+  - adapterfile:
+      type: file
+      description: |
+        File with the adapters used for trimming
 output:
   - meta:
       type: map
