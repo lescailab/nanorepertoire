@@ -4,4 +4,4 @@ channels:
   - bioconda
   - defaults
 dependencies:
-  - bioconda/label/cf201901::cutadapt
+  - bioconda::cutadapt=4.6

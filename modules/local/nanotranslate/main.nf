@@ -5,7 +5,7 @@ process NANOTRANSLATE {
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/biopython:1.78':
-        'biocontainers/biopython:1.78' }"
+        'ghcr.io/nibscbioinformatics/biopython:v1.78' }"
 
     input:
     tuple val(meta), path(mergedfq)
@@ -24,7 +24,7 @@ process NANOTRANSLATE {
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
     gzip -cd ${mergedfq} >sequences.fastq
-    python "${moduleDir}/translate.py" \
+    translate.py \
     sequences.fastq \
     ${meta.id}_AA_translated.fasta \
     >${meta.id}_AA_translated.log

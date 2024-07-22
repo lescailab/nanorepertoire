@@ -1,11 +1,11 @@
 {
-	"folders": [
-		{
-			"path": "../../../../Desktop/all/all_bioinformatics/tests"
-		},
-		{
-			"path": "../.."
-		}
-	],
-	"settings": {}
+    "folders": [
+        {
+            "path": "../../../../Desktop/all/all_bioinformatics/tests",
+        },
+        {
+            "path": "../..",
+        },
+    ],
+    "settings": {},
 }

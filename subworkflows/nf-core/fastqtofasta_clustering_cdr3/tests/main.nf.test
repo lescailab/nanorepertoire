@@ -4,6 +4,8 @@ nextflow_workflow {
     name "Test Subworkflow FASTQTOFASTA_CLUSTERING_CDR3"
     script "../main.nf"
     workflow "FASTQTOFASTA_CLUSTERING_CDR3"
+    config "./nextflow.config"
+    
     tag "subworkflows"
     tag "subworkflows_nfcore"
     tag "subworkflows/fastqtofasta_clustering_cdr3"
@@ -20,7 +22,7 @@ nextflow_workflow {
                 // input_ch
                 input[0] = [
                     [id:'test'],
-                    file('/workspace/nanorepertoire/data/test_AA*', checkIfExists: true)
+                    file('https://github.com/lescailab/testdata/blob/master/nanobodies/test01_aa.fasta', checkIfExists: true)
                 ]
                 input[1] = true
                 """

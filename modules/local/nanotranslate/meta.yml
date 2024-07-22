@@ -12,7 +12,7 @@ tools:
       homepage: "https://biopython.org/"
       documentation: "https://biopython.org/"
       tool_dev_url: "https://biopython.org/"
-      licence: ['Biopython License Agreement']
+      licence: ["Biopython License Agreement"]
 
 input:
   - meta:
@@ -28,7 +28,6 @@ input:
       type: file
       description: Sorted BAM/CRAM/SAM file
       pattern: "*.{fastq,fq}"
-
 
 output:
   #Only when we have meta

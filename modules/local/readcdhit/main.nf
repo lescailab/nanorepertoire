@@ -6,7 +6,7 @@ process READCDHIT {
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/biopython:1.78':
-        'biocontainers/biopython:1.78' }"
+        'community.wave.seqera.io/library/biopython:1.83--7ad5905a08b329b1' }"
 
     input:
     tuple val(meta), path(clusters)

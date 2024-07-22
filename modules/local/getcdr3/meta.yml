@@ -62,16 +62,15 @@ output:
   - hist:
       type: tuple
       description: |
-          Metadata map (meta) together with histogram calculated from
-          clusters (type: file)
+        Metadata map (meta) together with histogram calculated from
+        clusters (type: file)
       pattern: "*_cdr3.hist"
   - tsv:
       type: tuple
   - histonly:
   - tsvonly:
   - metaonly:
-  - version: 
-
+  - version:
 
 authors:
   - "@DavideBag"

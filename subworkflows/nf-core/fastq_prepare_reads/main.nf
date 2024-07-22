@@ -1,11 +1,11 @@
-// this subworkflow prepares the inputs from fastq files for the translation
+// this subworkflow prepares the inputs from fastq files and does the translation, in the meanwhile performs a fastqc
 // modules to include in this subworkflow
 
-include {CUTADAPT } from '../../../modules/nf-core/cutadapt/main.nf'
-include {FLASH    } from '../../../modules/nf-core/flash/main.nf'
-include {RENAME   } from '../../../modules/local/rename/main.nf'
-include {NANOTRANSLATE } from '../../../modules/local/nanotranslate/main.nf'
-include {FASTQC        } from '../../../modules/nf-core/fastqc/main.nf'
+include {CUTADAPT       } from '../../../modules/nf-core/cutadapt/main.nf'
+include {FLASH          } from '../../../modules/nf-core/flash/main.nf'
+include {RENAME         } from '../../../modules/local/rename/main.nf'
+include {NANOTRANSLATE  } from '../../../modules/local/nanotranslate/main.nf'
+include {FASTQC         } from '../../../modules/nf-core/fastqc/main.nf'
 
 
 ///Users/bagordo/Desktop/all/all_bioinformatics/nf-core-nanorepertoire/data/*_{1,2}_dummy2.fastq

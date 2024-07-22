@@ -12,7 +12,7 @@ tools:
       homepage: "https://biopython.org/"
       documentation: "https://biopython.org/"
       tool_dev_url: "https://biopython.org/"
-      licence: ['Biopython License Agreement']
+      licence: ["Biopython License Agreement"]
 
 input:
   - meta:
@@ -28,7 +28,6 @@ input:
       type: file
       description: Single-end reads
       pattern: "*.{fastq,fq,fastq.gz,fq.gz}"
-
 
 output:
   #Only when we have meta

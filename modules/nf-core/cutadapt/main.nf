@@ -4,8 +4,8 @@ process CUTADAPT {
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'oras://community.wave.seqera.io/library/cutadapt:4.8--4113788330d960d5' :
-        'community.wave.seqera.io/library/cutadapt:4.8--282b6d6fda8b0e40' }"
+        'oras://community.wave.seqera.io/library/cutadapt:4.8--6279cd8df210ebdd' :
+        'community.wave.seqera.io/library/cutadapt:4.8--5bd521adfad14edb' }"
 
     input:
     tuple val(meta), path(reads)
