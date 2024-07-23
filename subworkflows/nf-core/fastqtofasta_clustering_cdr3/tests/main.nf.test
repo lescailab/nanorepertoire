@@ -22,7 +22,7 @@ nextflow_workflow {
                 // input_ch
                 input[0] = [
                     [id:'test'],
-                    file('https://github.com/lescailab/testdata/blob/master/nanobodies/test01_aa.fasta', checkIfExists: true)
+                    file("https://raw.githubusercontent.com/lescailab/testdata/master/nanobodies/test01_aa.fasta", checkIfExists: true)
                 ]
                 input[1] = true
                 """

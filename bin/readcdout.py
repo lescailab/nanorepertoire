@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 #This is a python script to read the CD-HIT output to produce summary info on clusters
 #Give the name of the cluster representative, the cluster size, and the cluster average identity to representative
 

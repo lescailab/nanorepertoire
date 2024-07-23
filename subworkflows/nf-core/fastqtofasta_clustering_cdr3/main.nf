@@ -5,7 +5,6 @@ include {CDHIT_CDHIT   } from '../../../modules/nf-core/cdhit/cdhit/main.nf'
 include {READCDHIT     } from '../../../modules/local/readcdhit/main.nf'
 include {GETCDR3       } from '../../../modules/local/getcdr3/main.nf'
 
-
 ///Users/bagordo/Desktop/all/all_bioinformatics/nf-core-nanorepertoire/data/*_{1,2}_dummy2.fastq
 // main workflow
 workflow FASTQTOFASTA_CLUSTERING_CDR3 {
@@ -34,6 +33,7 @@ workflow FASTQTOFASTA_CLUSTERING_CDR3 {
 
 
 
+
     // defining the output channels that the workflow will
     emit:
     // emitted channels
@@ -41,6 +41,7 @@ workflow FASTQTOFASTA_CLUSTERING_CDR3 {
     clusteread       = READCDHIT.out.summary           // channel: [[id], [ fastq_renamed]]
     cdrpredicted     = GETCDR3.out.fasta
     cdrpredicted     = GETCDR3.out.tsv
+
    
     versions      = ch_versions                     // channel: [ versions.yml ]
 }
