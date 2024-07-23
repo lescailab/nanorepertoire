@@ -19,7 +19,7 @@ parser.add_argument("-i", "--input", help="cdhit clusters file",
 parser.add_argument("-c", "--cdr", help="output unique CDR3 fasta file",
                     action="store", dest = "cdr")
 parser.add_argument("-t", "--tsv", help="output all CDR3 TSV file",
-                    action="store", dest = "tsv")                    
+                    action="store", dest = "tsv")
 parser.add_argument("-o", "--hist", help="output histogram file",
                     action="store", dest = "hist")
 ## additional options to enrich the fasta name

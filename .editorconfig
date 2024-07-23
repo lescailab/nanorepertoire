@@ -6,7 +6,7 @@ end_of_line = lf
 insert_final_newline = true
 trim_trailing_whitespace = true
 indent_size = 4
-indent_style = unset
+indent_style = space
 
 [*.{md,yml,yaml,html,css,scss,js}]
 indent_size = 2
@@ -32,4 +32,10 @@ indent_size = unset
 [*.{py,md}]
 indent_style = unset
 
+# ignore config
+[nextflow.config]
+indent_style = unset
 
+# ignore qmd
+[*.qmd]
+indent_style = unset

@@ -29,7 +29,7 @@ process REPORT {
     sampleData.append("ID\tindividual\timmunisation\tboost\n")
 
     // Popola il file sampledata.tsv con i dati dalla mappa metadata
-    metadata.each() { map -> 
+    metadata.each(){map->
         sampleData.append("${map.sampleID}\t${map.individualID}\t${map.immunisation}\t${map.boost}\n")
     }
 
