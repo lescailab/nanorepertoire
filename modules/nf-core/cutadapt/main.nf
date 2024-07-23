@@ -1,0 +1,77 @@
+process CUTADAPT {
+    tag "$meta.id"
+    label 'process_medium'
+
+    conda "${moduleDir}/environment.yml"
+    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+        'oras://community.wave.seqera.io/library/cutadapt:4.8--6279cd8df210ebdd' :
+        'community.wave.seqera.io/library/cutadapt:4.8--5bd521adfad14edb' }"
+
+    input:
+    tuple val(meta), path(reads)
+    path (adapterfile)
+
+    output:
+    tuple val(meta), path('*.trim.fastq.gz'), emit: reads
+    tuple val(meta), path('*.log')          , emit: log
+    path "versions.yml"                     , emit: versions
+
+    when:
+    task.ext.when == null || task.ext.when
+
+    script:
+    def args = task.ext.args ?: ''
+    def prefix = task.ext.prefix ?: "${meta.id}"
+    def trimmed  = meta.single_end ? "-o ${prefix}.trim.fastq.gz" : "-o ${prefix}_1.trim.fastq.gz -p ${prefix}_2.trim.fastq.gz"
+
+    if (meta.single_end) {
+    """
+        cutadapt \\
+        -Z \\
+        --cores $task.cpus \\
+        -a file:${adapterfile} \\
+        -g file:${adapterfile} \\
+        $args \\
+        $trimmed \\
+        $reads \\
+        > ${prefix}.cutadapt.log
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        cutadapt: \$(cutadapt --version)
+    END_VERSIONS
+    """
+    }
+    else {
+        """
+        cutadapt \\
+        -Z \\
+        --cores $task.cpus \\
+        -a file:${adapterfile} \\
+        -A file:${adapterfile} \\
+        -g file:${adapterfile} \\
+        -G file:${adapterfile} \\
+        $args \\
+        $trimmed \\
+        $reads \\
+        > ${prefix}.cutadapt.log
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        cutadapt: \$(cutadapt --version)
+    END_VERSIONS
+        """
+    }
+
+
+    stub:
+    def prefix  = task.ext.prefix ?: "${meta.id}"
+    def trimmed = meta.single_end ? "${prefix}.trim.fastq.gz" : "${prefix}_1.trim.fastq.gz ${prefix}_2.trim.fastq.gz"
+    """
+    touch ${prefix}.cutadapt.log
+    touch ${trimmed}
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        cutadapt: \$(cutadapt --version)
+    END_VERSIONS
+    """
+}
