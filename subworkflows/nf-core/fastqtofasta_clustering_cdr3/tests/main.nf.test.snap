@@ -27,9 +27,19 @@
                     ]
                 ],
                 "3": [
+                    {
+                        "id": "test"
+                    }
+                ],
+                "4": [
                     "versions.yml:md5,2684ad5f43bf2afaf33fdbd1a001666c",
                     "versions.yml:md5,6573a2b7a84b9b1ccf5c0717ff0ba77c",
                     "versions.yml:md5,9247df97c268cf5278db5e0301fab030"
+                ],
+                "cdrmeta": [
+                    {
+                        "id": "test"
+                    }
                 ],
                 "cdrpredicted": [
                     [
@@ -66,6 +76,6 @@
             "nf-test": "0.8.4",
             "nextflow": "24.04.3"
         },
-        "timestamp": "2024-07-23T16:09:15.302707"
+        "timestamp": "2024-07-23T16:25:37.219908"
     }
 }

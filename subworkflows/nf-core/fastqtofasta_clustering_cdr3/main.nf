@@ -1,11 +1,10 @@
-// this subworkflow prepares the inputs from fastq files for the translation
+// this subworkflow use fasta file input to analyse and study cd loop of nanobodies
 // modules to include in this subworkflow
 
 include {CDHIT_CDHIT   } from '../../../modules/nf-core/cdhit/cdhit/main.nf'
 include {READCDHIT     } from '../../../modules/local/readcdhit/main.nf'
 include {GETCDR3       } from '../../../modules/local/getcdr3/main.nf'
 
-///Users/bagordo/Desktop/all/all_bioinformatics/nf-core-nanorepertoire/data/*_{1,2}_dummy2.fastq
 // main workflow
 workflow FASTQTOFASTA_CLUSTERING_CDR3 {
 
@@ -41,6 +40,7 @@ workflow FASTQTOFASTA_CLUSTERING_CDR3 {
     clusteread       = READCDHIT.out.summary           // channel: [[id], [ fastq_renamed]]
     cdrpredicted     = GETCDR3.out.fasta
     cdrpredicted     = GETCDR3.out.tsv
+    cdrmeta          = GETCDR3.out.metaonly
 
    
     versions      = ch_versions                     // channel: [ versions.yml ]
