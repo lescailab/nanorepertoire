@@ -12,6 +12,7 @@ nextflow_workflow {
     tag "cdhit"
     tag "readcdhit"
     tag "getcdr4"
+    tag "mafft"
 
 
     test("translate-clustering-reading-cdr3") {

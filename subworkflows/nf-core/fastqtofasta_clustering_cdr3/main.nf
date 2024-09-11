@@ -4,6 +4,7 @@
 include {CDHIT_CDHIT   } from '../../../modules/nf-core/cdhit/cdhit/main.nf'
 include {READCDHIT     } from '../../../modules/local/readcdhit/main.nf'
 include {GETCDR3       } from '../../../modules/local/getcdr3/main.nf'
+//include {MAFFT         } from '../../../modules/nf-core/mafft/main.nf'
 
 // main workflow
 workflow FASTQTOFASTA_CLUSTERING_CDR3 {
@@ -30,6 +31,9 @@ workflow FASTQTOFASTA_CLUSTERING_CDR3 {
     ch_versions = ch_versions.mix(GETCDR3.out.versions.first())
 
 
+    //MAFFT([[ id:'test', single_end:false ], [GETCDR3.out.fasta.groupTuple(by:[1, 2])]], [[:], []], [[:], []], [[:], []], [[:], []], [[:], []], false)
+    //ch_versions = ch_versions.mix(MAFFT.out.versions.first())
+
 
 
 
@@ -41,6 +45,7 @@ workflow FASTQTOFASTA_CLUSTERING_CDR3 {
     cdrpredicted     = GETCDR3.out.fasta
     cdrpredicted     = GETCDR3.out.tsv
     cdrmeta          = GETCDR3.out.metaonly
+    //mafftfasta       = MAFFT.out.fas 
 
    
     versions      = ch_versions                     // channel: [ versions.yml ]
