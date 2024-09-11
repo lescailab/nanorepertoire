@@ -1,14 +1,14 @@
-// nf-core subworkflows test fastq_prepare_reads
+// nf-core subworkflows test fastq_to_fasta
 nextflow_workflow {
 
-    name "Test Subworkflow FASTQ_PREPARE_READS"
+    name "Test Subworkflow FASTQ_TO_FASTA"
     script "../main.nf"
     config "./nextflow.config"
-    workflow "FASTQ_PREPARE_READS"
+    workflow "FASTQ_TO_FASTA"
 
     tag "subworkflows"
     tag "subworkflows_nfcore"
-    tag "subworkflows/fastq_prepare_reads"
+    tag "subworkflows/fastq_to_fasta"
     tag "cutadapt"
     tag "flash"
     tag "rename"
@@ -16,7 +16,7 @@ nextflow_workflow {
     tag "fastqc"
 
 
-    test("preprocessing - fastqc - both_end") {
+    test("preprocessing - fastqc - fasta") {
 
         when {
             workflow {

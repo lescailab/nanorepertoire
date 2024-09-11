@@ -7,7 +7,7 @@ include {GETCDR3       } from '../../../modules/local/getcdr3/main.nf'
 //include {MAFFT         } from '../../../modules/nf-core/mafft/main.nf'
 
 // main workflow
-workflow FASTQTOFASTA_CLUSTERING_CDR3 {
+workflow FASTA_CLUSTERING {
 
     // with take we define the input channels
     take:
