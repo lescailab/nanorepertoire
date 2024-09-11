@@ -1,0 +1,160 @@
+{
+    "translate-clustering-reading-cdr3": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.fasta:md5,1695c2cacd09c498be614659a0886b37"
+                    ]
+                ],
+                "1": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test_clusters.summary:md5,e79147ef0b91e56c0dbd206f4d45c88f"
+                    ]
+                ],
+                "2": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test_cdr3.tsv:md5,89ac4696390cab43ed2d1e5a62d4dac8"
+                    ]
+                ],
+                "3": [
+                    {
+                        "id": "test"
+                    }
+                ],
+                "4": [
+                    "versions.yml:md5,2684ad5f43bf2afaf33fdbd1a001666c",
+                    "versions.yml:md5,6573a2b7a84b9b1ccf5c0717ff0ba77c",
+                    "versions.yml:md5,9247df97c268cf5278db5e0301fab030"
+                ],
+                "cdrmeta": [
+                    {
+                        "id": "test"
+                    }
+                ],
+                "cdrpredicted": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test_cdr3.tsv:md5,89ac4696390cab43ed2d1e5a62d4dac8"
+                    ]
+                ],
+                "cluster": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.fasta:md5,1695c2cacd09c498be614659a0886b37"
+                    ]
+                ],
+                "clusteread": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test_clusters.summary:md5,e79147ef0b91e56c0dbd206f4d45c88f"
+                    ]
+                ],
+                "versions": [
+                    "versions.yml:md5,2684ad5f43bf2afaf33fdbd1a001666c",
+                    "versions.yml:md5,6573a2b7a84b9b1ccf5c0717ff0ba77c",
+                    "versions.yml:md5,9247df97c268cf5278db5e0301fab030"
+                ]
+            }
+        ],
+        "meta": {
+            "nf-test": "0.8.4",
+            "nextflow": "24.04.4"
+        },
+        "timestamp": "2024-09-11T15:42:53.628256"
+    },
+    "clustering-reading-cdr3": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.fasta:md5,1695c2cacd09c498be614659a0886b37"
+                    ]
+                ],
+                "1": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test_clusters.summary:md5,e79147ef0b91e56c0dbd206f4d45c88f"
+                    ]
+                ],
+                "2": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test_cdr3.tsv:md5,89ac4696390cab43ed2d1e5a62d4dac8"
+                    ]
+                ],
+                "3": [
+                    {
+                        "id": "test"
+                    }
+                ],
+                "4": [
+                    "versions.yml:md5,3c42fbfc37c2da9cfc0f08d1100daf58",
+                    "versions.yml:md5,478cbc392823d330428ee3d7b3c8b814",
+                    "versions.yml:md5,9113bedeb10f5a5bc90e86f437ccdbf8"
+                ],
+                "cdrmeta": [
+                    {
+                        "id": "test"
+                    }
+                ],
+                "cdrpredicted": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test_cdr3.tsv:md5,89ac4696390cab43ed2d1e5a62d4dac8"
+                    ]
+                ],
+                "cluster": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.fasta:md5,1695c2cacd09c498be614659a0886b37"
+                    ]
+                ],
+                "clusteread": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test_clusters.summary:md5,e79147ef0b91e56c0dbd206f4d45c88f"
+                    ]
+                ],
+                "versions": [
+                    "versions.yml:md5,3c42fbfc37c2da9cfc0f08d1100daf58",
+                    "versions.yml:md5,478cbc392823d330428ee3d7b3c8b814",
+                    "versions.yml:md5,9113bedeb10f5a5bc90e86f437ccdbf8"
+                ]
+            }
+        ],
+        "meta": {
+            "nf-test": "0.8.4",
+            "nextflow": "24.04.4"
+        },
+        "timestamp": "2024-09-11T15:59:44.309397"
+    }
+}

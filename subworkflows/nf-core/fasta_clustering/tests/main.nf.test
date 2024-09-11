@@ -1,20 +1,21 @@
-// nf-core subworkflows test fastqtofasta_clustering_cdr3
+// nf-core subworkflows test fasta_clustering
 nextflow_workflow {
 
-    name "Test Subworkflow FASTQTOFASTA_CLUSTERING_CDR3"
+    name "Test Subworkflow FASTA_CLUSTERING"
     script "../main.nf"
-    workflow "FASTQTOFASTA_CLUSTERING_CDR3"
+    workflow "FASTA_CLUSTERING"
     config "./nextflow.config"
     
     tag "subworkflows"
     tag "subworkflows_nfcore"
-    tag "subworkflows/fastqtofasta_clustering_cdr3"
+    tag "subworkflows/fasta_clustering"
     tag "cdhit"
     tag "readcdhit"
     tag "getcdr4"
+    tag "mafft"
 
 
-    test("translate-clustering-reading-cdr3") {
+    test("clustering-reading-cdr3") {
 
         when {
             workflow {
@@ -22,7 +23,7 @@ nextflow_workflow {
                 // input_ch
                 input[0] = [
                     [id:'test'],
-                    file('https://github.com/lescailab/testdata/blob/master/nanobodies/test01_aa.fasta', checkIfExists: true)
+                    file("https://raw.githubusercontent.com/lescailab/testdata/master/nanobodies/test01_aa.fasta", checkIfExists: true)
                 ]
                 input[1] = true
                 """

@@ -5,7 +5,7 @@ process GETCDR3 {
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/biopython:1.78':
-        "community.wave.seqera.io/library/biopython:1.83--7ad5905a08b329b1" }"
+        'ghcr.io/nibscbioinformatics/biopython:v1.78' }"
 
     input:
     tuple val(meta), path(translated)
@@ -27,7 +27,7 @@ process GETCDR3 {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    python "${moduleDir}/getcdr3.py" \
+    getcdr3.py \
     -i ${translated} \
     -c ${meta.id}_cdr3.fasta \
     -o ${meta.id}_cdr3.hist \

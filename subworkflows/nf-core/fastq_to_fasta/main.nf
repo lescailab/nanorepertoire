@@ -10,7 +10,7 @@ include {FASTQC         } from '../../../modules/nf-core/fastqc/main.nf'
 
 ///Users/bagordo/Desktop/all/all_bioinformatics/nf-core-nanorepertoire/data/*_{1,2}_dummy2.fastq
 // main workflow
-workflow FASTQ_PREPARE_READS {
+workflow FASTQ_TO_FASTA {
 
     // with take we define the input channels
     take:

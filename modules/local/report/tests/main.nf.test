@@ -15,19 +15,19 @@ nextflow_process {
                 """
                 // input_ch
                 input[0] = [
-                    file("${moduleDir}/analysis_report.qmd")
+                    file("/Users/bagordo/My Drive/PIPELINES/nanorepertoire-devel/bin/analysis_report.qmd")
                 ]
                 input[1] = [
-                    file("${moduleDir}/loop_tree.qmd")
+                    file("/Users/bagordo/My Drive/PIPELINES/nanorepertoire-devel/bin/loop_tree.qmd")
                 ]
                 input[2] = [
-                    file('/workspace/nanorepertoire/.nf-test/tests/9b7bcb08d25bcc630df61136bfa4169a/work/aa/ff026bc963fce799c9f64e8e0a2f4e/test_clusters.summary', checkIfExists: true)
+                    file('https://raw.githubusercontent.com/DavideBag/testdata/dev/nanobodies/report/test_clusters.summary', checkIfExists: true)
                 ]
                 input[3] = [
-                    file('/workspace/nanorepertoire/.nf-test/tests/9b7bcb08d25bcc630df61136bfa4169a/work/be/84da1e9b14388fd23623eebee47fec/test_cdr3.hist', checkIfExists: true)
+                    file('https://raw.githubusercontent.com/DavideBag/testdata/dev/nanobodies/report/test_cdr3.hist', checkIfExists: true)
                 ]
                 input[4] = [
-                    file('/workspace/nanorepertoire/.nf-test/tests/9b7bcb08d25bcc630df61136bfa4169a/work/be/84da1e9b14388fd23623eebee47fec/test_cdr3.tsv', checkIfExists: true)
+                    file('https://raw.githubusercontent.com/DavideBag/testdata/dev/nanobodies/report/test_cdr3.tsv', checkIfExists: true)
                 ]
                 input[5] = [
                     [id: 'test', sampleID: 'sample1', individualID: 'ind1', immunisation: 'imm1', boost: 'boost1']                ]
