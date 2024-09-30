@@ -9,7 +9,6 @@ process READCDHIT {
 
     input:
     tuple val(meta), path(clusters)
-    val single_end
 
 
     output:

@@ -30,8 +30,8 @@ nextflow_process {
                     file('https://raw.githubusercontent.com/DavideBag/testdata/dev/nanobodies/report/test_cdr3.tsv', checkIfExists: true)
                 ]
                 input[5] = [
-                    [id: 'test', sampleID: 'sample1', individualID: 'ind1', immunisation: 'imm1', boost: 'boost1']                ]
-                input[6] = true
+                    [id: 'test', sampleID: 'sample1', individualID: 'ind1', immunisation: 'imm1', boost: 'boost1']
+                ]
                 """
             }
         }

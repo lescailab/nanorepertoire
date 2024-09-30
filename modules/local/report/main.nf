@@ -13,7 +13,6 @@ process REPORT {
     path (cdr3histograms)
     path (cdr3tables)
     val  (metadata)
-    val  (options)
 
     output:
     path "*.RData", emit: rdata

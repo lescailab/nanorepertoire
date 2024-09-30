@@ -32,7 +32,7 @@ workflow FASTQ_TO_FASTA {
     RENAME(FLASH.out.merged, single_end = true)
     ch_versions = ch_versions.mix(RENAME.out.versions.first())
 
-    NANOTRANSLATE(RENAME.out.renamed, single_end = true)
+    NANOTRANSLATE(RENAME.out.renamed)
     ch_versions = ch_versions.mix(NANOTRANSLATE.out.versions.first())
 
     FASTQC(input_ch)

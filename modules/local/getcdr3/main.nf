@@ -9,7 +9,7 @@ process GETCDR3 {
 
     input:
     tuple val(meta), path(translated)
-    val options
+
 
     output:
     tuple val("${meta.id}"), val("${meta.individualid}"), val("${meta.immunisation}"), val("${meta.boost}"), path("*.fasta"), emit: fasta

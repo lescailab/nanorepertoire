@@ -24,10 +24,10 @@ workflow FASTA_CLUSTERING {
     CDHIT_CDHIT(input_ch)
     ch_versions = ch_versions.mix(CDHIT_CDHIT.out.versions.first())
 
-    READCDHIT(CDHIT_CDHIT.out.clusters, single_end = true)
+    READCDHIT(CDHIT_CDHIT.out.clusters)
     ch_versions = ch_versions.mix(READCDHIT.out.versions.first())
 
-    GETCDR3(CDHIT_CDHIT.out.fasta, single_end = true)
+    GETCDR3(CDHIT_CDHIT.out.fasta)
     ch_versions = ch_versions.mix(GETCDR3.out.versions.first())
 
 
