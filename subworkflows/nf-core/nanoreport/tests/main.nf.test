@@ -25,10 +25,10 @@ nextflow_workflow {
                         file("https://raw.githubusercontent.com/DavideBag/testdata/dev/nanobodies/report/nftest.cutadapt.log", checkIfExists: true)
                         ]
                 input[2] = [
-                        file("/Users/bagordo/My Drive/PIPELINES/nanorepertoire-devel/bin/analysis_report.qmd")
+                        file("$projectDir/assets/analysis_report.qmd")
                         ]
                 input[3] = [
-                        file("/Users/bagordo/My Drive/PIPELINES/nanorepertoire-devel/bin/loop_tree.qmd")
+                        file("$projectDir/assets/loop_tree.qmd")
                         ]
                 input[4] = [
                         file('https://raw.githubusercontent.com/DavideBag/testdata/dev/nanobodies/report/test_clusters.summary', checkIfExists: true)
@@ -42,7 +42,6 @@ nextflow_workflow {
                 input[7] = [
                         [id: 'test', sampleID: 'sample1', individualID: 'ind1', immunisation: 'imm1', boost: 'boost1']                
                         ]
-                input[8] = true
                 """
             }
         }

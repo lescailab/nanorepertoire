@@ -10,6 +10,7 @@ include { paramsSummaryMap       } from 'plugin/nf-validation'
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_nanorepertoire_pipeline'
+include { FASTQ_TO_FASTA         } from '../subworkflows/nf-core/fastq_to_fasta'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -21,6 +22,7 @@ workflow NANOREPERTOIRE {
 
     take:
     ch_samplesheet // channel: samplesheet read in from --input
+    adapterfile
 
     main:
 
@@ -35,6 +37,27 @@ workflow NANOREPERTOIRE {
     )
     ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect{it[1]})
     ch_versions = ch_versions.mix(FASTQC.out.versions.first())
+
+
+
+    FASTQ_TO_FASTA(
+        ch_samplesheet
+    )
+
+    FASTA_CLUSTERING(
+        FASTQ_TO_FASTA.out.translated
+    )
+
+    NANOREPORT(
+        FASTQ_TO_FASTA.out.fastqc,
+        FASTQ_TO_FASTA.out.trimmed_fastq,
+        ${projectDir}/assets/analysis_report.qmd,
+        ${projectDir}/assets/loop_tree.qmd,
+        FASTA_CLUSTERING.out.clusteread,
+        FASTA_CLUSTERING.out.cdrhistograms,
+        FASTA_CLUSTERING.out.cdrpredicted
+
+    )
 
     //
     // Collate and save software versions

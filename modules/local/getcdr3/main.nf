@@ -12,7 +12,7 @@ process GETCDR3 {
 
 
     output:
-    tuple val("${meta.id}"), val("${meta.individualid}"), val("${meta.immunisation}"), val("${meta.boost}"), path("*.fasta"), emit: fasta
+    tuple val("${meta.id}"), val("${meta.immunisation}"), val("${meta.boost}"), path("*.fasta"), emit: fasta
     tuple val(meta), path("*.hist")                                                                                         , emit: hist
     tuple val(meta), path("*.tsv")                                                                                          , emit: tsv
     path '*.hist'                                                                                                           , emit: histonly

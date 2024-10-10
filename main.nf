@@ -54,7 +54,7 @@ workflow NFCORE_NANOREPERTOIRE {
     // WORKFLOW: Run pipeline
     //
     NANOREPERTOIRE (
-        samplesheet
+        samplesheet, adapterfile
     )
 
     emit:

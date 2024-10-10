@@ -25,7 +25,6 @@ nextflow_workflow {
                     [id:'test'],
                     file("https://raw.githubusercontent.com/lescailab/testdata/master/nanobodies/test01_aa.fasta", checkIfExists: true)
                 ]
-                input[1] = true
                 """
             }
         }

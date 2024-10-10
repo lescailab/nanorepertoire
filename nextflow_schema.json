@@ -292,5 +292,13 @@
         {
             "$ref": "#/definitions/generic_options"
         }
-    ]
+    ],
+    "properties": {
+        "adapterfile": {
+            "type": "string",
+            "description": "To insert the adapter file used in sequencing and refine the work of Cutadapt.",
+            "fa_icon": "fas fa-cut",
+            "format": "file-path"
+        }
+    }
 }
