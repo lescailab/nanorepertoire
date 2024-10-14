@@ -12,7 +12,6 @@ workflow FASTA_CLUSTERING {
     // with take we define the input channels
     take:
     input      // channel: [[id], [reads_forward, reads_reverse]]
-    single_end
 
     main:
     // define the channels that will be used to store the versions of the software
@@ -24,10 +23,10 @@ workflow FASTA_CLUSTERING {
     CDHIT_CDHIT(input_ch)
     ch_versions = ch_versions.mix(CDHIT_CDHIT.out.versions.first())
 
-    READCDHIT(CDHIT_CDHIT.out.clusters, single_end = true)
+    READCDHIT(CDHIT_CDHIT.out.clusters)
     ch_versions = ch_versions.mix(READCDHIT.out.versions.first())
 
-    GETCDR3(CDHIT_CDHIT.out.fasta, single_end = true)
+    GETCDR3(CDHIT_CDHIT.out.fasta)
     ch_versions = ch_versions.mix(GETCDR3.out.versions.first())
 
 
@@ -43,7 +42,8 @@ workflow FASTA_CLUSTERING {
     cluster          = CDHIT_CDHIT.out.fasta              // channel: [[id], [ fastq_merged ]]
     clusteread       = READCDHIT.out.summary           // channel: [[id], [ fastq_renamed]]
     cdrpredicted     = GETCDR3.out.fasta
-    cdrpredicted     = GETCDR3.out.tsv
+    cdrtsv           = GETCDR3.out.tsv
+    cdrhistograms    = GETCDR3.out.histonly
     cdrmeta          = GETCDR3.out.metaonly
     //mafftfasta       = MAFFT.out.fas 
 

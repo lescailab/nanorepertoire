@@ -19,7 +19,6 @@ nextflow_process {
                     [file("https://github.com/lescailab/testdata/raw/master/nanobodies/test01_aa.clusters", checkIfExists: true)
                     ]
                 ]
-                input[1] = true
                 """
             }
         }

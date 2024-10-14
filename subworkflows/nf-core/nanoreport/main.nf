@@ -18,7 +18,7 @@ workflow NANOREPORT {
     cdr3histograms
     cdr3tables
     metadata
-    options
+    
 
 
     main:
@@ -31,7 +31,7 @@ workflow NANOREPORT {
     MULTIQC2(cutadapt_log, [], [],[], [], [])
     ch_versions = ch_versions.mix(MULTIQC2.out.versions.first())
 
-    REPORT(report, loop_tree, clustersummaries, cdr3histograms, cdr3tables, metadata, options)
+    REPORT(report, loop_tree, clustersummaries, cdr3histograms, cdr3tables, metadata)
 
 
 

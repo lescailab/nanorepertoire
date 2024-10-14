@@ -9,7 +9,6 @@ process NANOTRANSLATE {
 
     input:
     tuple val(meta), path(mergedfq)
-    val single_end
 
     output:
     tuple val(meta), path("*.fasta"), emit: fasta

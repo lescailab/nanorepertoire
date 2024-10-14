@@ -15,10 +15,10 @@ nextflow_process {
                 """
                 // input_ch
                 input[0] = [
-                    file("/Users/bagordo/My Drive/PIPELINES/nanorepertoire-devel/bin/analysis_report.qmd")
+                    file("$projectDir/assets/analysis_report.qmd")
                 ]
                 input[1] = [
-                    file("/Users/bagordo/My Drive/PIPELINES/nanorepertoire-devel/bin/loop_tree.qmd")
+                    file("$projectDir/assets/loop_tree.qmd")
                 ]
                 input[2] = [
                     file('https://raw.githubusercontent.com/DavideBag/testdata/dev/nanobodies/report/test_clusters.summary', checkIfExists: true)
@@ -30,8 +30,8 @@ nextflow_process {
                     file('https://raw.githubusercontent.com/DavideBag/testdata/dev/nanobodies/report/test_cdr3.tsv', checkIfExists: true)
                 ]
                 input[5] = [
-                    [id: 'test', sampleID: 'sample1', individualID: 'ind1', immunisation: 'imm1', boost: 'boost1']                ]
-                input[6] = true
+                    [id: 'test', sampleID: 'sample1', individualID: 'ind1', immunisation: 'imm1', boost: 'boost1']
+                ]
                 """
             }
         }

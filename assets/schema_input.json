@@ -26,6 +26,24 @@
                 "exists": true,
                 "pattern": "^\\S+\\.f(ast)?q\\.gz$",
                 "errorMessage": "FastQ file for reads 2 cannot contain spaces and must have extension '.fq.gz' or '.fastq.gz'"
+            },
+            "individual": {
+                "type": "string",
+                "pattern": "$",
+                "errorMessage": "boost field contains the boost round of the immunisation",
+                "meta": ["individualID"]
+            },
+            "boost": {
+                "type": "string",
+                "pattern": "$",
+                "errorMessage": "boost field contains the boost round of the immunisation",
+                "meta": ["boost"]
+            },
+            "immunisation": {
+                "type": "string",
+                "pattern": "$",
+                "errorMessage": "boost field contains the boost round of the immunisation",
+                "meta": ["immunisation"]
             }
         },
         "required": ["sample", "fastq_1"]
