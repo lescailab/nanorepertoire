@@ -1,2 +1,0 @@
-subworkflows/fastqtofasta_translation_cluster_and_align:
-  - subworkflows/nf-core/fastqtofasta_translation_cluster_and_align/**
