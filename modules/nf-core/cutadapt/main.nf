@@ -9,7 +9,8 @@ process CUTADAPT {
 
     input:
     tuple val(meta), path(reads)
-
+    path (adapterfile)
+    
     output:
     tuple val(meta), path('*.trim.fastq.gz'), emit: reads
     tuple val(meta), path('*.log')          , emit: log
@@ -22,10 +23,14 @@ process CUTADAPT {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     def trimmed  = meta.single_end ? "-o ${prefix}.trim.fastq.gz" : "-o ${prefix}_1.trim.fastq.gz -p ${prefix}_2.trim.fastq.gz"
+
+    if (meta.single_end) {
     """
-    cutadapt \\
+        cutadapt \\
         -Z \\
         --cores $task.cpus \\
+        -a file:${adapterfile} \\
+        -g file:${adapterfile} \\
         $args \\
         $trimmed \\
         $reads \\
@@ -35,6 +40,27 @@ process CUTADAPT {
         cutadapt: \$(cutadapt --version)
     END_VERSIONS
     """
+    }
+    else {
+        """
+        cutadapt \\
+        -Z \\
+        --cores $task.cpus \\
+        -a file:${adapterfile} \\
+        -A file:${adapterfile} \\
+        -g file:${adapterfile} \\
+        -G file:${adapterfile} \\
+        $args \\
+        $trimmed \\
+        $reads \\
+        > ${prefix}.cutadapt.log
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        cutadapt: \$(cutadapt --version)
+    END_VERSIONS
+        """
+    }
+
 
     stub:
     def prefix  = task.ext.prefix ?: "${meta.id}"
