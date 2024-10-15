@@ -32,7 +32,7 @@ process FLASH {
         -o ${prefix} \\
         -z \\
         ${reads[0]} \\
-        ${reads[1]} 
+        ${reads[1]}
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
