@@ -18,7 +18,6 @@ workflow NANOREPORT {
     cdr3histograms
     cdr3tables
     metadata
-    
 
 
     main:

@@ -5,7 +5,6 @@ nextflow_workflow {
     script "../main.nf"
     workflow "FASTA_CLUSTERING"
     config "./nextflow.config"
-    
     tag "subworkflows"
     tag "subworkflows_nfcore"
     tag "subworkflows/fasta_clustering"

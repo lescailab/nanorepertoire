@@ -45,9 +45,8 @@ workflow FASTA_CLUSTERING {
     cdrtsv           = GETCDR3.out.tsv
     cdrhistograms    = GETCDR3.out.histonly
     cdrmeta          = GETCDR3.out.metaonly
-    //mafftfasta       = MAFFT.out.fas 
+    //mafftfasta       = MAFFT.out.fas
 
-   
     versions      = ch_versions                     // channel: [ versions.yml ]
 }
 
