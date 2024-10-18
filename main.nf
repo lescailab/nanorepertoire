@@ -15,7 +15,7 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { NANOREPERTOIRE  } from './workflows/nanorepertoire'
+include { NANOREPERTOIRE          } from './workflows/nanorepertoire'
 include { PIPELINE_INITIALISATION } from './subworkflows/local/utils_nfcore_nanorepertoire_pipeline'
 include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_nanorepertoire_pipeline'
 include { getGenomeAttribute      } from './subworkflows/local/utils_nfcore_nanorepertoire_pipeline'
@@ -25,18 +25,11 @@ include { getGenomeAttribute      } from './subworkflows/local/utils_nfcore_nano
     GENOME PARAMETER VALUES
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-
-// TODO nf-core: Remove this line if you don't need a FASTA file
-//   This is an example of how to use getGenomeAttribute() to fetch parameters
-//   from igenomes.config using `--genome`
-params.fasta = getGenomeAttribute('fasta')
-
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     NAMED WORKFLOWS FOR PIPELINE
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-
 //
 // WORKFLOW: Run main analysis pipeline depending on type of input
 //
@@ -46,13 +39,11 @@ workflow NFCORE_NANOREPERTOIRE {
     samplesheet // channel: samplesheet read in from --input
 
     main:
-
     //
     // WORKFLOW: Run pipeline
     //
-    NANOREPERTOIRE (
-        samplesheet, adapterfile
-    )
+    NANOREPERTOIRE (samplesheet)
+
     emit:
     multiqc_report = NANOREPERTOIRE.out.multiqc_report // channel: /path/to/multiqc_report.html
 }

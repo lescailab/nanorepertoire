@@ -11,7 +11,9 @@
                 "type": "string",
                 "pattern": "^\\S+$",
                 "errorMessage": "Sample name must be provided and cannot contain spaces",
-                "meta": ["id"]
+                "meta": [
+                    "id"
+                ]
             },
             "fastq_1": {
                 "type": "string",
@@ -29,23 +31,32 @@
             },
             "individual": {
                 "type": "string",
-                "pattern": "$",
+                "pattern": "^\\S+$",
                 "errorMessage": "boost field contains the boost round of the immunisation",
-                "meta": ["individualID"]
+                "meta": [
+                    "individualID"
+                ]
             },
             "boost": {
-                "type": "string",
-                "pattern": "$",
+                "type": "integer",
+                "pattern": "^\\S+$",
                 "errorMessage": "boost field contains the boost round of the immunisation",
-                "meta": ["boost"]
+                "meta": [
+                    "boost"
+                ]
             },
             "immunisation": {
                 "type": "string",
-                "pattern": "$",
+                "pattern": "^\\S+$",
                 "errorMessage": "boost field contains the boost round of the immunisation",
-                "meta": ["immunisation"]
+                "meta": [
+                    "immunisation"
+                ]
             }
         },
-        "required": ["sample", "fastq_1"]
+        "required": [
+            "sample",
+            "fastq_1"
+        ]
     }
 }

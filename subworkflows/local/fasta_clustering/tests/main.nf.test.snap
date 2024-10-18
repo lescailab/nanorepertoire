@@ -82,94 +82,46 @@
         "content": [
             {
                 "0": [
-                    [
-                        {
-                            "id": "test"
-                        },
-                        "test.fasta:md5,1695c2cacd09c498be614659a0886b37"
-                    ]
+                    
                 ],
                 "1": [
-                    [
-                        {
-                            "id": "test"
-                        },
-                        "test_clusters.summary:md5,e79147ef0b91e56c0dbd206f4d45c88f"
-                    ]
+                    
                 ],
                 "2": [
-                    [
-                        "test",
-                        "null",
-                        "null",
-                        "test_cdr3.fasta:md5,5f0ad57d6ac3c3923ad35aa4ad4033c0"
-                    ]
+                    
                 ],
                 "3": [
-                    [
-                        {
-                            "id": "test"
-                        },
-                        "test_cdr3.tsv:md5,89ac4696390cab43ed2d1e5a62d4dac8"
-                    ]
+                    
                 ],
                 "4": [
-                    "test_cdr3.hist:md5,4e99a92c87ac3be1e7d61bc5804b1c36"
+                    
                 ],
                 "5": [
-                    {
-                        "id": "test"
-                    }
+                    
                 ],
                 "6": [
-                    "versions.yml:md5,3c42fbfc37c2da9cfc0f08d1100daf58",
-                    "versions.yml:md5,478cbc392823d330428ee3d7b3c8b814",
-                    "versions.yml:md5,9113bedeb10f5a5bc90e86f437ccdbf8"
+                    
                 ],
                 "cdrhistograms": [
-                    "test_cdr3.hist:md5,4e99a92c87ac3be1e7d61bc5804b1c36"
+                    
                 ],
                 "cdrmeta": [
-                    {
-                        "id": "test"
-                    }
+                    
                 ],
                 "cdrpredicted": [
-                    [
-                        "test",
-                        "null",
-                        "null",
-                        "test_cdr3.fasta:md5,5f0ad57d6ac3c3923ad35aa4ad4033c0"
-                    ]
+                    
                 ],
                 "cdrtsv": [
-                    [
-                        {
-                            "id": "test"
-                        },
-                        "test_cdr3.tsv:md5,89ac4696390cab43ed2d1e5a62d4dac8"
-                    ]
+                    
                 ],
                 "cluster": [
-                    [
-                        {
-                            "id": "test"
-                        },
-                        "test.fasta:md5,1695c2cacd09c498be614659a0886b37"
-                    ]
+                    
                 ],
                 "clusteread": [
-                    [
-                        {
-                            "id": "test"
-                        },
-                        "test_clusters.summary:md5,e79147ef0b91e56c0dbd206f4d45c88f"
-                    ]
+                    
                 ],
                 "versions": [
-                    "versions.yml:md5,3c42fbfc37c2da9cfc0f08d1100daf58",
-                    "versions.yml:md5,478cbc392823d330428ee3d7b3c8b814",
-                    "versions.yml:md5,9113bedeb10f5a5bc90e86f437ccdbf8"
+                    
                 ]
             }
         ],
@@ -177,6 +129,6 @@
             "nf-test": "0.8.4",
             "nextflow": "24.04.4"
         },
-        "timestamp": "2024-10-07T11:31:14.443225"
+        "timestamp": "2024-10-16T11:32:32.867821"
     }
 }

@@ -1,0 +1,37 @@
+ERROR ~ Error executing process > 'FASTA_CLUSTERING:CDHIT_CDHIT (test)'
+
+Caused by:
+  Process `FASTA_CLUSTERING:CDHIT_CDHIT (test)` terminated with an error exit status (125)
+
+
+Command executed:
+
+  cd-hit \
+       \
+      -i test01_aa.fasta \
+      -o test.fasta \
+      -M 4915 \
+      -T 2
+  
+  cat <<-END_VERSIONS > versions.yml
+  "FASTA_CLUSTERING:CDHIT_CDHIT":
+      cdhit: $(cd-hit -h | head -n 1 | sed 's/^.*====== CD-HIT version //;s/ (built on .*) ======//' )
+  END_VERSIONS
+
+Command exit status:
+  125
+
+Command output:
+  (empty)
+
+Command error:
+  Unable to find image 'biocontainers/cd-hit:4.8.1--h5b5514e_7' locally
+  docker: Error response from daemon: manifest for biocontainers/cd-hit:4.8.1--h5b5514e_7 not found: manifest unknown: manifest unknown.
+  See 'docker run --help'.
+
+Work dir:
+  /Users/bagordo/Desktop/CODE/nanorepertoire-devel/subworkflows/local/fasta_clustering/tests/.nf-test/tests/c18cd727a79aa1d5df4a701dedbd5657/work/5b/29d0f2ce5d46e75201a00f752004a9
+
+Tip: view the complete command output by changing to the process work dir and entering the command `cat .command.out`
+
+ -- Check '/Users/bagordo/Desktop/CODE/nanorepertoire-devel/subworkflows/local/fasta_clustering/tests/.nf-test/tests/c18cd727a79aa1d5df4a701dedbd5657/meta/nextflow.log' file for details

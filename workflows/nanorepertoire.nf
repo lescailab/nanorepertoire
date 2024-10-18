@@ -9,7 +9,9 @@ include { paramsSummaryMap       } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_nanorepertoire_pipeline'
-include { FASTQ_TO_FASTA         } from '../subworkflows/nf-core/fastq_to_fasta'
+include { FASTQ_TO_FASTA         } from '../subworkflows/local/fastq_to_fasta'
+include { FASTA_CLUSTERING       } from '../subworkflows/local/fasta_clustering'
+include { NANOREPORT             } from '../subworkflows/local/nanoreport'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -20,18 +22,19 @@ include { FASTQ_TO_FASTA         } from '../subworkflows/nf-core/fastq_to_fasta'
 workflow NANOREPERTOIRE {
 
     take:
-    ch_samplesheet // channel: samplesheet read in from --input
-    adapterfile
+    input // channel: samplesheet read in from --input
 
     main:
 
-    ch_versions = Channel.empty()
+    ch_versions      = Channel.empty()
     ch_multiqc_files = Channel.empty()
+    ch_adapterfile   = Channel.value(file(params.adapterfile, checkIfExists: true))
+
     //
     // MODULE: Run FastQC
     //
     FASTQC (
-        ch_samplesheet
+        input
     )
     ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect{it[1]})
     ch_versions = ch_versions.mix(FASTQC.out.versions.first())
@@ -39,7 +42,8 @@ workflow NANOREPERTOIRE {
 
 
     FASTQ_TO_FASTA(
-        ch_samplesheet
+        input,
+        ch_adapterfile
     )
 
     FASTA_CLUSTERING(
@@ -49,12 +53,12 @@ workflow NANOREPERTOIRE {
     NANOREPORT(
         FASTQ_TO_FASTA.out.fastqc,
         FASTQ_TO_FASTA.out.trimmed_fastq,
-        ${projectDir}/assets/analysis_report.qmd,
-        ${projectDir}/assets/loop_tree.qmd,
+        file("${projectDir}/assets/analysis_report.qmd"),
+        file("${projectDir}/assets/loop_tree.qmd"),
         FASTA_CLUSTERING.out.clusteread,
         FASTA_CLUSTERING.out.cdrhistograms,
-        FASTA_CLUSTERING.out.cdrpredicted
-
+        FASTA_CLUSTERING.out.cdrpredicted,
+        [id: [], sampleID: [], individualID: [], immunisation: [], boost: []]
     )
 
     //

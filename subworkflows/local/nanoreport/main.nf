@@ -20,6 +20,7 @@ workflow NANOREPORT {
     metadata
 
 
+
     main:
 
     ch_versions = Channel.empty()

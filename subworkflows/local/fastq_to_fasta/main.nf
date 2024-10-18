@@ -1,7 +1,7 @@
 // this subworkflow prepares the inputs from fastq files and does the translation, in the meanwhile performs a fastqc
 // modules to include in this subworkflow
 
-include {CUTADAPT       } from '../../../modules/nf-core/cutadapt/main.nf'
+include {CUTADAPT       } from '../../../modules/local/cutadapt/main.nf'
 include {FLASH          } from '../../../modules/nf-core/flash/main.nf'
 include {RENAME         } from '../../../modules/local/rename/main.nf'
 include {NANOTRANSLATE  } from '../../../modules/local/nanotranslate/main.nf'
@@ -14,8 +14,8 @@ workflow FASTQ_TO_FASTA {
 
     // with take we define the input channels
     take:
-    input      // channel: [[id], [reads_forward, reads_reverse]]
-    adapterfile
+    input          // channel: [[id], [reads_forward, reads_reverse]]
+    adapterfile    // channel: "adapter.fasta"
 
     main:
     // define the channels that will be used to store the versions of the software
