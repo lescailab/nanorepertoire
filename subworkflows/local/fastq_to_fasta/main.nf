@@ -5,7 +5,6 @@ include {CUTADAPT       } from '../../../modules/local/cutadapt/main.nf'
 include {FLASH          } from '../../../modules/nf-core/flash/main.nf'
 include {RENAME         } from '../../../modules/local/rename/main.nf'
 include {NANOTRANSLATE  } from '../../../modules/local/nanotranslate/main.nf'
-include {FASTQC         } from '../../../modules/nf-core/fastqc/main.nf'
 
 
 ///Users/bagordo/Desktop/all/all_bioinformatics/nf-core-nanorepertoire/data/*_{1,2}_dummy2.fastq
@@ -35,9 +34,6 @@ workflow FASTQ_TO_FASTA {
     NANOTRANSLATE(RENAME.out.renamed)
     ch_versions = ch_versions.mix(NANOTRANSLATE.out.versions.first())
 
-    FASTQC(input_ch)
-    ch_versions = ch_versions.mix(FASTQC.out.versions.first())
-
     // defining the output channels that the workflow will
     emit:
     // emitted channels
@@ -46,7 +42,6 @@ workflow FASTQ_TO_FASTA {
     renamed       = RENAME.out.renamed              // channel: [[id], [ fastq_renamed]]
     translated    = NANOTRANSLATE.out.fasta         // channel: [[id], [ fasta]]
     translog      = NANOTRANSLATE.out.log           // channel: [[id], [ fastalog]]
-    fastqc        = FASTQC.out.zip                  // channel: zipped_fastqc
     versions      = ch_versions                     // channel: [ versions.yml ]
 }
 
