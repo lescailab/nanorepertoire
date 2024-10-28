@@ -40,9 +40,9 @@ workflow FASTA_CLUSTERING {
     emit:
     // emitted channels
     cluster          = CDHIT_CDHIT.out.fasta              // channel: [[id], [ fastq_merged ]]
-    clusteread       = READCDHIT.out.summary           // channel: [[id], [ fastq_renamed]]
+    clusteread       = READCDHIT.out.summaryonly           // channel: [[id], [ fastq_renamed]]
     cdrpredicted     = GETCDR3.out.fasta
-    cdrtsv           = GETCDR3.out.tsv
+    cdrtsv           = GETCDR3.out.tsvonly
     cdrhistograms    = GETCDR3.out.histonly
     cdrmeta          = GETCDR3.out.metaonly
     //mafftfasta       = MAFFT.out.fas

@@ -50,7 +50,10 @@ workflow NANOREPERTOIRE {
         FASTQ_TO_FASTA.out.translated
     )
 
-    FASTA_CLUSTERING.out.cdrmeta.collect().view()
+    FASTA_CLUSTERING.out.cdrmeta.collect().dump(tag: 'channel')
+    FASTA_CLUSTERING.out.clusteread.collect().dump(tag: 'reads')
+    FASTA_CLUSTERING.out.cdrhistograms.collect().dump(tag: 'hist')
+    FASTA_CLUSTERING.out.cdrtsv.collect().dump(tag: 'tsv')
 
     REPORT(
         file("${projectDir}/assets/analysis_report.qmd"),
@@ -58,7 +61,7 @@ workflow NANOREPERTOIRE {
         FASTA_CLUSTERING.out.clusteread.collect(),
         FASTA_CLUSTERING.out.cdrhistograms.collect(),
         FASTA_CLUSTERING.out.cdrtsv.collect(),
-        FASTA_CLUSTERING.out.cdrmeta.collect()+[]
+        FASTA_CLUSTERING.out.cdrmeta.collect()
     )
 
     //
