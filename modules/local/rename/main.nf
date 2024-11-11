@@ -4,7 +4,7 @@ process RENAME {
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/fastx_toolkit:0.0.14--hdbdd923_11':
+        'https://depot.galaxyproject.org/singularity/fastx_toolkit:0.0.14--hdbdd923_11' :
         'biocontainers/fastx_toolkit:0.0.14--hdbdd923_11' }"
 
     input:
@@ -12,8 +12,8 @@ process RENAME {
     val single_end
 
     output:
-    tuple val(meta), path("*.fastq.gz"), emit: renamed
-    path "versions.yml"                , emit: versions
+    tuple val(meta), path('*.fastq.gz'), emit: renamed
+    path 'versions.yml'               , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -36,7 +36,6 @@ process RENAME {
         """
         zcat ${reads[0]} | fastx_renamer -z -n COUNT -o ${meta.id}_R1_renamed.fastq.gz
         zcat ${reads[1]} | fastx_renamer -z -n COUNT -o ${meta.id}_R2_renamed.fastq.gz
-
 
         cat <<-END_VERSIONS > versions.yml
         "${task.process}":

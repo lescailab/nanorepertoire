@@ -2,13 +2,51 @@
     "reporting": {
         "content": [
             [
-                
+                "N E X T F L O W  ~  version 24.04.4",
+                "Launching `/Users/bagordo/Desktop/CODE/nanorepertoire-devel/.nf-test/tests/b6b48da82d8aacb878525ec667a9d5c5/meta/mock.nf` [happy_baekeland] DSL2 - revision: 723f071c5e",
+                "WARN: Input `tuple` must define at least two elements -- Check process `REPORT`",
+                "ERROR ~ Error executing process > 'REPORT'",
+                "",
+                "Caused by:",
+                "  No such variable: sampleID -- Check script '/Users/bagordo/Desktop/CODE/nanorepertoire-devel/modules/local/report/tests/../main.nf' at line: 32",
+                "",
+                "",
+                "Source block:",
+                "  def args = task.ext.args ?: ''",
+                "  def sampleData = new File(\"${workDir}/sampledata.tsv\")",
+                "  sampleData.append(\"ID\\tindividual\\timmunisation\\tboost\\n\")",
+                "  metadata.each() { map ->",
+                "      sampleData.append(\"${map.sampleID}\\t${map.individualID}\\t${map.immunisation}\\t${map.boost}\\n\")",
+                "  }",
+                "  clusterList = clustersummaries.join(\",\")",
+                "  histoList = cdr3histograms.join(\",\")",
+                "  tableList = cdr3tables.join(\",\")",
+                "  def output = report.baseName",
+                "  \"\"\"",
+                "  ln -s '$moduleDir/nibsc_report.css' .",
+                "  ln -s '${workDir}/sampledata.tsv' .",
+                "  ",
+                "  quarto render analysis_report.qmd \\\\",
+                "      -P clusterList:\\\"$clusterList\\\" \\\\",
+                "      -P histoList:\\\"$histoList\\\" \\\\",
+                "      -P tableList:\\\"$tableList\\\" \\\\",
+                "      -P sampleData:\\\"sampledata.tsv\\\" \\\\",
+                "      -P sizeThreshold:\\\"${params.cluster_size_threshold}\\\" \\\\",
+                "      -P loopFile:\\\"loop_tree.qmd\" \\\\",
+                "      -P calcTree:\\\"${params.calculate_tree}\\\" \\\\",
+                "      --output \"${output}.html\"",
+                "  \"\"\"",
+                "",
+                "Tip: view the complete command output by changing to the process work dir and entering the command `cat .command.out`",
+                "",
+                " -- Check '/Users/bagordo/Desktop/CODE/nanorepertoire-devel/.nf-test/tests/b6b48da82d8aacb878525ec667a9d5c5/meta/nextflow.log' file for details",
+                "Execution cancelled -- Finishing pending tasks before exit"
             ]
         ],
         "meta": {
             "nf-test": "0.8.4",
             "nextflow": "24.04.4"
         },
-        "timestamp": "2024-09-10T15:45:31.415663"
+        "timestamp": "2024-10-25T09:42:23.668302"
     }
 }
