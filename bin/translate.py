@@ -1,25 +1,14 @@
 #!/usr/bin/env python
-#This is a script to take input fastq data from FLASH and translate it with biopython
-#Input data is in files like:
-#/usr/share/sequencing/projects/317/alignments/317-D1-Bst3_S1_L001.relabel.fastq
-#Then the translation needs to run from ATGGCACAG (MAQ) up to ACCGTCTCCTCA (TVSS)
-#Note that most merged reads start as: CCGGCCATGGCACAG
+# This script processes input FASTQ data, translating sequences with Biopython.
+# It has been refactored and parallelized using multiprocessing for better performance.
 
-#### NB THIS SCRIPT ONLY WORKS WITH FASTQ HEADER SHORT
-
-import Bio
-from Bio.Seq import Seq
 import sys
-import gzip
 import re
+import multiprocessing
+from Bio.Seq import translate
+from multiprocessing import Pool
 
-filein = open(sys.argv[1])
-fileout = open(sys.argv[2], "w")
-notfound = open(str(sys.argv[2] + ".notfound"), "w")
-log = open(str(sys.argv[2] + ".log"), "w")
-nomultiplefile = open(str(sys.argv[2] + ".outframe"), "w")
-
-# Regex pattern for matching sequences
+# Regex patterns for matching sequences
 startseq = r'(ATGGCTCAA|ATGGCTCAG|ATGGCCCAA|ATGGCCCAG|ATGGCACAA|ATGGCACAG|ATGGCGCAA|ATGGCGCAG|' \
     r'GTTCAATTA|GTTCAATTG|GTTCAACTT|GTTCAACTC|GTTCAACTA|GTTCAACTG|GTTCAGTTA|GTTCAGTTG|' \
     r'GTTCAGCTT|GTTCAGCTC|GTTCAGCTA|GTTCAGCTG|GTCCAATTA|GTCCAATTG|GTCCAACTT|GTCCAACTC|' \
@@ -114,68 +103,136 @@ endseq = r'(ACTGTTTCTTCT|ACTGTTTCTTCC|ACTGTTTCTTCA|ACTGTTTCTTCG|ACTGTTTCTAGT|ACT
     r'ACGGTGTCGTCA|ACGGTGTCGTCG|ACGGTGTCGAGT|ACGGTGTCGAGC|ACGGTGAGTTCT|ACGGTGAGTTCC|ACGGTGAGTTCA|ACGGTGAGTTCG|' \
     r'ACGGTGAGTAGT|ACGGTGAGTAGC|ACGGTGAGCTCT|ACGGTGAGCTCC|ACGGTGAGCTCA|ACGGTGAGCTCG|ACGGTGAGCAGT|ACGGTGAGCAGC)'
 
-readsread = 0
-readspassing = 0
-foundstart = 0
-foundend = 0
-notinframe = 0
-withstop = 0
-nostartnoend = 0
+def read_fastq(file_handle):
+    """Generator to read FASTQ file."""
+    while True:
+        headerline = file_handle.readline()
+        if not headerline:
+            break
+        sequenceline = file_handle.readline()
+        plusline = file_handle.readline()
+        qualityline = file_handle.readline()
+        yield (headerline.rstrip(), sequenceline.rstrip(), plusline.rstrip(), qualityline.rstrip())
 
-linecounter = 0
-for line in filein:
-    linecounter += 1
-    if linecounter % 4 == 1:
-        readsread += 1
-        headerline = line
-    if linecounter % 4 == 2:
-        dna = Seq(line.rstrip())
+def process_read(read):
+    """Processes a single read."""
+    headerline, sequenceline, _, _ = read
+    result = {}
+    dna = sequenceline.rstrip()
 
-        # Find start sequence
-        if len(re.findall(startseq, str(dna))) > 0:
-            startbase = dna.find(re.findall(startseq, str(dna))[0])
-            foundstart += 1
-        else:
-            startbase = -1
+    # Find start sequence
+    startseq_match = re.findall(startseq, dna)
+    if startseq_match:
+        startbase = dna.find(startseq_match[0])
+        result['foundstart'] = 1
+    else:
+        startbase = -1
+        result['foundstart'] = 0
 
-        # Find end sequence with check to avoid IndexError
-        if len(re.findall(endseq, str(dna))) > 0:
-            endbase = dna.find(re.findall(endseq, str(dna))[0])  # Find the first matching sequence
-            foundend += 1
-        else:
-            endbase = -1
+    # Find end sequence
+    endseq_match = re.findall(endseq, dna)
+    if endseq_match:
+        endbase = dna.find(endseq_match[0])
+        result['foundend'] = 1
+    else:
+        endbase = -1
+        result['foundend'] = 0
 
-        if startbase == -1 or endbase == -1:  # Read fails if missing the start or end sequence
-            nostartnoend += 1
-            notfound.write("sequenza non trovata" + "\t" + str(dna) + "\n")
-            continue
+    if startbase == -1 or endbase == -1:
+        result['status'] = 'nostartnoend'
+        result['notfound'] = f"sequenza non trovata\t{dna}\n"
+        return result
 
-        targetregion = dna[startbase:endbase + 12] # 12 is the length of the codon correspondence to TVSS of which endbase captures only the start
-        if len(str(targetregion)) % 3 != 0:  # Read fails if the grabbed region is not a multiple of three
-            notinframe += 1
-            nomultiplefile.write(headerline + "\t" + str(dna) + "\t" + str(startbase) + "\t" + str(endbase) + "\t" + str(targetregion) + "\n")
-            continue
+    targetregion = dna[startbase:endbase + 12]  # 12 is the length of the end sequence
+    if len(targetregion) % 3 != 0:
+        result['status'] = 'notinframe'
+        result['nomultiple'] = f"{headerline}\t{dna}\t{startbase}\t{endbase}\t{targetregion}\n"
+        return result
 
-        translated = targetregion.translate()
-        if "*" in str(translated):  # Read fails if it has a stop codon
-            withstop += 1
-            continue
+    # Translate the target region
+    translated = translate(targetregion)
+    if '*' in translated:
+        result['status'] = 'withstop'
+        return result
 
-        readspassing += 1
-        fileout.write(headerline)
-        fileout.write(str(translated) + "\n")
+    result['status'] = 'passed'
+    result['header'] = headerline
+    result['translated'] = translated + "\n"
+    return result
 
-log.write("Completed reading reads:")
-log.write(readsread)
-log.write("Of which passing and written into FASTA:")
-log.write(readspassing)
-log.write("start matched are")
-log.write(foundstart)
-log.write("end matched are")
-log.write(foundend)
-log.write("failed because missing start or missing end")
-log.write(nostartnoend)
-log.write("failed because not in frame, i.e. not multiple of 3")
-log.write(notinframe)
-log.write("failed because there is a stop codon in the sequence")
-log.write(withstop)
+def process_reads(reads):
+    """Processes a batch of reads."""
+    return [process_read(read) for read in reads]
+
+def main():
+    with open(sys.argv[1], 'r') as filein, \
+         open(sys.argv[2], 'w') as fileout, \
+         open(sys.argv[2] + '.notfound', 'w') as notfound, \
+         open(sys.argv[2] + '.log', 'w') as log, \
+         open(sys.argv[2] + '.outframe', 'w') as nomultiplefile:
+
+        readsread = 0
+        readspassing = 0
+        foundstart = 0
+        foundend = 0
+        notinframe = 0
+        withstop = 0
+        nostartnoend = 0
+
+        batch_size = 1000
+        batches = []
+        batch = []
+
+        # Read and batch the reads
+        for read in read_fastq(filein):
+            readsread += 1
+            batch.append(read)
+            if len(batch) == batch_size:
+                batches.append(batch)
+                batch = []
+        if batch:
+            batches.append(batch)
+
+        # Process batches in parallel
+        cpus = multiprocessing.cpu_count()
+        pool = Pool(processes=cpus)
+        results_list = pool.map(process_reads, batches)
+        pool.close()
+        pool.join()
+
+        # Collect and write results
+        for results in results_list:
+            for result in results:
+                if result['status'] == 'nostartnoend':
+                    nostartnoend += 1
+                    notfound.write(result['notfound'])
+                elif result['status'] == 'notinframe':
+                    notinframe += 1
+                    nomultiplefile.write(result['nomultiple'])
+                elif result['status'] == 'withstop':
+                    withstop += 1
+                elif result['status'] == 'passed':
+                    readspassing += 1
+                    fileout.write(result['header'] + '\n')
+                    fileout.write(result['translated'])
+                foundstart += result['foundstart']
+                foundend += result['foundend']
+
+        # Write log file
+        log.write("Completed reading reads:\n")
+        log.write(f"{readsread}\n")
+        log.write("Of which passing and written into FASTA:\n")
+        log.write(f"{readspassing}\n")
+        log.write("start matched are\n")
+        log.write(f"{foundstart}\n")
+        log.write("end matched are\n")
+        log.write(f"{foundend}\n")
+        log.write("failed because missing start or missing end\n")
+        log.write(f"{nostartnoend}\n")
+        log.write("failed because not in frame, i.e. not multiple of 3\n")
+        log.write(f"{notinframe}\n")
+        log.write("failed because there is a stop codon in the sequence\n")
+        log.write(f"{withstop}\n")
+
+if __name__ == "__main__":
+    main()
