@@ -12,7 +12,7 @@ process REPORT {
     path(clustersummaries)
     path(cdr3histograms)
     path(cdr3tables)
-    val(metadata)
+    val (metadata)
 
     output:
     path '*.RData', emit: rdata
@@ -24,9 +24,8 @@ process REPORT {
 
     script:
     def args = task.ext.args ?: ''
-    def sampleData = new File('./sampledata.tsv')
+    def sampleData = new File("${workDir}/sampledata.tsv")
     sampleData.append('ID\tindividual\timmunisation\tboost\n')
-    def fileAbsPath = sampleData.getAbsolutePath()
 
     // Popola il file sampledata.tsv con i dati dalla mappa metadata
     metadata.each() { map ->
@@ -42,7 +41,7 @@ process REPORT {
 
     """
     ln -s '$moduleDir/nibsc_report.css' .
-    ln -s '$fileAbsPath' .
+    ln -s '${workDir}/sampledata.tsv' .
 
     quarto render analysis_report.qmd \\
         -P clusterList:\"$clusterList\" \\
