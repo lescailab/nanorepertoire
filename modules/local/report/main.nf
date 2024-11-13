@@ -12,7 +12,7 @@ process REPORT {
     path(clustersummaries)
     path(cdr3histograms)
     path(cdr3tables)
-    val (metadata)
+    path(reportsamples)
 
     output:
     path '*.RData', emit: rdata
@@ -24,13 +24,6 @@ process REPORT {
 
     script:
     def args = task.ext.args ?: ''
-    def sampleData = new File("${workDir}/sampledata.tsv")
-    sampleData.append('ID\tindividual\timmunisation\tboost\n')
-
-    // Popola il file sampledata.tsv con i dati dalla mappa metadata
-    metadata.each() { map ->
-        sampleData.append("${map.sampleID}\t${map.individualID}\t${map.immunisation}\t${map.boost}\n")
-    }
 
     // Concatena le liste dei file in stringhe separate da virgola
     clusterList = clustersummaries.join(',')
@@ -41,13 +34,12 @@ process REPORT {
 
     """
     ln -s '$moduleDir/nibsc_report.css' .
-    ln -s '${workDir}/sampledata.tsv' .
 
     quarto render analysis_report.qmd \\
         -P clusterList:\"$clusterList\" \\
         -P histoList:\"$histoList\" \\
         -P tableList:\"$tableList\" \\
-        -P sampleData:\"sampledata.tsv\" \\
+        -P sampleData:\"$reportsamples\" \\
         -P sizeThreshold:\"${params.cluster_size_threshold}\" \\
         -P loopFile:\"loop_tree.qmd" \\
         -P calcTree:\"${params.calculate_tree}\" \\
