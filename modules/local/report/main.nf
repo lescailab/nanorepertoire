@@ -24,8 +24,8 @@ process REPORT {
 
     script:
     def args = task.ext.args ?: ''
-    def sampleData = new File("${launchDir}/sampledata.tsv")
-    sampleData.append('sampleID\tindividualID\timmunisation\tboost\n')
+    def sampleData = new File("${workDir}/sampledata.tsv")
+    sampleData.append('ID\tindividual\timmunisation\tboost\n')
 
     // Popola il file sampledata.tsv con i dati dalla mappa metadata
     metadata.each() { map ->
