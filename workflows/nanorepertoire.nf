@@ -11,7 +11,6 @@ include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pi
 include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_nanorepertoire_pipeline'
 include { FASTQ_TO_FASTA         } from '../subworkflows/local/fastq_to_fasta'
 include { FASTA_CLUSTERING       } from '../subworkflows/local/fasta_clustering'
-include { REPORTSAMPLES          } from '../modules/local/reportsamples'
 include { REPORT                 } from '../modules/local/report'
 
 /*
@@ -48,17 +47,13 @@ workflow NANOREPERTOIRE {
         FASTQ_TO_FASTA.out.translated
     )
 
-    REPORTSAMPLES(
-        FASTA_CLUSTERING.out.cdrmeta.collect()
-    )
-
     REPORT(
         file("${projectDir}/assets/analysis_report.qmd"),
         file("${projectDir}/assets/loop_tree.qmd"),
         FASTA_CLUSTERING.out.clusteread.collect(),
         FASTA_CLUSTERING.out.cdrhistograms.collect(),
         FASTA_CLUSTERING.out.cdrtsv.collect(),
-        REPORTSAMPLES.out.reportsamples
+        FASTA_CLUSTERING.out.cdrmeta.collect()
     )
 
     //
