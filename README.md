@@ -30,10 +30,10 @@ A graphical view of the pipeline can be seen below
 
 <h1>
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/images/nanorepertoire_metromap_dark.svg">
-    <img alt="eduomics pipeline overview" src="docs/images/nanorepertoire_metromap_light.svg">
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/nanorepertoire_metromap_dark.png">
+    <img alt="nf-core/nanorepertoire" src="docs/images/nanorepertoire_metromap_light.png">
   </picture>
-</
+</h1>
 
 ## Usage
 
