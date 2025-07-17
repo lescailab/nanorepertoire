@@ -52,7 +52,7 @@ Here's an example:
 
 `sample,fastq_1,fastq_2,individual,boost,immunisation`
 `sample_01,sample_1.fastq.gz,sample_2.fastq.gz,ind1,1,unenriched`
-`ample_02,sample1_1.fastq.gz,sample2_2.fastq.gz,ind2,2,RBD_enriched`
+`sample_02,sample1_1.fastq.gz,sample2_2.fastq.gz,ind2,2,RBD_enriched`
 
 #### Column descriptions:
 
@@ -72,6 +72,7 @@ nextflow run nf-core/nanorepertoire \
    -profile <docker/singularity/.../institute> \
    --input samplesheet.csv \
    --outdir <OUTDIR>
+   -- adapterfile 'path-to-adapter-file.fa'
 ```
 
 > [!WARNING]
@@ -87,11 +88,7 @@ For more details about the output files and reports, please refer to the
 
 ## Credits
 
-nf-core/nanorepertoire was originally written by Davide Bagordo.
-
-We thank the following people for their extensive assistance in the development of this pipeline:
-
-<!-- TODO nf-core: If applicable, make list of people who have also contributed -->
+nf-core/nanorepertoire was originally written by Francesco Lescai and Davide Bagordo.
 
 ## Contributions and Support
 
