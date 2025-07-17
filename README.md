@@ -45,9 +45,7 @@ A graphical view of the pipeline can be seen below
 To run the pipeline, you need to prepare a CSV file containing metadata and paths to your input FASTQ files.
 The samplesheet must contain the following columns:
 
-````csv
 sample,fastq_1,fastq_2,individual,boost,immunisation
-```
 
 Each row represents a pair of FASTQ files (paired-end) associated with a given biological sample and metadata.
 Here's an example:
@@ -65,21 +63,16 @@ sample_02,sample1_1.fastq.gz,sample2_2.fastq.gz,ind2,2,RBD_enriched
 - **boost**: Boost number (e.g. 1 for priming, 2 for first boost, etc.).
 - **immunisation**: Type of immunisation or enrichment strategy (e.g. `unenriched`, `RBD_enriched`, etc.).
 
-
 Make sure all paths are accessible (local or remote) and the CSV is comma-separated (not tab-separated).
 
-
-
-
 Now, you can run the pipeline using:
-
 
 ```bash
 nextflow run nf-core/nanorepertoire \
    -profile <docker/singularity/.../institute> \
    --input samplesheet.csv \
    --outdir <OUTDIR>
-````
+```
 
 > [!WARNING]
 > Please provide pipeline parameters via the CLI or Nextflow `-params-file` option. Custom config files including those provided by the `-c` Nextflow option can be used to provide any configuration _**except for parameters**_; see [docs](https://nf-co.re/docs/usage/getting_started/configuration#custom-configuration-files).
