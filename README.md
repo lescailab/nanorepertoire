@@ -50,9 +50,9 @@ The samplesheet must contain the following columns:
 Each row represents a pair of FASTQ files (paired-end) associated with a given biological sample and metadata.
 Here's an example:
 
-sample,fastq_1,fastq_2,individual,boost,immunisation
-sample_01,sample_1.fastq.gz,sample_2.fastq.gz,ind1,1,unenriched
-sample_02,sample1_1.fastq.gz,sample2_2.fastq.gz,ind2,2,RBD_enriched
+`sample,fastq_1,fastq_2,individual,boost,immunisation`
+`sample_01,sample_1.fastq.gz,sample_2.fastq.gz,ind1,1,unenriched`
+`ample_02,sample1_1.fastq.gz,sample2_2.fastq.gz,ind2,2,RBD_enriched`
 
 #### Column descriptions:
 
