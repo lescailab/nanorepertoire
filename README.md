@@ -40,32 +40,45 @@ A graphical view of the pipeline can be seen below
 > [!NOTE]
 > If you are new to Nextflow and nf-core, please refer to [this page](https://nf-co.re/docs/usage/installation) on how to set-up Nextflow. Make sure to [test your setup](https://nf-co.re/docs/usage/introduction#how-to-run-a-pipeline) with `-profile test` before running the workflow on actual data.
 
-<!-- TODO nf-core: Describe the minimum required steps to execute the pipeline, e.g. how to prepare samplesheets.
-     Explain what rows and columns represent. For instance (please edit as appropriate):
+### Input samplesheet
 
-First, prepare a samplesheet with your input data that looks as follows:
+To run the pipeline, you need to prepare a CSV file containing metadata and paths to your input FASTQ files.
+The samplesheet must contain the following columns:
 
-`samplesheet.csv`:
+````csv
+sample,fastq_1,fastq_2,individual,boost,immunisation
 
-```csv
-sample,fastq_1,fastq_2
-CONTROL_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz
-```
+Each row represents a pair of FASTQ files (paired-end) associated with a given biological sample and metadata.
+Here's an example:
 
-Each row represents a fastq file (single-end) or a pair of fastq files (paired end).
+sample,fastq_1,fastq_2,individual,boost,immunisation
+sample_01,sample_1.fastq.gz,sample_2.fastq.gz,ind1,1,unenriched
+sample_02,sample1_1.fastq.gz,sample2_2.fastq.gz,ind2,2,RBD_enriched
 
--->
+#### Column descriptions:
+
+- **sample**: Unique identifier for the sample.
+- **fastq_1**: Path or URL to the first read (R1) FASTQ file (paired-end).
+- **fastq_2**: Path or URL to the second read (R2) FASTQ file (paired-end).
+- **individual**: Identifier for the biological individual or subject.
+- **boost**: Boost number (e.g. 1 for priming, 2 for first boost, etc.).
+- **immunisation**: Type of immunisation or enrichment strategy (e.g. `unenriched`, `RBD_enriched`, etc.).
+
+
+Make sure all paths are accessible (local or remote) and the CSV is comma-separated (not tab-separated).
+
+
+
 
 Now, you can run the pipeline using:
 
-<!-- TODO nf-core: update the following command to include all required parameters for a minimal example -->
 
 ```bash
 nextflow run nf-core/nanorepertoire \
    -profile <docker/singularity/.../institute> \
    --input samplesheet.csv \
    --outdir <OUTDIR>
-```
+````
 
 > [!WARNING]
 > Please provide pipeline parameters via the CLI or Nextflow `-params-file` option. Custom config files including those provided by the `-c` Nextflow option can be used to provide any configuration _**except for parameters**_; see [docs](https://nf-co.re/docs/usage/getting_started/configuration#custom-configuration-files).
