@@ -19,20 +19,21 @@
 
 ## Introduction
 
-**nf-core/nanorepertoire** is a bioinformatics pipeline that ...
+**nf-core/nanorepertoire** is a bioinformatics pipeline that enables the analysis and characterization of nanobody repertoires from NGS data.
+It identifies expanded nanobody clusters potentially involved in antigen binding and immune response, and generates a detailed, reproducible report on the repertoire features of antibodies and nanobodies.
 
-<!-- TODO nf-core:
-   Complete this sentence with a 2-3 sentence summary of what types of data the pipeline ingests, a brief overview of the
-   major pipeline sections and the types of output it produces. You're giving an overview to someone new
-   to nf-core here, in 15-20 seconds. For an example, see https://github.com/nf-core/rnaseq/blob/master/README.md#introduction
--->
+The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. It uses Docker/Singularity containers making installation trivial and results highly reproducible. The [Nextflow DSL2](https://www.nextflow.io/docs/latest/index.html) implementation of this pipeline uses one container per process which makes it much easier to maintain and update software dependencies. Where possible, these processes have been submitted to and installed from [nf-core/modules](https://github.com/nf-core/modules) in order to make them available to all nf-core pipelines, and to everyone within the Nextflow community!
 
-<!-- TODO nf-core: Include a figure that guides the user through the major workflow steps. Many nf-core
-     workflows use the "tube map" design for that. See https://nf-co.re/docs/contributing/design_guidelines#examples for examples.   -->
-<!-- TODO nf-core: Fill in short bullet-pointed list of the default steps in the pipeline -->
+## Functionality Overview
 
-1. Read QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/))
-2. Present QC for raw reads ([`MultiQC`](http://multiqc.info/))
+A graphical view of the pipeline can be seen below
+
+<h1>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/nanorepertoire_metromap_dark.svg">
+    <img alt="eduomics pipeline overview" src="docs/images/nanorepertoire_metromap_light.svg">
+  </picture>
+</
 
 ## Usage
 
