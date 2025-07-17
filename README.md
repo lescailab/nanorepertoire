@@ -46,7 +46,8 @@ To run the pipeline, you need to prepare a CSV file containing metadata and path
 The samplesheet must contain the following columns:
 
 ````csv
-sample,fastq_1,fastq_2,individual,boost,immunisation ```
+sample,fastq_1,fastq_2,individual,boost,immunisation
+```
 
 Each row represents a pair of FASTQ files (paired-end) associated with a given biological sample and metadata.
 Here's an example:
