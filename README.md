@@ -103,7 +103,7 @@ The pipeline produces:
 
 ## Credits
 
-nf-core/nanorepertoire was originally written by Francesco Lescai.
+lescailab/nanorepertoire was originally written by Francesco Lescai.
 
 We thank the following people for their extensive assistance in the development of this pipeline:
 - Davide Bagordo
