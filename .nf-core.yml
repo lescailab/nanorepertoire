@@ -1,9 +1,9 @@
-bump_version: null
+bump_version:
 lint:
   files_unchanged:
-    - assets/nf-core-nanorepertoire_logo_light.png
+  - assets/nf-core-nanorepertoire_logo_light.png
 nf_core_version: 3.0.2
-org_path: null
+org_path:
 repository_type: pipeline
 template:
   author: Davide Bagordo
@@ -13,6 +13,6 @@ template:
   name: nanorepertoire
   org: nf-core
   outdir: .
-  skip_features: null
-  version: 1.0dev
-update: null
+  skip_features:
+  version: 1.0.0
+update:
