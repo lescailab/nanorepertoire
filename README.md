@@ -118,7 +118,7 @@ For further information or help, don't hesitate to get in touch on the [Slack `#
 ## Citations
 
 
-<!-- If you use nf-core/nanorepertoire for your analysis, please cite it using the following doi: [10.5281/zenodo.XXXXXX](https://doi.org/10.5281/zenodo.XXXXXX) -->
+If you use lescailab/nanorepertoire for your analysis, please cite it using the following doi: [10.5281/zenodo.17379842](https://doi.org/10.5281/zenodo.17379842)
 
 <!-- TODO nf-core: Add bibliography of tools and data used in your pipeline -->
 
