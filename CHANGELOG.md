@@ -10,12 +10,15 @@ Initial release of nf-core/nanorepertoire, created with the [nf-core](https://nf
 ### `Added`
 
 ### `Fixed`
+
 No fixes in this initial release
 
 ### `Dependencies`
+
 - Uses `nf-schema@2.1.x` plugin for parameter schema validation
 - Standardizes container registries on `quay.io`
 - Requires Nextflow ≥ 24.10.5
 
 ### `Deprecated`
+
 No deprecations in this release
