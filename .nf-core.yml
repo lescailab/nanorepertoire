@@ -1,3 +1,7 @@
+lint:
+  files_unchanged:
+    - assets/nf-core-nanorepertoire_logo_light.png
+nf_core_version: 3.4.1
 bump_version:
 lint:
   files_unchanged:
@@ -5,6 +9,15 @@ lint:
 nf_core_version: 3.0.2
 org_path:
 repository_type: pipeline
+template:
+  author: Davide Bagordo
+  description: pipeline to characterise the repertoire of nanobodies
+  force: false
+  is_nfcore: true
+  name: nanorepertoire
+  org: nf-core
+  outdir: .
+  version: 1.0.0
 template:
   author: Davide Bagordo
   description: pipeline to characterise the repertoire of nanobodies

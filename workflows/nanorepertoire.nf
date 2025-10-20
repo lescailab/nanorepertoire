@@ -21,8 +21,7 @@ include { REPORT                 } from '../modules/local/report'
 
 workflow NANOREPERTOIRE {
     take:
-    input // channel: samplesheet read in from --input
-
+    ch_samplesheet // channel: samplesheet read in from --input
     main:
 
     ch_versions      = Channel.empty()
@@ -62,10 +61,11 @@ workflow NANOREPERTOIRE {
     softwareVersionsToYAML(ch_versions)
         .collectFile(
             storeDir: "${params.outdir}/pipeline_info",
-            name: 'nf_core_'  + 'pipeline_software_' +  'mqc_'  + 'versions.yml',
+            name: 'nf_core_'  +  'nanorepertoire_software_'  + 'mqc_'  + 'versions.yml',
             sort: true,
             newLine: true
         ).set { ch_collated_versions }
+
 
     //
     // MODULE: MultiQC
@@ -109,6 +109,7 @@ workflow NANOREPERTOIRE {
 
     emit:multiqc_report = MULTIQC.out.report.toList() // channel: /path/to/multiqc_report.html
     versions       = ch_versions                 // channel: [ path(versions.yml) ]
+
 }
 
 /*
