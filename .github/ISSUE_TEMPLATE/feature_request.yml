@@ -1,5 +1,5 @@
 name: Feature request
-description: Suggest an idea for the nf-core/nanorepertoire pipeline
+description: Suggest an idea for the lescailab/nanorepertoire pipeline
 labels: enhancement
 body:
   - type: textarea
