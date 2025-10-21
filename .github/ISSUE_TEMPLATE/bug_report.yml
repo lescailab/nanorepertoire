@@ -2,8 +2,6 @@ name: Bug report
 description: Report something that is broken or incorrect
 labels: bug
 body:
-<<<<<<< HEAD
-=======
   - type: markdown
     attributes:
       value: |
@@ -11,7 +9,6 @@ body:
 
         - [nf-core website: troubleshooting](https://nf-co.re/usage/troubleshooting)
         - [nf-core/nanorepertoire pipeline documentation](https://nf-co.re/nanorepertoire/usage)
->>>>>>> TEMPLATE
   - type: textarea
     id: description
     attributes:

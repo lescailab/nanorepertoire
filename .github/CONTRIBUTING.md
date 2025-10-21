@@ -1,4 +1,4 @@
-# `nf-core/nanorepertoire`: Contributing Guidelines
+# `lescailab/nanorepertoire`: Contributing Guidelines
 
 Hi there!
 Many thanks for taking an interest in improving lescailab/nanorepertoire.
@@ -54,11 +54,6 @@ These tests are run both with the latest available version of `Nextflow` and als
 
 - On your own fork, make a new branch `patch` based on `upstream/main` or `upstream/master`.
 - Fix the bug, and bump version (X.Y.Z+1).
-- Open a pull-request from `patch` to `main`/`master` with the changes.
-
-## Getting help
-
-For further information/help, please consult the [nf-core/nanorepertoire documentation](https://nf-co.re/nanorepertoire/usage) and don't hesitate to get in touch on the nf-core Slack [#nanorepertoire](https://nfcore.slack.com/channels/nanorepertoire) channel ([join our Slack here](https://nf-co.re/join/slack)).
 - Open a pull-request from `patch` to `main`/`master` with the changes.
 
 ## Pipeline contribution conventions

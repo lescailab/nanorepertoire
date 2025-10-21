@@ -71,21 +71,12 @@ jobs:
         env:
           NXF_SINGULARITY_CACHEDIR: ./singularity_container_images
         run: |
-<<<<<<< HEAD
-          nf-core pipelines download ${{ env.REPO_LOWERCASE }} \
-          --revision ${{ env.REPO_BRANCH }} \
-          --outdir ./${{ env.REPOTITLE_LOWERCASE }} \
-          --compress "none" \
-          --container-system 'singularity' \
-          --container-library "quay.io" -l "docker.io" -l "community.wave.seqera.io" \
-=======
           nf-core pipelines download ${{ needs.configure.outputs.REPO_LOWERCASE }} \
           --revision ${{ needs.configure.outputs.REPO_BRANCH }} \
           --outdir ./${{ needs.configure.outputs.REPOTITLE_LOWERCASE }} \
           --compress "none" \
           --container-system 'singularity' \
           --container-library "quay.io" -l "docker.io" -l "community.wave.seqera.io/library/" \
->>>>>>> TEMPLATE
           --container-cache-utilisation 'amend' \
           --download-configuration 'yes'
 
@@ -122,29 +113,13 @@ jobs:
         env:
           NXF_SINGULARITY_CACHEDIR: ./singularity_container_images
           NXF_SINGULARITY_HOME_MOUNT: true
-<<<<<<< HEAD
-        run: nextflow run ./${{ env.REPOTITLE_LOWERCASE }}/$( sed 's/\W/_/g' <<< ${{ env.REPO_BRANCH }}) -profile test,singularity --outdir ./results
-=======
         run: nextflow run ./${{ needs.configure.outputs.REPOTITLE_LOWERCASE }}/$( sed 's/\W/_/g' <<< ${{ needs.configure.outputs.REPO_BRANCH }}) -profile test,singularity --outdir ./results
->>>>>>> TEMPLATE
 
       - name: Count the downloaded number of container images
         id: count_afterwards
         run: |
           image_count=$(ls -1 ./singularity_container_images | wc -l | xargs)
           echo "Post-pipeline run container image count: $image_count"
-<<<<<<< HEAD
-          echo "IMAGE_COUNT_AFTER=$image_count" >> ${GITHUB_ENV}
-
-      - name: Compare container image counts
-        run: |
-          if [ "${{ env.IMAGE_COUNT_INITIAL }}" -ne "${{ env.IMAGE_COUNT_AFTER }}" ]; then
-            initial_count=${{ env.IMAGE_COUNT_INITIAL }}
-            final_count=${{ env.IMAGE_COUNT_AFTER }}
-            difference=$((final_count - initial_count))
-            echo "$difference additional container images were \n downloaded at runtime . The pipeline has no support for offline runs!"
-            tree ./singularity_container_images
-=======
           echo "IMAGE_COUNT_AFTER=$image_count" >> "$GITHUB_OUTPUT"
 
       - name: Compare container image counts
@@ -157,13 +132,10 @@ jobs:
             echo "$difference additional container images were \n downloaded at runtime . The pipeline has no support for offline runs!"
             tree ./singularity_container_images > ./container_afterwards
             diff ./container_initial ./container_afterwards
->>>>>>> TEMPLATE
             exit 1
           else
             echo "The pipeline can be downloaded successfully!"
           fi
-<<<<<<< HEAD
-=======
 
       - name: Upload Nextflow logfile for debugging purposes
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -171,4 +143,3 @@ jobs:
           name: nextflow_logfile.txt
           path: .nextflow.log*
           include-hidden-files: true
->>>>>>> TEMPLATE

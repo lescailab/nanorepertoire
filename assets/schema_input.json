@@ -1,10 +1,6 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-<<<<<<< HEAD
     "$id": "https://raw.githubusercontent.com/nf-core/nanorepertoire/master/assets/schema_input.json",
-=======
-    "$id": "https://raw.githubusercontent.com/nf-core/nanorepertoire/main/assets/schema_input.json",
->>>>>>> TEMPLATE
     "title": "nf-core/nanorepertoire pipeline - params.input schema",
     "description": "Schema for the file provided with params.input",
     "type": "array",
