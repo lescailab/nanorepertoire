@@ -1,6 +1,4 @@
 lint:
-  files_unchanged:
-    - assets/nf-core-nanorepertoire_logo_light.png
 nf_core_version: 3.4.1
 bump_version:
 org_path:
