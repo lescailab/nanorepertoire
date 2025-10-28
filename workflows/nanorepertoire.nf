@@ -21,7 +21,7 @@ include { REPORT                 } from '../modules/local/report'
 
 workflow NANOREPERTOIRE {
     take:
-    ch_samplesheet // channel: samplesheet read in from --input
+    input // channel: samplesheet read in from --input
     main:
 
     ch_versions      = Channel.empty()
@@ -66,7 +66,6 @@ workflow NANOREPERTOIRE {
             newLine: true
         ).set { ch_collated_versions }
 
-
     //
     // MODULE: MultiQC
     //
@@ -109,7 +108,6 @@ workflow NANOREPERTOIRE {
 
     emit:multiqc_report = MULTIQC.out.report.toList() // channel: /path/to/multiqc_report.html
     versions       = ch_versions                 // channel: [ path(versions.yml) ]
-
 }
 
 /*

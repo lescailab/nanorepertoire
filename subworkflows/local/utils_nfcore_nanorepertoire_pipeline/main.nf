@@ -56,6 +56,12 @@ workflow PIPELINE_INITIALISATION {
         workflow,
         validate_params,
         null,
+        params.help ?: false,
+        params.help_full ?: false,
+        params.show_hidden ?: false,
+        "",
+        "",
+        "",
     )
 
     //
@@ -73,6 +79,7 @@ workflow PIPELINE_INITIALISATION {
     //
     // Create channel from input file provided through params.input
     //
+
     Channel
         .fromList(samplesheetToList(params.input, "${projectDir}/assets/schema_input.json"))
         .map { meta, fastq_1, fastq_2 ->

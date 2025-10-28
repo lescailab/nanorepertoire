@@ -33,7 +33,7 @@ def checkConfigProvided() {
     def valid_config = true as Boolean
     if (workflow.profile == 'standard' && workflow.configFiles.size() <= 1) {
         log.warn(
-            "[${workflow.manifest.name}] You are attempting to run the pipeline without any custom configuration!\n\n" + "This will be dependent on your local compute environment but can be achieved via one or more of the following:\n" + "   (1) Using an existing pipeline profile e.g. `-profile docker` or `-profile singularity`\n" + "   (2) Using an existing nf-core/configs for your Institution e.g. `-profile crick` or `-profile uppmax`\n" + "   (3) Using your own local custom config e.g. `-c /path/to/your/custom.config`\n\n" + "Please refer to the quick start section and usage docs for the pipeline.\n "
+            "[${workflow.manifest.name}] You are attempting to run the pipeline without any custom configuration!\n\n" + 'This will be dependent on your local compute environment but can be achieved via one or more of the following:\n' + '   (1) Using an existing pipeline profile e.g. `-profile docker` or `-profile singularity`\n' + '   (2) Using an existing nf-core/configs for your Institution e.g. `-profile crick` or `-profile uppmax`\n' + '   (3) Using your own local custom config e.g. `-c /path/to/your/custom.config`\n\n' + 'Please refer to the quick start section and usage docs for the pipeline.\n '
         )
         valid_config = false
     }
@@ -46,12 +46,12 @@ def checkConfigProvided() {
 def checkProfileProvided(nextflow_cli_args) {
     if (workflow.profile.endsWith(',')) {
         error(
-            "The `-profile` option cannot end with a trailing comma, please remove it and re-run the pipeline!\n" + "HINT: A common mistake is to provide multiple values separated by spaces e.g. `-profile test, docker`.\n"
+            'The `-profile` option cannot end with a trailing comma, please remove it and re-run the pipeline!\n' + 'HINT: A common mistake is to provide multiple values separated by spaces e.g. `-profile test, docker`.\n'
         )
     }
     if (nextflow_cli_args[0]) {
         log.warn(
-            "nf-core pipelines do not accept positional arguments. The positional argument `${nextflow_cli_args[0]}` has been detected.\n" + "HINT: A common mistake is to provide multiple values separated by spaces e.g. `-profile test, docker`.\n"
+            "nf-core pipelines do not accept positional arguments. The positional argument `${nextflow_cli_args[0]}` has been detected.\n" + 'HINT: A common mistake is to provide multiple values separated by spaces e.g. `-profile test, docker`.\n'
         )
     }
 }
@@ -60,7 +60,7 @@ def checkProfileProvided(nextflow_cli_args) {
 // Generate workflow version string
 //
 def getWorkflowVersion() {
-    def version_string = "" as String
+    def version_string = '' as String
     if (workflow.manifest.version) {
         def prefix_v = workflow.manifest.version[0] != 'v' ? 'v' : ''
         version_string += "${prefix_v}${workflow.manifest.version}"
@@ -113,14 +113,14 @@ def paramsSummaryMultiqc(summary_params) {
             // This gets the parameters of that particular group
             if (group_params) {
                 summary_section += "    <p style=\"font-size:110%\"><b>${group}</b></p>\n"
-                summary_section += "    <dl class=\"dl-horizontal\">\n"
+                summary_section += '    <dl class=\"dl-horizontal\">\n'
                 group_params
                     .keySet()
                     .sort()
                     .each { param ->
                         summary_section += "        <dt>${param}</dt><dd><samp>${group_params.get(param) ?: '<span style=\"color:#999999;\">N/A</a>'}</samp></dd>\n"
                     }
-                summary_section += "    </dl>\n"
+                summary_section += '    </dl>\n'
             }
         }
 
@@ -129,7 +129,7 @@ def paramsSummaryMultiqc(summary_params) {
     yaml_file_text += "section_name: '${workflow.manifest.name} Workflow Summary'\n"
     yaml_file_text += "section_href: 'https://github.com/${workflow.manifest.name}'\n"
     yaml_file_text += "plot_type: 'html'\n"
-    yaml_file_text += "data: |\n"
+    yaml_file_text += 'data: |\n'
     yaml_file_text += "${summary_section}"
 
     return yaml_file_text
@@ -231,7 +231,6 @@ def getSingleReport(multiqc_reports) {
 // Construct and send completion email
 //
 def completionEmail(summary_params, email, email_on_fail, plaintext_email, outdir, monochrome_logs = true, multiqc_report = null) {
-
     // Set up the e-mail variables
     def subject = "[${workflow.manifest.name}] Successful: ${workflow.runName}"
     if (!workflow.success) {
@@ -312,14 +311,14 @@ def completionEmail(summary_params, email, email_on_fail, plaintext_email, outdi
                 throw new org.codehaus.groovy.GroovyException('Send plaintext e-mail, not HTML')
             }
             // Try to send HTML e-mail using sendmail
-            def sendmail_tf = new File(workflow.launchDir.toString(), ".sendmail_tmp.html")
+            def sendmail_tf = new File(workflow.launchDir.toString(), '.sendmail_tmp.html')
             sendmail_tf.withWriter { w -> w << sendmail_html }
             ['sendmail', '-t'].execute() << sendmail_html
             log.info("-${colors.purple}[${workflow.manifest.name}]${colors.green} Sent summary e-mail to ${email_address} (sendmail)-")
         }
-        catch (msg: Exception) {
+        catch (Exception msg) {
             log.debug(msg.toString())
-            log.debug("Trying with mail instead of sendmail")
+            log.debug('Trying with mail instead of sendmail')
             // Catch failures and try with plaintext
             def mail_cmd = ['mail', '-s', subject, '--content-type=text/html', email_address]
             mail_cmd.execute() << email_html
@@ -328,13 +327,13 @@ def completionEmail(summary_params, email, email_on_fail, plaintext_email, outdi
     }
 
     // Write summary e-mail HTML to a file
-    def output_hf = new File(workflow.launchDir.toString(), ".pipeline_report.html")
+    def output_hf = new File(workflow.launchDir.toString(), '.pipeline_report.html')
     output_hf.withWriter { w -> w << email_html }
     nextflow.extension.FilesEx.copyTo(output_hf.toPath(), "${outdir}/pipeline_info/pipeline_report.html")
     output_hf.delete()
 
     // Write summary e-mail TXT to a file
-    def output_tf = new File(workflow.launchDir.toString(), ".pipeline_report.txt")
+    def output_tf = new File(workflow.launchDir.toString(), '.pipeline_report.txt')
     output_tf.withWriter { w -> w << email_txt }
     nextflow.extension.FilesEx.copyTo(output_tf.toPath(), "${outdir}/pipeline_info/pipeline_report.txt")
     output_tf.delete()
@@ -397,7 +396,7 @@ def imNotification(summary_params, hook_url) {
     msg_fields['exitStatus'] = workflow.exitStatus
     msg_fields['errorMessage'] = (workflow.errorMessage ?: 'None')
     msg_fields['errorReport'] = (workflow.errorReport ?: 'None')
-    msg_fields['commandLine'] = workflow.commandLine.replaceFirst(/ +--hook_url +[^ ]+/, "")
+    msg_fields['commandLine'] = workflow.commandLine.replaceFirst(/ +--hook_url +[^ ]+/, '')
     msg_fields['projectDir'] = workflow.projectDir
     msg_fields['summary'] = summary << misc_fields
 
@@ -405,17 +404,17 @@ def imNotification(summary_params, hook_url) {
     def engine = new groovy.text.GStringTemplateEngine()
     // Different JSON depending on the service provider
     // Defaults to "Adaptive Cards" (https://adaptivecards.io), except Slack which has its own format
-    def json_path = hook_url.contains("hooks.slack.com") ? "slackreport.json" : "adaptivecard.json"
+    def json_path = hook_url.contains('hooks.slack.com') ? 'slackreport.json' : 'adaptivecard.json'
     def hf = new File("${workflow.projectDir}/assets/${json_path}")
     def json_template = engine.createTemplate(hf).make(msg_fields)
     def json_message = json_template.toString()
 
     // POST
     def post = new URL(hook_url).openConnection()
-    post.setRequestMethod("POST")
+    post.setRequestMethod('POST')
     post.setDoOutput(true)
-    post.setRequestProperty("Content-Type", "application/json")
-    post.getOutputStream().write(json_message.getBytes("UTF-8"))
+    post.setRequestProperty('Content-Type', 'application/json')
+    post.getOutputStream().write(json_message.getBytes('UTF-8'))
     def postRC = post.getResponseCode()
     if (!postRC.equals(200)) {
         log.warn(post.getErrorStream().getText())
