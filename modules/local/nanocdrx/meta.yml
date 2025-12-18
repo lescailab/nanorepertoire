@@ -1,0 +1,42 @@
+name: nanocdrx
+description: Predict and explain CDR regions in nanobody sequences using a deep learning model.
+keywords:
+  - nanobody
+  - cdr
+  - prediction
+  - deep learning
+tools:
+  - nanocdr-x:
+      description: |
+        A lightweight CLI package for predicting complementarity-determining regions (CDRs) in nanobody sequences and extracting model interpretability data.
+      homepage: https://github.com/lescailab/nanocdr-x
+      documentation: https://github.com/lescailab/nanocdr-x#readme
+      licence: ["MIT"]
+input:
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. [ id:'test', single_end:false ]
+  - translated:
+      type: file
+      description: |
+        FASTA/FASTQ-like file containing nanobody sequences.
+      pattern: "*"
+output:
+  - fasta:
+      type: file
+      description: FASTA file containing unique CDR3 sequences
+      pattern: "*.fasta"
+  - hist:
+      type: file
+      description: Histogram of CDR3 lengths
+      pattern: "*.hist"
+  - tsv:
+      type: file
+      description: TSV file containing all sequences and their CDR3 status
+      pattern: "*.tsv"
+  - versions:
+      type: file
+      description: File containing software versions
+      pattern: "versions.yml"

@@ -1,0 +1,8 @@
+name: nanocdrx
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+  - lescailab
+dependencies:
+  - lescailab::nanocdr-x

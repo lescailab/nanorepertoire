@@ -1,0 +1,33 @@
+nextflow_process {
+
+    name "Test Process NANOCDRX"
+    script "../main.nf"
+    process "NANOCDRX"
+    config "./nextflow.config"
+    tag "nanocdrx"
+    tag "modules"
+    tag "modules_local"
+
+    test("nanocdrx-test") {
+
+        when {
+            process {
+                """
+                input[0] = [
+                    [ id:'test1', single_end:false ], // meta map
+                    file("https://github.com/lescailab/testdata/raw/master/nanobodies/test01_aa.clusters", checkIfExists: true)
+                ]
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert snapshot(process.out).match() }
+            )
+        }
+
+    }
+
+}
