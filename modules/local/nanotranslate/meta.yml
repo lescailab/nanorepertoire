@@ -22,11 +22,7 @@ input:
         e.g. `[ id:'sample1', single_end:false ]`
   - mergedfq:
       type: file
-      description: Sorted BAM/CRAM/SAM file
-      pattern: "*.{fastq,fq}"
-  - single_end:
-      type: file
-      description: Sorted BAM/CRAM/SAM file
+      description: Merged FASTQ file
       pattern: "*.{fastq,fq}"
 
 output:
@@ -48,6 +44,13 @@ output:
   - log:
       type: file
       description: log of the run
+
+authors:
+  - "@davidebag"
+  - "@lescai"
+maintainers:
+  - "@davidebag"
+  - "@lescai"
       pattern: "*.{log,txt}"
 
 authors:
