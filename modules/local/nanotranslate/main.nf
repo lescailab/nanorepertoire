@@ -23,10 +23,11 @@ process NANOTRANSLATE {
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
     gzip -cd ${mergedfq} >sequences.fastq
-    translate.py \
-    sequences.fastq \
-    ${meta.id}_AA_translated.fasta \
-    >${meta.id}_AA_translated.log
+    translate.py \\
+    sequences.fastq \\
+    ${prefix}_AA_translated.fasta \\
+    ${args} \\
+    >${prefix}_AA_translated.log
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
