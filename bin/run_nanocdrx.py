@@ -23,7 +23,12 @@ def main():
             header = lines[i].strip()
             seq = lines[i+1].strip()
             # Clean header as getcdr3 does
-            identifier = header.replace("@", "").replace(">", "")
+            # Split by whitespace to get only the ID, matching CD-HIT clstr format
+            identifier = header.replace("@", "").replace(">", "").split()[0]
+            # Filter sequences containing 'X' or '*' as they cause issues with nanocdrx tokenization
+            if 'X' in seq or '*' in seq:
+                # print(f"Skipping sequence {identifier} due to invalid characters (X or *)")
+                continue
             sequences.append({'identifier': identifier, 'input': seq})
 
     temp_csv_in = "nanocdrx_input.csv"

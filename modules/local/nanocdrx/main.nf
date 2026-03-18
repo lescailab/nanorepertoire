@@ -4,8 +4,8 @@ process NANOCDRX {
 
     conda "${moduleDir}/environment.yml"
     container "${workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container
-        ? 'https://depot.galaxyproject.org/singularity/nanocdr-x:1.0.0'
-        : 'docker.io/lescailab/nanocdr-x:1.0.0'}"
+        ? 'oras://community.wave.seqera.io/library/nanocdr-x:1.0.0--146125dcde3e4498'
+        : 'community.wave.seqera.io/library/nanocdr-x:1.0.0--539f1c75ff746d30'}"
 
     input:
     tuple val(meta), path(translated)

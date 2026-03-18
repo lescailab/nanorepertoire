@@ -14,7 +14,7 @@ nextflow_process {
             process {
                 """
                 input[0] = [
-                    [ id:'test1', single_end:false ], // meta map
+                    [ id:'test1', single_end:false, immunisation:'test_imm', boost:'test_boost' ], // meta map
                     file("https://github.com/lescailab/testdata/raw/master/nanobodies/test01_aa.clusters", checkIfExists: true)
                 ]
                 """

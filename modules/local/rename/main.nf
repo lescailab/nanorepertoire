@@ -4,8 +4,8 @@ process RENAME {
 
     conda "${moduleDir}/environment.yml"
     container "${workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container
-        ? 'https://depot.galaxyproject.org/singularity/fastx_toolkit:0.0.14--hdbdd923_11'
-        : 'biocontainers/fastx_toolkit:0.0.14--hdbdd923_11'}"
+        ? 'https://depot.galaxyproject.org/singularity/seqtk:1.3--h5bf99c6_3'
+        : 'biocontainers/seqtk:1.3--h5bf99c6_3'}"
 
     input:
     tuple val(meta), path(reads)
@@ -24,22 +24,22 @@ process RENAME {
 
     if (single_end) {
         """
-        zcat ${reads[0]} | fastx_renamer -z -n COUNT ${args} -o ${prefix}_renamed.fastq.gz
+        seqtk rename ${reads[0]} | gzip > ${prefix}_renamed.fastq.gz
 
         cat <<-END_VERSIONS > versions.yml
         "${task.process}":
-        rename: \$(fastx_renamer -h |& sed '2!d' |& perl -nae 'print \$F[4]."\n";')
+            seqtk: \$(echo \$(seqtk 2>&1) | sed 's/^.*bVersion: //; s/ .*\$//')
         END_VERSIONS
         """
     }
     else {
         """
-        zcat ${reads[0]} | fastx_renamer -z -n COUNT ${args} -o ${prefix}_R1_renamed.fastq.gz
-        zcat ${reads[1]} | fastx_renamer -z -n COUNT ${args} -o ${prefix}_R2_renamed.fastq.gz
+        seqtk rename ${reads[0]} | gzip > ${prefix}_R1_renamed.fastq.gz
+        seqtk rename ${reads[1]} | gzip > ${prefix}_R2_renamed.fastq.gz
 
         cat <<-END_VERSIONS > versions.yml
         "${task.process}":
-            rename: \$(fastx_renamer -h |& sed '2!d' |& perl -nae 'print \$F[4]."\n";')
+            seqtk: \$(echo \$(seqtk 2>&1) | sed 's/^.*Version: //; s/ .*\$//')
         END_VERSIONS
     """
     }

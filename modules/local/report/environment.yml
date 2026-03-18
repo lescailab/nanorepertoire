@@ -7,15 +7,20 @@ channels:
   - r
 
 dependencies:
-  - bioconda::bioconductor-biostrings=2.52.0
-  - bioconda::bioconductor-genomicfeatures=1.36.0
-  - bioconda::bioconductor-gviz=1.28.0
-  - bioconda::bioconductor-rtracklayer=1.44.2
-  - bioconda::bioconductor-variantannotation=1.30.0
-  - conda-forge::pandoc=2.9.2.1
-  - conda-forge::r-ape=5.4
-  - r::r-knitr
-  - r::r-quarto
-  - r::r-tidyverse
-  - r::r-tidyverse
-  - r::r=3.6.0
+  - bioconductor-biostrings
+  - bioconductor-genomicfeatures
+  - bioconductor-gviz
+  - bioconductor-rtracklayer
+  - bioconductor-variantannotation
+  - pandoc
+  - r-ape
+  - r-knitr
+  - r-quarto
+  - r-tidyverse
+  - r-kableextra
+  - bioconductor-biostrings
+  - bioconductor-ggtree
+  # - bioconductor-msa  # Not available on osx-arm64
+  - r-plotly
+  - r-seqinr
+  - r-base
