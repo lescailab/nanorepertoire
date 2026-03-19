@@ -6,4 +6,4 @@ channels:
   - bioconda
   - defaults
 dependencies:
-  - seqtk
+  - bioconda::seqtk=1.4

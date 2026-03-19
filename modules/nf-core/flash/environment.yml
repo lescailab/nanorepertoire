@@ -4,4 +4,4 @@ channels:
   - conda-forge
   - bioconda
 dependencies:
-  - flash
+  - conda-forge::flash=1.2.11

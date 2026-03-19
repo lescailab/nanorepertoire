@@ -5,4 +5,4 @@ channels:
   - defaults
   - lescailab
 dependencies:
-  - lescailab::nanocdr-x
+  - lescailab::nanocdr-x=1.0.0
