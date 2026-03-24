@@ -25,9 +25,10 @@ def main():
             # Clean header as getcdr3 does
             # Split by whitespace to get only the ID, matching CD-HIT clstr format
             identifier = header.replace("@", "").replace(">", "").split()[0]
-            # Filter sequences containing 'X' or '*' as they cause issues with nanocdrx tokenization
-            if 'X' in seq or '*' in seq:
-                # print(f"Skipping sequence {identifier} due to invalid characters (X or *)")
+            # Filter sequences to ensure only standard amino acids are present
+            # Nanocdr-x tokenization fails on X, *, and other non-standard amino acids
+            if not all(c in "ACDEFGHIKLMNPQRSTVWY" for c in seq.upper()):
+                # print(f"Skipping sequence {identifier} due to invalid characters")
                 continue
             sequences.append({'identifier': identifier, 'input': seq})
 
@@ -51,7 +52,7 @@ def main():
     hist_out_name = f"{prefix}_cdr3.hist"
 
     unique_cdr3s = set()
-    cdr3_lengths = defaultdict(int)
+    cdr3_lengths = {}
 
     # Initialize histogram for 0-50 like getcdr3
     for i in range(51):
@@ -90,7 +91,8 @@ def main():
 
             # It is unique and valid
             unique_cdr3s.add(cdr3)
-            cdr3_lengths[len(cdr3)] += 1
+            length = len(cdr3)
+            cdr3_lengths[length] = cdr3_lengths.get(length, 0) + 1
 
             # Write to FASTA
             # getcdr3 header: fastaheader (which is >ID)
@@ -103,7 +105,8 @@ def main():
     with open(hist_out_name, 'w') as f_hist:
         f_hist.write("Size,Count\n")
         for i in range(51):
-            f_hist.write(f"{i},{cdr3_lengths[i]}\n")
+            count = cdr3_lengths.get(i, 0)
+            f_hist.write(f"{i},{count}\n")
 
 if __name__ == "__main__":
     main()
