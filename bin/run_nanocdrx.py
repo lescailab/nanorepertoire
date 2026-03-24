@@ -17,21 +17,32 @@ def main():
     # 1. Convert Input to CSV for nanocdrx
     sequences = []
     with open(input_file, 'r') as f:
-        lines = f.readlines()
-        for i in range(0, len(lines), 2):
-            if i+1 >= len(lines): break
-            header = lines[i].strip()
-            seq = lines[i+1].strip()
-            # Clean header as getcdr3 does
-            # Split by whitespace to get only the ID, matching CD-HIT clstr format
-            identifier = header.replace("@", "").replace(">", "").split()[0]
-            # Filter sequences to ensure only standard amino acids and biological VHH lengths
-            # Nanocdr-x tokenization fails if sequences exceed model bounds or contain non-standard AAs
-            # Typical VHH length is 110-140 AA; we use 70-160 to be inclusive but safe.
-            if not (70 <= len(seq) <= 160) or not all(c in "ACDEFGHIKLMNPQRSTVWY" for c in seq.upper()):
-                # print(f"Skipping sequence {identifier} due to invalid characters or length")
-                continue
-            sequences.append({'identifier': identifier, 'input': seq})
+        current_id = None
+        current_seq = []
+        for line in f:
+            line = line.strip()
+            if not line: continue
+            if line.startswith(">") or line.startswith("@"):
+                # Save the pending sequence if it exists
+                if current_id:
+                    full_seq = "".join(current_seq).upper()
+                    # Strict cleaning: keep only standard amino acids
+                    full_seq = "".join(c for c in full_seq if c in "ACDEFGHIKLMNPQRSTVWY")
+                    # Biological VHH length filter (70-160 AA)
+                    if 70 <= len(full_seq) <= 160:
+                        sequences.append({'identifier': current_id, 'input': full_seq})
+                # Start a new sequence
+                # Replace comma in identifier to avoid CSV issues, use only the first part as ID
+                current_id = str(line.lstrip(">@").split()[0]).replace(",", "_")
+                current_seq = []
+            else:
+                current_seq.append(str(line))
+        # Don't forget the last sequence in the file
+        if current_id:
+            full_seq = "".join(current_seq).upper()
+            full_seq = "".join(c for c in full_seq if c in "ACDEFGHIKLMNPQRSTVWY")
+            if 70 <= len(full_seq) <= 160:
+                sequences.append({'identifier': current_id, 'input': full_seq})
 
     temp_csv_in = "nanocdrx_input.csv"
     temp_csv_out = "nanocdrx_output.csv"
