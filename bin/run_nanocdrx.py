@@ -25,10 +25,11 @@ def main():
             # Clean header as getcdr3 does
             # Split by whitespace to get only the ID, matching CD-HIT clstr format
             identifier = header.replace("@", "").replace(">", "").split()[0]
-            # Filter sequences to ensure only standard amino acids are present
-            # Nanocdr-x tokenization fails on X, *, and other non-standard amino acids
-            if not all(c in "ACDEFGHIKLMNPQRSTVWY" for c in seq.upper()):
-                # print(f"Skipping sequence {identifier} due to invalid characters")
+            # Filter sequences to ensure only standard amino acids and biological VHH lengths
+            # Nanocdr-x tokenization fails if sequences exceed model bounds or contain non-standard AAs
+            # Typical VHH length is 110-140 AA; we use 70-160 to be inclusive but safe.
+            if not (70 <= len(seq) <= 160) or not all(c in "ACDEFGHIKLMNPQRSTVWY" for c in seq.upper()):
+                # print(f"Skipping sequence {identifier} due to invalid characters or length")
                 continue
             sequences.append({'identifier': identifier, 'input': seq})
 
