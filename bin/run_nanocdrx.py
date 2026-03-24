@@ -44,21 +44,46 @@ def main():
             if 70 <= len(full_seq) <= 160:
                 sequences.append({'identifier': current_id, 'input': full_seq})
 
-    temp_csv_in = "nanocdrx_input.csv"
-    temp_csv_out = "nanocdrx_output.csv"
+    # 2. Run nanocdrx in Batches
+    # Processing in chunks (e.g., 500) reduces memory usage and prevents inhomogeneous array shape errors on large datasets.
+    batch_size = 500
+    all_results = []
+    
+    import os
+    seq_list = list(sequences)
+    for i in range(0, len(seq_list), batch_size):
+        batch = seq_list[i:i + batch_size]
+        batch_num = (i // batch_size) + 1
+        # print(f"Processing batch {batch_num} ({len(batch)} sequences)...")
+        
+        temp_csv_in = f"nanocdrx_input_b{batch_num}.csv"
+        temp_csv_out = f"nanocdrx_output_b{batch_num}.csv"
+        
+        with open(temp_csv_in, 'w', newline='') as f:
+            writer = csv.DictWriter(f, fieldnames=['identifier', 'input'])
+            writer.writeheader()
+            for item in batch:
+                writer.writerow(item)
+        
+        # Run predict_cdrs on this batch
+        cmd = ["predict_cdrs", "-i", temp_csv_in, "-o", temp_csv_out] + unknown
+        try:
+            subprocess.run(cmd, check=True)
+            # Read results back
+            with open(temp_csv_out, 'r') as f_out:
+                reader = csv.DictReader(f_out)
+                for row in reader:
+                    all_results.append(row)
+        except subprocess.CalledProcessError as e:
+            # print(f"Error in batch {batch_num}: {e}")
+            # If a batch fails, we skip it but continue with others to maximize output
+            continue
+        finally:
+            # Cleanup temp files
+            if os.path.exists(temp_csv_in): os.remove(temp_csv_in)
+            if os.path.exists(temp_csv_out): os.remove(temp_csv_out)
 
-    with open(temp_csv_in, 'w', newline='') as f:
-        writer = csv.DictWriter(f, fieldnames=['identifier', 'input'])
-        writer.writeheader()
-        for item in sequences:
-            writer.writerow({'identifier': item['identifier'], 'input': item['input']})
-
-    # 2. Run nanocdrx
-    # Pass any extra arguments to predict_cdrs
-    cmd = ["predict_cdrs", "-i", temp_csv_in, "-o", temp_csv_out] + unknown
-    subprocess.run(cmd, check=True)
-
-    # 3. Process Output
+    # 3. Process Final Output
     fasta_out_name = f"{prefix}_cdr3.fasta"
     tsv_out_name = f"{prefix}_cdr3.tsv"
     hist_out_name = f"{prefix}_cdr3.hist"
@@ -70,22 +95,18 @@ def main():
     for i in range(51):
         cdr3_lengths[i] = 0
 
-    with open(temp_csv_out, 'r') as f_in, \
-         open(fasta_out_name, 'w') as f_fasta, \
+    with open(fasta_out_name, 'w') as f_fasta, \
          open(tsv_out_name, 'w') as f_tsv:
 
-        reader = csv.DictReader(f_in)
-        # TSV Header from getcdr3: ID\tCDR3\tsequence\tunique
+        # TSV Header
         f_tsv.write("ID\tCDR3\tsequence\tunique\n")
 
-        for row in reader:
+        for row in all_results:
             identifier = row['identifier']
             full_sequence = row['input']
             cdr3 = row.get('predicted_cdr3', '')
 
-            # Logic from getcdr3.py
             status = ""
-
             if not cdr3 or cdr3 == "nan":
                 status = "no-cdr3"
                 f_tsv.write(f"{identifier}\tNA\t{full_sequence}\t{status}\n")
@@ -101,16 +122,12 @@ def main():
                 f_tsv.write(f"{identifier}\t{cdr3}\t{full_sequence}\t{status}\n")
                 continue
 
-            # It is unique and valid
+            # Valid unique CDR3
             unique_cdr3s.add(cdr3)
             length = len(cdr3)
             cdr3_lengths[length] = cdr3_lengths.get(length, 0) + 1
 
-            # Write to FASTA
-            # getcdr3 header: fastaheader (which is >ID)
             f_fasta.write(f">{identifier}\n{cdr3}\n")
-
-            # Write to TSV
             f_tsv.write(f"{identifier}\t{cdr3}\t{full_sequence}\tunique\n")
 
     # 4. Write Histogram
