@@ -11,7 +11,8 @@ include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pi
 include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_nanorepertoire_pipeline'
 include { FASTQ_TO_FASTA         } from '../subworkflows/local/fastq_to_fasta'
 include { FASTA_CLUSTERING       } from '../subworkflows/local/fasta_clustering'
-include { REPORT                 } from '../modules/local/report'
+include { NANOREPERTOIRE_REPORT  } from '../modules/local/nanorepertoire_report'
+include { REPORT                 } from '../modules/local/report/main'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -47,13 +48,22 @@ workflow NANOREPERTOIRE {
     )
 
     REPORT(
-        file("${projectDir}/assets/analysis_report.qmd"),
-        file("${projectDir}/assets/loop_tree.qmd"),
+        file("$projectDir/assets/analysis_report.qmd", checkIfExists: true),
+        file("$projectDir/assets/loop_tree.qmd", checkIfExists: true),
         FASTA_CLUSTERING.out.clusteread.collect(),
         FASTA_CLUSTERING.out.cdrhistograms.collect(),
         FASTA_CLUSTERING.out.cdrtsv.collect(),
-        FASTA_CLUSTERING.out.cdrmeta.collect()
+        input.map { it[0] }.collect()
     )
+
+    NANOREPERTOIRE_REPORT(
+        REPORT.out.clustercounts,
+        REPORT.out.cdrcounts,
+        REPORT.out.cdrhists,
+        REPORT.out.clusterbig,
+        REPORT.out.fastaseq
+    )
+    ch_versions = ch_versions.mix(NANOREPERTOIRE_REPORT.out.versions)
 
     //
     // Collate and save software versions

@@ -361,8 +361,15 @@ for (ind in unique(boostEvol$individual)) {
 `r paste(out, collapse = '\n')`
 
 ```{r}
-#| lablabel: saveImage
+#| label: exportCSV
+#| include: false
 save.image("nanobodies_report.RData")
+# Export CSVs for the interactive Python report
+write_csv(clustercounts, "clustercounts.csv")
+write_csv(cdrcounts,     "cdrcounts.csv")
+write_csv(cdrhists,      "cdrhists.csv")
+write_csv(clusterbig,    "clusterbig.csv")
+write_csv(fastaSeq,      "fastaSeq.csv")
 ```
 
 # Additional QC
