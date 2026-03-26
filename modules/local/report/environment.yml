@@ -7,15 +7,18 @@ channels:
   - r
 
 dependencies:
-  - bioconda::bioconductor-biostrings=2.52.0
-  - bioconda::bioconductor-genomicfeatures=1.36.0
-  - bioconda::bioconductor-gviz=1.28.0
-  - bioconda::bioconductor-rtracklayer=1.44.2
-  - bioconda::bioconductor-variantannotation=1.30.0
-  - conda-forge::pandoc=2.9.2.1
-  - conda-forge::r-ape=5.4
-  - r::r-knitr
-  - r::r-quarto
-  - r::r-tidyverse
-  - r::r-tidyverse
-  - r::r=3.6.0
+  - bioconda::bioconductor-biostrings=2.78.0
+  - bioconda::bioconductor-genomicfeatures=1.62.0
+  - bioconda::bioconductor-ggtree=4.0.4
+  - bioconda::bioconductor-gviz=1.54.0
+  - bioconda::bioconductor-rtracklayer=1.70.1
+  - bioconda::bioconductor-variantannotation=1.56.0
+  - conda-forge::pandoc=3.6.3
+  - conda-forge::r-ape=5.8_1
+  - conda-forge::r-base=4.5.3
+  - conda-forge::r-kableextra=1.4.0
+  - conda-forge::r-knitr=1.51
+  - conda-forge::r-plotly=4.12.0
+  - conda-forge::r-quarto=1.5.1
+  - conda-forge::r-seqinr=4.2_36
+  - conda-forge::r-tidyverse=2.0.0
