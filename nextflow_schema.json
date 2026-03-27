@@ -238,6 +238,32 @@
                     "description": "Display hidden parameters in the help message (only works when --help or --help_full are provided)."
                 }
             }
+        },
+        "nanorepertoire_options": {
+            "title": "Nanorepertoire options",
+            "type": "object",
+            "fa_icon": "fas fa-microscope",
+            "description": "Specific options for the nanorepertoire pipeline.",
+            "properties": {
+                "cdhit_identity": {
+                    "type": "number",
+                    "default": 0.9,
+                    "description": "Sequence identity threshold for CD-HIT clustering.",
+                    "fa_icon": "fas fa-compress-arrows-alt"
+                },
+                "cluster_size_threshold": {
+                    "type": "integer",
+                    "default": 1,
+                    "description": "Minimum number of sequences in a cluster to be included in the report.",
+                    "fa_icon": "fas fa-filter"
+                },
+                "calculate_tree": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Whether to calculate a phylogenetic tree for the clusters.",
+                    "fa_icon": "fas fa-tree"
+                }
+            }
         }
     },
     "allOf": [
@@ -252,6 +278,9 @@
         },
         {
             "$ref": "#/$defs/generic_options"
+        },
+        {
+            "$ref": "#/$defs/nanorepertoire_options"
         }
     ],
     "properties": {

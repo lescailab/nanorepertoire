@@ -1,4 +1,4 @@
-process REPORT {
+process AGGREGATE_STATS {
     label 'process_single'
 
     conda "${moduleDir}/environment.yml"

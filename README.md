@@ -37,45 +37,38 @@ Processes raw sequencing data to produce translated FASTA sequences:
 
 ### 2. `fasta_clustering`
 Clusters and analyses translated nanobody sequences:
-- **CD-HIT** – clustering of identical or highly similar sequences
+- **CD-HIT** – clustering of identical or highly similar sequences (configurable identity threshold)
 - **ReadCDHIT** – extraction and summarization of cluster statistics
 - **getCDR3** – extraction of CDR3 regions from translated nanobodies
-- **MAFFT** – multiple sequence alignment of CDR3 clusters
+- **Nanocdr-x** – CDR3 extraction and analysis tool
 
-### 3. `nanoreport`
+### 3. `reporting`
 Generates integrated reports and visual outputs:
 - **MultiQC** – aggregation of QC metrics
-- **Report (R-based)** – production of summary tables (`.tsv`), serialized objects (`.RData`), and an HTML report summarizing repertoire metrics
+- **Aggregate Stats (R-based)** – production of summary tables (`.csv`, `.tsv`), serialized objects (`.RData`), and a static analysis report.
+- **Nanorepertoire Report (Python-based)** – generation of a modern, interactive HTML dashboard.
 
-A visual representation of the three main subworkflows:
+## Parameters
 
-
-<p align="center">
-  <img src="docs/images/nanorepertoire_workflow.png" width="800" alt="Nanorepertoire workflow overview">
-</p>
+| Parameter | Default | Description |
+| :--- | :--- | :--- |
+| `--cdhit_identity` | `0.9` | Sequence identity threshold for CD-HIT clustering. |
+| `--cluster_size_threshold` | `1` | Minimum sequences per cluster for inclusion in reports. |
+| `--calculate_tree` | `false` | Enable/disable phylogenetic tree calculation. |
+| `--adapterfile` | `null` | Custom adapter file for Cutadapt. |
 
 ## Usage
 
 > [!NOTE]
 > If you are new to Nextflow and nf-core, please refer to [this page](https://nf-co.re/docs/usage/installation) on how to set-up Nextflow. Make sure to [test your setup](https://nf-co.re/docs/usage/introduction#how-to-run-a-pipeline) with `-profile test` before running the workflow on actual data.
 
-
-First, prepare a samplesheet with your input data that looks as follows:
-
-`samplesheet.csv`:
-
+1. Prepare a samplesheet (`samplesheet.csv`):
 ```csv
 sample,fastq_1,fastq_2
 CONTROL_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz
 ```
 
-Each row represents a fastq file (single-end) or a pair of fastq files (paired end).
-
-
-
-Now, you can run the pipeline using:
-
-**Example command**
+2. Run the pipeline:
 ```bash
 nextflow run lescailab/nanorepertoire \
   -profile docker \
@@ -83,60 +76,25 @@ nextflow run lescailab/nanorepertoire \
   --outdir results/
 ```
 
-> [!WARNING]
-> Please provide pipeline parameters via the CLI or Nextflow `-params-file` option. Custom config files including those provided by the `-c` Nextflow option can be used to provide any configuration _**except for parameters**_; see [docs](https://nf-co.re/docs/usage/getting_started/configuration#custom-configuration-files).
-
-For more details and further functionality, please refer to the [usage documentation](https://nf-co.re/nanorepertoire/usage) and the [parameter documentation](https://nf-co.re/nanorepertoire/parameters).
-
 ## Pipeline output
 
 The pipeline produces:
-
-- Translated nanobody FASTA sequences
-
-- Clustered and aligned CDR3 repertoires
-
-- Cluster statistics and summary tables
-
-- Quality control reports (multiqc.html)
-
-- Final integrated report (report.html, .RData, .tsv)
-
+- **Translated Sequences**: Amino acid sequences in FASTA format.
+- **Cluster Stats**: Detailed statistics on nanobody clusters.
+- **QC Reports**: `multiqc_report.html` for technical quality metrics.
+- **Hybrid Reports**:
+    - `analysis_report.html`: Static scientific summary (R/Quarto).
+    - `nanorepertoire_report.html`: Interactive, premium dashboard (Python/Plotly).
+    - `nanobodies_report.RData`: Serialized R object for downstream analysis.
 
 ## Credits
 
-lescailab/nanorepertoire was originally written by Francesco Lescai.
-
-We thank the following people for their extensive assistance in the development of this pipeline:
-- Davide Bagordo
-
-
-## Contributions and Support
-
-If you would like to contribute to this pipeline, please see the [contributing guidelines](.github/CONTRIBUTING.md).
-
-For further information or help, don't hesitate to get in touch on the [Slack `#nanorepertoire` channel](https://nfcore.slack.com/channels/nanorepertoire) (you can join with [this invite](https://nf-co.re/join/slack)).
+**lescailab/nanorepertoire** was originally written by Francesco Lescai.
+Key contributors: Davide Bagordo.
 
 ## Citations
 
+If you use lescailab/nanorepertoire, please cite: [10.5281/zenodo.17379842](https://doi.org/10.5281/zenodo.17379842)
 
-If you use lescailab/nanorepertoire for your analysis, please cite it using the following doi: [10.5281/zenodo.17379842](https://doi.org/10.5281/zenodo.17379842)
-
-<!-- TODO nf-core: Add bibliography of tools and data used in your pipeline -->
-
-An extensive list of references for the tools used by the pipeline can be found in the [`CITATIONS.md`](CITATIONS.md) file.
-
-You can cite the `nf-core` publication as follows:
-
-> **The nf-core framework for community-curated bioinformatics pipelines.**
->
-> Philip Ewels, Alexander Peltzer, Sven Fillinger, Harshil Patel, Johannes Alneberg, Andreas Wilm, Maxime Ulysse Garcia, Paolo Di Tommaso & Sven Nahnsen.
->
-> _Nat Biotechnol._ 2020 Feb 13. doi: [10.1038/s41587-020-0439-x](https://dx.doi.org/10.1038/s41587-020-0439-x).
-
-
-## Limitations
-
-It is important to note that the pipeline currently does not pass all GitHub CI tests due to incorrect container versioning affecting some modules.
-
-We recommend using Nextflow version 24.10.4 build 5934 for proper execution.
+An extensive list of references for the tools used can be found in [`CITATIONS.md`](CITATIONS.md).
+for proper execution.

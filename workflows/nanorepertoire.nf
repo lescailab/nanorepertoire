@@ -12,7 +12,7 @@ include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_nano
 include { FASTQ_TO_FASTA         } from '../subworkflows/local/fastq_to_fasta'
 include { FASTA_CLUSTERING       } from '../subworkflows/local/fasta_clustering'
 include { NANOREPERTOIRE_REPORT  } from '../modules/local/nanorepertoire_report'
-include { REPORT                 } from '../modules/local/report/main'
+include { AGGREGATE_STATS      } from '../modules/local/report/main'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -47,7 +47,7 @@ workflow NANOREPERTOIRE {
         FASTQ_TO_FASTA.out.translated
     )
 
-    REPORT(
+    AGGREGATE_STATS(
         file("$projectDir/assets/analysis_report.qmd", checkIfExists: true),
         file("$projectDir/assets/loop_tree.qmd", checkIfExists: true),
         FASTA_CLUSTERING.out.clusteread.collect(),
@@ -57,11 +57,11 @@ workflow NANOREPERTOIRE {
     )
 
     NANOREPERTOIRE_REPORT(
-        REPORT.out.clustercounts,
-        REPORT.out.cdrcounts,
-        REPORT.out.cdrhists,
-        REPORT.out.clusterbig,
-        REPORT.out.fastaseq
+        AGGREGATE_STATS.out.clustercounts,
+        AGGREGATE_STATS.out.cdrcounts,
+        AGGREGATE_STATS.out.cdrhists,
+        AGGREGATE_STATS.out.clusterbig,
+        AGGREGATE_STATS.out.fastaseq
     )
     ch_versions = ch_versions.mix(NANOREPERTOIRE_REPORT.out.versions)
 
