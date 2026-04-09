@@ -1,0 +1,47 @@
+name: repertoire_report
+description: Orchestrates the execution of aggregate stats and nanorepertoire report modules.
+keywords:
+  - report
+  - statistics
+  - nanobodies
+components:
+  - aggregate_stats
+  - nanorepertoire_report
+input:
+  - report_template:
+      type: file
+      description: The RMarkdown/Quarto report template.
+      pattern: "*.{Rmd,qmd}"
+  - loop_tree_template:
+      type: file
+      description: Loop tree template file.
+      pattern: "*.{Rmd,qmd}"
+  - clusteread:
+      type: file
+      description: Clustered summaries from FASTA clustering.
+      pattern: "*.summary"
+  - cdrhistograms:
+      type: file
+      description: CDRhistograms from FASTA clustering.
+      pattern: "*.hist"
+  - cdrtsv:
+      type: file
+      description: CDR TSV files from FASTA clustering.
+      pattern: "*.tsv"
+  - metadata:
+      type: file
+      description: Sample metadata table mapping strings.
+output:
+  - report:
+      type: file
+      description: The final HTML comprehensive report.
+      pattern: "*.html"
+  - versions:
+      type: file
+      description: |
+        File containing software versions
+        Structure: `[ path(versions.yml) ]`
+      pattern: "versions.yml"
+authors:
+  - "@DavideBag"
+  - "@lescai"

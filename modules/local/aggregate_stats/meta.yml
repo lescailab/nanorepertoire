@@ -1,7 +1,7 @@
 ---
 # yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
-name: "report"
-description: Generates a final HTML report and summary tables for the analysis
+name: "aggregate_stats"
+description: Performs data aggregation across samples and generates preliminary analysis reports including phylogenetic trees.
 keywords:
   - report
   - visualization
@@ -67,10 +67,3 @@ authors:
 maintainers:
   - "@davidebag"
   - "@lescai"
-      description: Sorted BAM/CRAM/SAM file
-      pattern: "*.{bam,cram,sam}"
-
-authors:
-  - "@DavideBag"
-maintainers:
-  - "@DavideBag"

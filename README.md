@@ -42,11 +42,11 @@ Clusters and analyses translated nanobody sequences:
 - **getCDR3** – extraction of CDR3 regions from translated nanobodies
 - **Nanocdr-x** – CDR3 extraction and analysis tool
 
-### 3. `reporting`
-Generates integrated reports and visual outputs:
-- **MultiQC** – aggregation of QC metrics
-- **Aggregate Stats (R-based)** – production of summary tables (`.csv`, `.tsv`), serialized objects (`.RData`), and a static analysis report.
-- **Nanorepertoire Report (Python-based)** – generation of a modern, interactive HTML dashboard.
+### 3. `repertoire_report`
+Generates integrated reports and visual outputs by abstracting the reporting layer:
+- **MultiQC** – aggregation of QC metrics across all initial samples
+- **Aggregate Stats (R-based)** – statistical data engine for production of summary tables (`.csv`, `.tsv`), serialized objects (`.RData`), and static scientific summaries.
+- **Nanorepertoire Report (Python-based)** – generation of a modern, interactive HTML dashboard based on the aggregated metrics.
 
 ## Parameters
 

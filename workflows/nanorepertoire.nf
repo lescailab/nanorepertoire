@@ -11,8 +11,7 @@ include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pi
 include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_nanorepertoire_pipeline'
 include { FASTQ_TO_FASTA         } from '../subworkflows/local/fastq_to_fasta'
 include { FASTA_CLUSTERING       } from '../subworkflows/local/fasta_clustering'
-include { NANOREPERTOIRE_REPORT  } from '../modules/local/nanorepertoire_report'
-include { AGGREGATE_STATS      } from '../modules/local/report/main'
+include { REPERTOIRE_REPORT      } from '../subworkflows/local/repertoire_report/main'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -47,7 +46,7 @@ workflow NANOREPERTOIRE {
         FASTQ_TO_FASTA.out.translated
     )
 
-    AGGREGATE_STATS(
+    REPERTOIRE_REPORT(
         file("$projectDir/assets/analysis_report.qmd", checkIfExists: true),
         file("$projectDir/assets/loop_tree.qmd", checkIfExists: true),
         FASTA_CLUSTERING.out.clusteread.collect(),
@@ -55,15 +54,7 @@ workflow NANOREPERTOIRE {
         FASTA_CLUSTERING.out.cdrtsv.collect(),
         input.map { it[0] }.collect()
     )
-
-    NANOREPERTOIRE_REPORT(
-        AGGREGATE_STATS.out.clustercounts,
-        AGGREGATE_STATS.out.cdrcounts,
-        AGGREGATE_STATS.out.cdrhists,
-        AGGREGATE_STATS.out.clusterbig,
-        AGGREGATE_STATS.out.fastaseq
-    )
-    ch_versions = ch_versions.mix(NANOREPERTOIRE_REPORT.out.versions)
+    ch_versions = ch_versions.mix(REPERTOIRE_REPORT.out.versions)
 
     //
     // Collate and save software versions

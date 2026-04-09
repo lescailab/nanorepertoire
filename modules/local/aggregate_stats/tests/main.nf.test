@@ -1,8 +1,8 @@
 nextflow_process {
 
-    name "Test Process REPORT"
+    name "Test Process AGGREGATE_STATS"
     script "../main.nf"
-    process "REPORT"
+    process "AGGREGATE_STATS"
     config "./nextflow.config"
     tag "modules"
     tag "modules_nfcore"
@@ -39,7 +39,12 @@ nextflow_process {
         then {
             assertAll(
                 { assert workflow.success},
-                { assert snapshot(workflow.stdout).match()}
+                { assert snapshot(workflow.stdout).match()},
+                { assert path(process.out.clustercounts[0]).exists() },
+                { assert path(process.out.cdrcounts[0]).exists() },
+                { assert path(process.out.cdrhists[0]).exists() },
+                { assert path(process.out.clusterbig[0]).exists() },
+                { assert path(process.out.fastaseq[0]).exists() }
             )
         }
     }
