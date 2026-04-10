@@ -4,7 +4,7 @@ process NANOREPERTOIRE_REPORT {
     conda "${moduleDir}/environment.yml"
     container "${workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/plotly:4.14.3--py_0' :
-        'quay.io/biocontainers/plotly:4.14.3--py_0' }"
+        'community.wave.seqera.io/library/pip_plotly:371e79f3e90713b3' }"
 
     input:
     path clustercounts
