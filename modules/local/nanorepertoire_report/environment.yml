@@ -5,5 +5,3 @@ channels:
   - defaults
 dependencies:
   - python=3.10
-  - pandas=1.5.3
-  - plotly=5.13.0
