@@ -1,3 +1,0 @@
-task_id	name	status	energy_consumption	CO2e	time	cpus	powerdraw_cpu	cpu_model	cpu_usage	requested_memory
-3	NFCORE_NANOREPERTOIRE:NANOREPERTOIRE:FASTQ_TO_FASTA:CUTADAPT (sample02)	FAILED	19.16 mWh	9.1 mg	765.0ms	4	12.0	null	1.0	15.0 GB
-2	NFCORE_NANOREPERTOIRE:NANOREPERTOIRE:FASTQ_TO_FASTA:CUTADAPT (sample01)	FAILED	676.34 uWh	321.26 ug	27.0ms	4	12.0	null	1.0	15.0 GB
