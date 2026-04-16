@@ -90,6 +90,6 @@ for i in range(51):
   bighist[i] = 0
 for sequence in bigset:
   bighist[len(sequence)] += 1
-histo.write("Size,Count")
+histo.write("Size,Count\n")
 for i in range(51):
   histo.write(str(i) + "," + str(bighist[i]) + "\n")

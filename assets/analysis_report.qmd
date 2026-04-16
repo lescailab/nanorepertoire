@@ -181,6 +181,7 @@ cdrhists <- data.frame()
 for (file in histofiles) {
     samplename <- gsub("_cdr3.hist", "", file)
     histdata <- read.csv(file, header = TRUE)
+    colnames(histdata)[1:2] <- c("Size", "Count")
     histdata$Sample <- rep(samplename, times = nrow(histdata))
     cdrhists <- rbind(cdrhists, histdata)
 }

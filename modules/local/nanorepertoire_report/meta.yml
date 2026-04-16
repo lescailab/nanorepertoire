@@ -1,0 +1,52 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
+name: "nanorepertoire_report"
+description: Generates final HTML report of nanobody repertoire based on sequence clusters
+keywords:
+  - report
+  - nanobody
+  - visualization
+tools:
+  - "python":
+      description: "Python language script for generating the final comprehensive HTML report"
+      homepage: "https://www.python.org/"
+      documentation: "https://docs.python.org/"
+
+input:
+  - clustercounts:
+      type: file
+      description: CSV file with cluster counts
+      pattern: "*.csv"
+  - cdrcounts:
+      type: file
+      description: CSV file with CDR counts
+      pattern: "*.csv"
+  - cdrhists:
+      type: file
+      description: CSV file with CDR histograms
+      pattern: "*.csv"
+  - clusterbig:
+      type: file
+      description: CSV file with bigger clusters
+      pattern: "*.csv"
+  - fastaseq:
+      type: file
+      description: CSV file with corresponding FASTA sequences
+      pattern: "*.csv"
+
+output:
+  - report:
+      type: file
+      description: Final generated HTML interactive report
+      pattern: "*.html"
+  - versions:
+      type: file
+      description: File containing software versions
+      pattern: "versions.yml"
+
+authors:
+  - "@davidebag"
+  - "@lescai"
+maintainers:
+  - "@davidebag"
+  - "@lescai"

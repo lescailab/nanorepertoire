@@ -611,11 +611,10 @@ html = f"""<!DOCTYPE html>
   <h1>Nanorepertoire</h1>
   <div class="subtitle">Nanobody Repertoire Analysis (VHH Sequencing · Clonotype &amp; CDR3 Analysis Report)</div>
   <div class="meta" style="margin-top:20px; border-top:1px solid rgba(255,255,255,0.1); padding-top:15px; display:flex; gap:30px; flex-wrap:wrap;">
-    <div class="meta-item" style="font-size:0.85em; opacity:0.8;">
-      <strong>Pipeline Status</strong> 
-      <span style="color:#e94560; font-weight:600;">Pending Nextflow Integration</span>
-      <div style="font-size:0.9em; opacity:0.7; margin-top:4px;">
-        Scheduled: Start/End Times · CPU Efficiency · CO2 Footprint
+    <div class="meta-item" style="font-size:0.85em; opacity:0.8; max-width:400px;">
+      <strong>Pipeline Execution Metrics</strong> 
+      <div style="font-size:0.9em; margin-top:4px; line-height: 1.4;">
+        If you are interested in detailed Start/End Times, CPU Efficiency, and CO₂ metrics, please see the dedicated reports produced upon completion of the pipeline. We sincerely thank the authors of the <strong>nf-co2footprint plugin</strong> and the Green Algorithms project for enabling these measurements.
       </div>
     </div>
     <div class="meta-item" style="margin-left:auto; text-align:right; font-size:0.85em; opacity:0.8;">

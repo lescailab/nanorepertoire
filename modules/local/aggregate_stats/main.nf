@@ -1,4 +1,4 @@
-process REPORT {
+process AGGREGATE_STATS {
     label 'process_single'
 
     conda "${moduleDir}/environment.yml"
@@ -24,6 +24,7 @@ process REPORT {
     path 'cdrhists.csv', emit: cdrhists
     path 'clusterbig.csv', emit: clusterbig
     path 'fastaSeq.csv', emit: fastaseq
+    path "versions.yml", emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -52,5 +53,10 @@ process REPORT {
         -P loopFile:'loop_tree.qmd' \\
         -P calcTree:'${params.calculate_tree}' \\
         --output '${report.baseName}.html'
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        quarto: \$(quarto --version)
+END_VERSIONS
     """
 }
