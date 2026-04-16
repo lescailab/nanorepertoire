@@ -27,7 +27,6 @@ jobs:
     strategy:
       matrix:
         NXF_VER:
-          - "24.04.2"
           - "25.04.4"
         profile:
           - "conda"
