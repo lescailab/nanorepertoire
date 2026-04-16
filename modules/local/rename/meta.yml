@@ -27,7 +27,6 @@ input:
   - single_end:
       type: boolean
       description: Single-end reads
-      pattern: "*.{fastq,fq}"
 
 output:
   - meta:
@@ -47,5 +46,6 @@ output:
 
 authors:
   - "@davidebag"
+  - "@lescai"
 maintainers:
   - "@davidebag"

@@ -88,7 +88,18 @@ def checkCondaChannels() {
     def parser = new org.yaml.snakeyaml.Yaml()
     def channels = []
     try {
-        def config = parser.load("conda config --show channels".execute().text)
+        def proc = ["bash", "-i", "-c", "conda config --show channels 2>/dev/null"].execute()
+        def text = proc.text
+        proc.waitFor()
+        if (!text?.trim()) {
+            log.warn("Could not verify conda channel configuration.")
+            return null
+        }
+        def config = parser.load(text)
+        if (config == null || config.channels == null) {
+            log.warn("Could not verify conda channel configuration.")
+            return null
+        }
         channels = config.channels
     }
     catch (NullPointerException e) {

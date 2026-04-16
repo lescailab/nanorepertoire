@@ -6,4 +6,4 @@ channels:
   - bioconda
   - defaults
 dependencies:
-  - bioconda::fastx_toolkit=0.0.14
+  - bioconda::seqtk=1.4

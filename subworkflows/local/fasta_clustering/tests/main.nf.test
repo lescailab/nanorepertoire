@@ -21,7 +21,7 @@ nextflow_workflow {
                 """
                 // input_ch
                 input[0] = [
-                    [id:'test'],
+                    [id:'test', immunisation:'test_imm', boost:'test_boost'],
                     file("https://raw.githubusercontent.com/lescailab/testdata/master/nanobodies/test01_aa.fasta", checkIfExists: true)
                 ]
                 """

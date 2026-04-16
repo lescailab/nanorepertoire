@@ -19,6 +19,11 @@ process REPORT {
     path '*.html', emit: report
     path 'cdr3_boost_overview_table.tsv', emit: results
     path 'sampledata.tsv', emit: sampledata
+    path 'clustercounts.csv', emit: clustercounts
+    path 'cdrcounts.csv', emit: cdrcounts
+    path 'cdrhists.csv', emit: cdrhists
+    path 'clusterbig.csv', emit: clusterbig
+    path 'fastaSeq.csv', emit: fastaseq
 
     when:
     task.ext.when == null || task.ext.when

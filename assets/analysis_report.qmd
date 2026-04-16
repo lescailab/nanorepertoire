@@ -37,7 +37,7 @@ library(tidyverse)
 library(kableExtra)
 library(ggtree)
 library(Biostrings)
-library(msa)
+# library(msa)
 library(plotly)
 library(seqinr)
 library(ape)
@@ -193,7 +193,7 @@ for (file in histofiles) {
 
 cdrcounts <- cdrhists %>%
     group_by(Sample) %>%
-    summarize(Unique_CDR3s = sum(Count0))
+    summarize(Unique_CDR3s = sum(Count))
 
 kable(cdrcounts) %>%
     kable_styling()
@@ -205,7 +205,7 @@ kable(cdrcounts) %>%
 # Genera un istogramma della distribuzione delle dimensioni delle sequenze CDR3 uniche.
 
 ggplot(data = cdrhists) +
-    geom_histogram(aes(x = Size, y = Count0), stat = "identity") +
+    geom_histogram(aes(x = Size, y = Count), stat = "identity") +
     facet_wrap(~Sample) +
     ggtitle("Size Distribution of Unique CDR3s")
 ```
@@ -237,6 +237,10 @@ for (fasta in tablefiles) {
 #| label:  mergeData
 
 # Unisce i dati dei cluster con i dati delle sequenze fasta.
+
+boostEvol <- clusterbig
+    clusterbig$Representative <- as.character(clusterbig$Representative)
+    fastaSeq$ID <- as.character(fastaSeq$ID)
 
 boostEvol <- clusterbig %>%
     left_join(fastaSeq,
@@ -301,9 +305,14 @@ for (ind in unique(boostEvol$individual)) {
         next
     }
 
+    if (!requireNamespace("msa", quietly = TRUE)) {
+        message(paste("Package 'msa' is not installed. Skipping alignment and tree generation for individual", ind))
+        next
+    }
+
     # message("---> multiple alignment")
-    msa <- msa(individualCDR3, method = "ClustalOmega", type = "protein")
-    alignment <- msaConvert(msa, type = "seqinr::alignment")
+    msa <- msa::msa(individualCDR3, method = "ClustalOmega", type = "protein")
+    alignment <- msa::msaConvert(msa, type = "seqinr::alignment")
 
     # message("---> tree generation")
     dist <- dist.alignment(alignment)
@@ -352,8 +361,15 @@ for (ind in unique(boostEvol$individual)) {
 `r paste(out, collapse = '\n')`
 
 ```{r}
-#| lablabel: saveImage
+#| label: exportCSV
+#| include: false
 save.image("nanobodies_report.RData")
+# Export CSVs for the interactive Python report
+write_csv(clustercounts, "clustercounts.csv")
+write_csv(cdrcounts,     "cdrcounts.csv")
+write_csv(cdrhists,      "cdrhists.csv")
+write_csv(clusterbig,    "clusterbig.csv")
+write_csv(fastaSeq,      "fastaSeq.csv")
 ```
 
 # Additional QC

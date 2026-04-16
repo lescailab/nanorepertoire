@@ -24,10 +24,6 @@ input:
       type: file
       description: CD-HIT output file
       pattern: "*.{clstr,clstr.gz}"
-  - single_end:
-      type: file
-      description: Single-end reads
-      pattern: "*.{fastq,fq,fastq.gz,fq.gz}"
 
 output:
   #Only when we have meta
@@ -44,12 +40,14 @@ output:
   - summary:
       type: file
       description: Summary of the CD-HIT output
-      pattern: "*.{txt,log}"
+      pattern: "*.{txt,log,summary}"
   - summaryonly:
       type: file
       description: Summary of the CD-HIT output
-      pattern: "*.{txt,log}"
+
 authors:
   - "@davidebag"
+  - "@lescai"
 maintainers:
   - "@davidebag"
+  - "@lescai"
