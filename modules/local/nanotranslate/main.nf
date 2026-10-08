@@ -26,6 +26,7 @@ process NANOTRANSLATE {
     translate.py \\
     sequences.fastq \\
     ${prefix}_AA_translated.fasta \\
+    ${task.cpus} \\
     ${args} \\
     >${prefix}_AA_translated.log
 

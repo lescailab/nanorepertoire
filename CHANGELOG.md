@@ -22,6 +22,7 @@ Second major release focused on repertoire analysis robustness, reporting refact
 - Refined output routing for pipeline info and CO2-related artifacts to align with official plugin guidance.
 - `run_nanocdrx.py` writes every cluster representative to `<sample>_cdr3.tsv` exactly once, with the new statuses `cdr3-too-long`, `excluded-length` and `excluded-nonstandard`. Representatives containing non-standard residues are now excluded instead of having those residues deleted, which shortened their CDR3.
 - `run_nanocdrx.py` calls `predict_cdrs` once per sample instead of once per 500 sequences.
+- `NANOTRANSLATE` is faster and uses less memory: the start and end motifs are built from their amino acids instead of being listed one by one, each motif is searched once, reads are processed in groups instead of being loaded all at once, and the script uses the CPUs assigned by Nextflow instead of all those of the machine. The output is unchanged (verified byte by byte on two llama samples and an alpaca subset).
 
 ### `Fixed`
 
