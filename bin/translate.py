@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 # Translates the VHH region of merged reads: the region runs from a start motif to an end
 # motif, searched on both strands, and is kept only if in frame, without stop codons and
-# without undetermined residues. Reads are processed in parallel, in input order.
+# without undetermined residues. Reads with no exact motif on either strand are searched
+# again with anchors that tolerate one amino-acid substitution (see rescue()). Reads are
+# processed in parallel, in input order.
 #
 # Usage: translate.py <reads.fastq> <output.fasta> [cpus]
 
@@ -30,6 +32,45 @@ def motif(peptide):
 START = re.compile('|'.join(motif(peptide) for peptide in ('MAQ', 'QVQ', 'EVQ', 'VQL', 'LQL')))
 # VHH end: every DNA encoding of TVSS (12 nt)
 END = re.compile(motif('TVSS'))
+
+# Rescue of reads in which no exact start or end motif is found on either strand. The VHH is
+# looked for in the six reading frames with anchors that tolerate one amino-acid substitution,
+# each confirmed by residues conserved in the IMGT germline of the alpaca:
+# - start: a tripeptide at most one residue away from a germline FR1 start (QVQ, EVQ, QLQ),
+#   with the FR1 cysteine (1st-CYS, IMGT position 23) 21 residues later;
+# - second cysteine (2nd-CYS, IMGT position 104): a C 88 to 100 residues after the start (94 to
+#   96 in the germline; the window allows for CDR1 and CDR2 length differences);
+# - end: the first WG.G (J-TRP, IMGT position 118) at least 80 residues after the start,
+#   followed 7 residues later by a tetrapeptide at most one residue away from TVSS.
+RESCUE_STARTS = ('QVQ', 'EVQ', 'QLQ')
+FR4_ANCHOR = re.compile(r'WG.G')
+
+
+def near(peptide, targets):
+    """True when peptide differs in at most one residue from one of targets of the same length."""
+    return any(len(peptide) == len(target) and sum(a != b for a, b in zip(peptide, target)) <= 1
+               for target in targets)
+
+
+def rescue(dna):
+    """Return (vhh, strand) of a VHH found with the tolerant anchors, or None."""
+    for strand, seq in (('forward', dna), ('reverse', dna.translate(COMPLEMENT)[::-1])):
+        for frame in range(3):
+            coding = seq[frame:]
+            protein = translate(coding[:len(coding) // 3 * 3])
+            for start in range(len(protein) - 21):
+                if protein[start + 21] != 'C' or not near(protein[start:start + 3], RESCUE_STARTS):
+                    continue
+                if 'C' not in protein[start + 88:start + 101]:
+                    continue
+                trp = FR4_ANCHOR.search(protein, start + 80)
+                if not trp or not near(protein[trp.start() + 7:trp.start() + 11], ('TVSS',)):
+                    continue
+                vhh = protein[start:trp.start() + 11]
+                if '*' not in vhh and 'X' not in vhh:
+                    return vhh, strand
+    return None
+
 
 def read_fastq(file_handle):
     """Generator to read FASTQ file."""
@@ -66,6 +107,14 @@ def process_read(read):
     result['foundend'] = int(endbase != -1)
 
     if startbase == -1 or endbase == -1:
+        rescued = rescue(dna)
+        if rescued:
+            vhh, strand = rescued
+            result['status'] = 'rescued'
+            result['header'] = headerline
+            result['translated'] = vhh + "\n"
+            result['rescued'] = f"{headerline}\t{strand}\t{vhh[:3]}\t{vhh[-4:]}\t{len(vhh)}\t{vhh}\n"
+            return result
         result['status'] = 'nostartnoend'
         result['notfound'] = f"sequenza non trovata\t{dna}\n"
         return result
@@ -108,7 +157,8 @@ def main():
          open(sys.argv[2], 'w') as fileout, \
          open(sys.argv[2] + '.notfound', 'w') as notfound, \
          open(sys.argv[2] + '.log', 'w') as log, \
-         open(sys.argv[2] + '.outframe', 'w') as nomultiplefile:
+         open(sys.argv[2] + '.outframe', 'w') as nomultiplefile, \
+         open(sys.argv[2] + '.rescued', 'w') as rescuedfile:
 
         readsread = 0
         readspassing = 0
@@ -119,6 +169,7 @@ def main():
         withundetermined = 0
         reversed_reads = 0
         nostartnoend = 0
+        rescued_reads = 0
 
         # Batches of 1000 reads are processed in parallel, a few per CPU at a time, so that
         # only part of the file is held in memory; results are written in input order
@@ -137,6 +188,12 @@ def main():
                             withstop += 1
                         elif result['status'] == 'withundetermined':
                             withundetermined += 1
+                        elif result['status'] == 'rescued':
+                            readspassing += 1
+                            rescued_reads += 1
+                            rescuedfile.write(result['rescued'])
+                            fileout.write(result['header'] + '\n')
+                            fileout.write(result['translated'])
                         elif result['status'] == 'passed':
                             readspassing += 1
                             fileout.write(result['header'] + '\n')
@@ -150,11 +207,13 @@ def main():
         log.write(f"{readsread}\n")
         log.write("Of which passing and written into FASTA:\n")
         log.write(f"{readspassing}\n")
+        log.write("of which rescued with tolerant anchors (no exact start or end motif)\n")
+        log.write(f"{rescued_reads}\n")
         log.write("start matched are\n")
         log.write(f"{foundstart}\n")
         log.write("end matched are\n")
         log.write(f"{foundend}\n")
-        log.write("failed because missing start or missing end\n")
+        log.write("failed because missing start or missing end, also with tolerant anchors\n")
         log.write(f"{nostartnoend}\n")
         log.write("failed because not in frame, i.e. not multiple of 3\n")
         log.write(f"{notinframe}\n")
