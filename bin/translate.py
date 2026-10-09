@@ -28,9 +28,8 @@ def motif(peptide):
 
 # VHH start: every DNA encoding of MAQ, QVQ, EVQ, VQL or LQL (9 nt)
 START = re.compile('|'.join(motif(peptide) for peptide in ('MAQ', 'QVQ', 'EVQ', 'VQL', 'LQL')))
-# VHH end: every DNA encoding of TVSS (12 nt), except that ACTGTTAGCTCA is matched as
-# CTGTTAGCTCA (11 nt), as in the earlier list of motifs, so that the output is unchanged
-END = re.compile('(?!ACTGTTAGCTCA)' + motif('TVSS') + '|CTGTTAGCTCA')
+# VHH end: every DNA encoding of TVSS (12 nt)
+END = re.compile(motif('TVSS'))
 
 def read_fastq(file_handle):
     """Generator to read FASTQ file."""
