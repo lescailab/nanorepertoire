@@ -56,6 +56,8 @@ process AGGREGATE_STATS {
         -P tableList:'${tableList}' \\
         -P sampleData:'sampledata.tsv' \\
         -P sizeThreshold:'${params.cluster_size_threshold}' \\
+        -P cdhitIdentity:'${params.cdhit_identity}' \\
+        -P cdhitWordSize:'${params.cdhit_word_size}' \\
         -P loopFile:'loop_tree.qmd' \\
         -P calcTree:'${params.calculate_tree}' \\
         --output '${report.baseName}.html'

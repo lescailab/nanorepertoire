@@ -1076,9 +1076,15 @@ html = f"""<!DOCTYPE html>
 
     <div class="methods-card">
       <h3>🔬 Pre-processing &amp; Translation</h3>
-      <p>Paired-end FASTQ reads were adapter-trimmed with <strong>Cutadapt</strong> and merged with <strong>FLASH</strong> (max overlap 300 bp). 
-      Merged reads were translated in-silico using conserved VHH framework start/end primer motifs (ATG…TVSS pattern; Deschaght 2017).</p>
-      <p>CDR3 regions were extracted with <strong>nanocdr-x</strong>, a deep learning model trained on camelid VHH sequences.</p>
+      <p>Paired-end FASTQ reads were adapter-trimmed with <strong>Cutadapt</strong> and merged with <strong>FLASH</strong>
+      with its default settings (minimum overlap 10 bp, maximum expected overlap 65 bp, maximum mismatch density 0.25) and
+      one thread, so that the reads keep their input order.
+      The VHH region of each merged read was translated from a start motif (MAQ, QVQ, EVQ, VQL or LQL) to the TVSS end
+      motif that follows the framework-4 tryptophan (WG.G), on either strand; reads without exact motifs were searched
+      again with anchors that tolerate one substitution, confirmed by residues conserved in the IMGT alpaca germline.
+      Regions out of frame, or with a stop codon or an undetermined residue, were discarded.</p>
+      <p>The CDR3 of each cluster representative was annotated with <strong>nanoCDR-X</strong> (Bagordo et al. 2026),
+      a deep-learning model for nanobody CDR annotation.</p>
     </div>
 
     <div class="methods-card">
@@ -1088,6 +1094,7 @@ html = f"""<!DOCTYPE html>
         <li>Identity threshold: {identity_threshold/100:.2f} ({identity_pct})</li>
         <li>Word size: {word_size}</li>
         <li>Global identity alignment (CD-HIT default <code>-G 1</code>); no minimum alignment coverage is imposed</li>
+        <li>One thread, so that the clusters do not depend on the number of threads</li>
         <li>Four size thresholds analysed: 1, ≥5, ≥100, ≥1000</li>
       </ul>
       <p>This follows the validated approach of Deschaght et al. (2017) for large nanobody repertoires.</p>

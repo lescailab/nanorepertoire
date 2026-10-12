@@ -43,6 +43,7 @@ Second major release focused on repertoire analysis robustness, reporting refact
 - Fixed resource-limit guard logic (`check_max`) and conda channel checks for Nextflow `25.10.4` + micromamba.
 - Addressed nf-core compliance and linting issues across templates/modules/subworkflows.
 - Fixed `AGGREGATE_STATS` writing `null` as the sample ID in `sampledata.tsv`: it read the key `sampleID`, which is never set (the sample name is `meta.id`), so the sample metadata never joined the clusters and individual, immunisation and boost were `NA` in every row of `cdr3_boost_overview_table.tsv`. Samplesheet columns left empty are now written as `NA` instead of `[]`. The alignment and tree step of the Quarto report, which the fix made run on every sample with metadata, now runs only with `--calculate_tree`, which already controlled the drawing of the trees.
+- Fixed the methods text of both reports, which described FLASH with a 300 bp maximum overlap (the pipeline uses the FLASH defaults) and the translation with the old fixed motifs `ATGGCACAG` and `ACCGTCTCCTCA`; it now describes the current start and end motifs, the framework-4 end rule and the rescue with tolerant anchors. The Quarto report quotes the CD-HIT identity threshold and word size of the run instead of a fixed 0.9, and no longer prints debugging lines, a sentence left from development and two unfinished sections.
 
 ### `Dependencies`
 
