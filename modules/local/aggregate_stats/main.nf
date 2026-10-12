@@ -34,13 +34,19 @@ process AGGREGATE_STATS {
     def clusterList = clustersummaries.join(',')
     def histoList = cdr3histograms.join(',')
     def tableList = cdr3tables.join(',')
+    // One line per sample; the sample name is meta.id. Columns left out of the samplesheet
+    // arrive as null or as an empty list and are written as NA, which R reads as missing.
+    def sampleRows = metadata.collect { map ->
+        def fields = [map.id, map.individualID, map.immunisation, map.boost].collect { value ->
+            (value == null || value == [] || value.toString().trim() == '') ? 'NA' : value
+        }
+        "echo '${fields.join('\t')}' >> sampledata.tsv"
+    }.join('\n')
 
     """
     # Create sampledata.tsv within the task execution context
     echo "ID\tindividual\timmunisation\tboost" > sampledata.tsv
-    ${metadata.collect { map ->
-        "echo '${map.sampleID}\t${map.individualID}\t${map.immunisation}\t${map.boost}' >> sampledata.tsv"
-    }.join('\n')}
+    ${sampleRows}
 
     ln -s '$moduleDir/nibsc_report.css' .
 

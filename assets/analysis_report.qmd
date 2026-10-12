@@ -254,7 +254,7 @@ boostEvol <- boostEvol %>%
 write_tsv(boostEvol, "cdr3_boost_overview_table.tsv")
 ```
 
-```{r}
+```{r eval=dotree}
 #| label: MSAandTreeStore
 
 # Questa sezione esegue l'allineamento multiplo delle sequenze CDR3 e genera un albero filogenetico per ciascun individuo.
