@@ -12,6 +12,7 @@ format:
   html:
     theme: default
     toc: true
+    embed-resources: true
 editor:
   options:
     chunk-output-type: console
@@ -83,7 +84,7 @@ In the first section, we briefly summarise the characteristics of the clusters. 
 
 ## Clusters
 
-In the following, we review the distribution of members of clusters and their sequence identity to the representative.
+In the following, we review the distribution of members of clusters and their sequence identity to the representative. The first plot shows, for every cluster size (x), how many clusters have that size (y), on logarithmic axes so that every cluster is drawn, from the singletons to the largest clones.
 
 ```{r}
 #| label: ClusterMembership
@@ -103,13 +104,18 @@ for (file in clusterfiles) {
 ```{r}
 #| label: ClusterSizePlot
 
-# Genera un istogramma delle dimensioni dei cluster.
+# Distribuzione delle dimensioni dei cluster: per ogni dimensione, quanti cluster la hanno.
+# Assi logaritmici e nessun limite, così compaiono tutti i cluster, dai singoletti ai più grandi.
+# dplyr::count perché seqinr, caricato dopo, ha una funzione count diversa.
 
-ggplot(data = clusterbig) +
-    geom_histogram(aes(x = Count)) +
-    scale_x_continuous(limits = c(0, 500)) +
-    scale_y_continuous(limits = c(0, 5000)) +
-    xlab("Number of Cluster Members") +
+clusterbig %>%
+    dplyr::count(Sample, Count, name = "Clusters") %>%
+    ggplot(aes(x = Count, y = Clusters)) +
+    geom_point(size = 1) +
+    scale_x_log10(breaks = scales::breaks_log(n = 7), labels = scales::label_comma()) +
+    scale_y_log10(breaks = scales::breaks_log(n = 7), labels = scales::label_comma()) +
+    xlab("Number of Cluster Members (log scale)") +
+    ylab("Number of Clusters (log scale)") +
     ggtitle("Cluster Sizes") +
     facet_wrap(~Sample)
 ```
