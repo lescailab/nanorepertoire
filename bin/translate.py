@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # Translates the VHH region of merged reads: the region runs from a start motif to an end
 # motif, searched on both strands, and is kept only if in frame, without stop codons and
-# without undetermined residues. Reads with no exact motif on either strand are searched
+# without undetermined residues. When the read holds more than one TVSS, the end is the one 7
+# residues after the tryptophan of WG.G. Reads with no exact motif on either strand are searched
 # again with anchors that tolerate one amino-acid substitution (see rescue()). Reads are
 # processed in parallel, in input order.
 #
@@ -72,6 +73,23 @@ def rescue(dna):
     return None
 
 
+END_ANY = re.compile('(?=' + motif('TVSS') + ')')
+
+
+def framework4_end(dna, startbase, endbase):
+    """Position of the first TVSS in frame with the start whose residue 7 before it starts WG.G.
+
+    In the IMGT germline TVSS starts 7 residues after the tryptophan of WG.G (J-TRP, IMGT 118);
+    an earlier TVSS inside the VHH would cut the protein. When no TVSS is in that position,
+    the first end motif of the read is kept (endbase).
+    """
+    for match in END_ANY.finditer(dna, startbase):
+        end = match.start()
+        if (end - startbase) % 3 == 0 and end - 21 >= startbase and FR4_ANCHOR.fullmatch(translate(dna[end - 21:end - 9])):
+            return end
+    return endbase
+
+
 def read_fastq(file_handle):
     """Generator to read FASTQ file."""
     while True:
@@ -119,6 +137,7 @@ def process_read(read):
         result['notfound'] = f"sequenza non trovata\t{dna}\n"
         return result
 
+    endbase = framework4_end(dna, startbase, endbase)
     targetregion = dna[startbase:endbase + 12]  # 12 is the length of the end sequence
     if len(targetregion) % 3 != 0:
         result['status'] = 'notinframe'

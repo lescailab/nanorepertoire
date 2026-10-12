@@ -38,7 +38,7 @@
                             "id": "nftest",
                             "single_end": false
                         },
-                        "nftest_AA_translated.fasta:md5,1d1c0fa48397847e598cb92b3c404227"
+                        "nftest_AA_translated.fasta:md5,7a5899038d987850ba686d4dcfb03821"
                     ]
                 ],
                 "4": [
@@ -83,7 +83,7 @@
                             "id": "nftest",
                             "single_end": false
                         },
-                        "nftest_AA_translated.fasta:md5,1d1c0fa48397847e598cb92b3c404227"
+                        "nftest_AA_translated.fasta:md5,7a5899038d987850ba686d4dcfb03821"
                     ]
                 ],
                 "translog": [
@@ -122,6 +122,6 @@
             "nf-test": "0.9.2",
             "nextflow": "25.04.8"
         },
-        "timestamp": "2026-10-09T11:48:17.814609"
+        "timestamp": "2026-10-12T10:14:31.781863"
     }
 }

@@ -8,7 +8,7 @@
                             "id": "test1",
                             "single_end": false
                         },
-                        "test1_AA_translated.fasta:md5,f9141fa59b655e44344ec822e5aa6f08"
+                        "test1_AA_translated.fasta:md5,c7d4ca2158a40a3543b54970d30a861d"
                     ]
                 ],
                 "1": [
@@ -32,7 +32,7 @@
                             "id": "test1",
                             "single_end": false
                         },
-                        "test1_AA_translated.fasta:md5,f9141fa59b655e44344ec822e5aa6f08"
+                        "test1_AA_translated.fasta:md5,c7d4ca2158a40a3543b54970d30a861d"
                     ]
                 ],
                 "log": [
@@ -56,6 +56,6 @@
             "nf-test": "0.9.2",
             "nextflow": "25.04.8"
         },
-        "timestamp": "2026-10-09T11:47:50.402876"
+        "timestamp": "2026-10-12T10:14:05.134377"
     }
 }
