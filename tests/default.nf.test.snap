@@ -170,7 +170,6 @@
                 "report/nanorepertoire_report.html"
             ],
             [
-                "analysis_report.html:md5,13fdfd698e23d1da94bfae12cc359f39",
                 "cdr3_boost_overview_table.tsv:md5,7e8569b9c5a8ca377b863e35749bc71c",
                 "cdrcounts.csv:md5,1b9b652beca340ffdbd1535a205a7f3b",
                 "cdrhists.csv:md5,b83a00e3c659a9bdeaeb833f4289ac5b",
@@ -226,8 +225,7 @@
                 "sample01_renamed.fastq.gz:md5,8fdf247615c140abe7425e3ad26a1ad3",
                 "sample02_renamed.fastq.gz:md5,4f2f9bea1772f44373fb5b79a9374a67",
                 "cdr3_boundary_offsets.tsv:md5,67b5f2183684ef1ad8efd1008239bc00",
-                "cdr3_boundary_qc.tsv:md5,febb3f49e9fa11267dd323b39ff43b4e",
-                "nanorepertoire_report.html:md5,8e73a5082c8b77e5cb733d5a255c0ffb"
+                "cdr3_boundary_qc.tsv:md5,febb3f49e9fa11267dd323b39ff43b4e"
             ]
         ],
         "meta": {

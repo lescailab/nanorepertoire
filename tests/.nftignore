@@ -12,3 +12,5 @@ fastqc/*_fastqc.{html,zip}
 pipeline_info/*.{html,json,txt,yml}
 cutadapt/*.cutadapt.log
 aggregate_stats/nanobodies_report.RData
+aggregate_stats/analysis_report.html
+report/nanorepertoire_report.html
