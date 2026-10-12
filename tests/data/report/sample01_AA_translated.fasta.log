@@ -1,0 +1,20 @@
+Completed reading reads:
+6206
+Of which passing and written into FASTA:
+4001
+of which rescued with tolerant anchors (no exact start or end motif)
+28
+start matched are
+6202
+end matched are
+6080
+failed because missing start or missing end, also with tolerant anchors
+102
+failed because not in frame, i.e. not multiple of 3
+1305
+failed because there is a stop codon in the sequence
+193
+failed because the translation contains an undetermined residue (X)
+605
+located on the reverse strand (reverse-complemented before translation)
+3

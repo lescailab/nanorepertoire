@@ -167,7 +167,8 @@
                 "report",
                 "report/cdr3_boundary_offsets.tsv",
                 "report/cdr3_boundary_qc.tsv",
-                "report/nanorepertoire_report.html"
+                "report/nanorepertoire_report.html",
+                "report/sequence_accounting.tsv"
             ],
             [
                 "cdr3_boost_overview_table.tsv:md5,d4e35bf94cd4ba84ac0d4946d54d254a",
@@ -225,13 +226,14 @@
                 "sample01_renamed.fastq.gz:md5,8fdf247615c140abe7425e3ad26a1ad3",
                 "sample02_renamed.fastq.gz:md5,4f2f9bea1772f44373fb5b79a9374a67",
                 "cdr3_boundary_offsets.tsv:md5,67b5f2183684ef1ad8efd1008239bc00",
-                "cdr3_boundary_qc.tsv:md5,febb3f49e9fa11267dd323b39ff43b4e"
+                "cdr3_boundary_qc.tsv:md5,febb3f49e9fa11267dd323b39ff43b4e",
+                "sequence_accounting.tsv:md5,9de0f9521c82dd46aa31edb74c95b2c1"
             ]
         ],
         "meta": {
             "nf-test": "0.9.2",
             "nextflow": "25.04.8"
         },
-        "timestamp": "2026-10-12T11:29:52.578915"
+        "timestamp": "2026-10-12T12:59:48.403312"
     }
 }

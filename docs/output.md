@@ -135,8 +135,11 @@ The annotation coverage of the model is `with_cdr3 / sent_to_model`; the share o
   - `nanorepertoire_report.html`: interactive HTML report.
   - `cdr3_boundary_qc.tsv`: per-sample summary of the CDR3 annotation QC.
   - `cdr3_boundary_offsets.tsv`: full distribution of the CDR3 boundary offsets.
+  - `sequence_accounting.tsv`: number of sequences of each sample at every step of the pipeline, and of those lost between steps.
 
 </details>
+
+`sequence_accounting.tsv` has one line per sample and step, with the columns `Sample`, `Step`, `Description`, `Unit` and `Count`. The steps, in order, are the read pairs sequenced and after Cutadapt, the reads merged by FLASH, the translated VHH sequences (with those rescued by tolerant anchors), the sequences in clusters, the clusters, the representatives annotated by nanoCDR-X, those with a CDR3 and the distinct CDR3s; between two steps come the sequences lost and why (for example `not_merged`, `no_motif`, `stop_codon`, `excluded_length`, `no_cdr3`). The counts are read from the Cutadapt reports, the translation logs (`*_AA_translated.fasta.log`), the cluster sizes and `*_cdr3_summary.tsv`. From `clusters` on the unit is the cluster representative, not the read. A count that cannot be read is `NA`.
 
 Every figure of the report is described in the [README](../README.md#what-the-interactive-report-shows).
 

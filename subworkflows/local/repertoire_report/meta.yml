@@ -31,11 +31,27 @@ input:
   - metadata:
       type: file
       description: Sample metadata table mapping strings.
+  - cutadapt_logs:
+      type: file
+      description: Per-sample Cutadapt reports.
+      pattern: "*.cutadapt.log"
+  - translation_logs:
+      type: file
+      description: Per-sample translation logs.
+      pattern: "*_AA_translated.fasta.log"
+  - cdr3_summaries:
+      type: file
+      description: Per-sample nanoCDR-X summaries.
+      pattern: "*_cdr3_summary.tsv"
 output:
   - report:
       type: file
       description: The final HTML comprehensive report.
       pattern: "*.html"
+  - accounting:
+      type: file
+      description: Number of sequences of each sample at every step of the pipeline.
+      pattern: "sequence_accounting.tsv"
   - versions:
       type: file
       description: |

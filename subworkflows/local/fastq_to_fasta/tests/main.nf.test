@@ -42,7 +42,16 @@ nextflow_workflow {
         then {
             assertAll(
                 { assert workflow.success},
-                { assert snapshot(workflow.out).match()}
+                // The Cutadapt log holds its run time, so it is checked for content, not by MD5
+                { assert snapshot(
+                    workflow.out.trimmed_fastq,
+                    workflow.out.merged,
+                    workflow.out.renamed,
+                    workflow.out.translated,
+                    workflow.out.translog,
+                    workflow.out.versions
+                ).match() },
+                { assert path(workflow.out.cutadaptlog[0][1]).text.contains("Total read pairs processed:") }
             )
         }
     }

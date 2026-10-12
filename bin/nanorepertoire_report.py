@@ -8,6 +8,9 @@ from datetime import datetime
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
 from repertoire_metrics import abundance_metrics
 from cdr3_boundary_qc import summarise as summarise_boundaries, write_summary_tsv, write_distribution_tsv
+from sequence_accounting import (CUTADAPT_SUFFIX, TRANSLATION_SUFFIX, ROWS as ACCOUNTING_ROWS, account,
+                                 parse_cdr3_summary, parse_cutadapt_log, parse_translation_log, percentage,
+                                 sample_name, write_tsv as write_accounting_tsv)
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 0. I/O & ARGUMENT PARSING
@@ -52,6 +55,12 @@ parser.add_argument("--cdrcounts", nargs="*", help="One or more CDR3 count CSVs"
 parser.add_argument("--cdrhists", nargs="*", help="One or more CDR3 size histogram CSVs")
 parser.add_argument("--clusterbig", nargs="*", help="One or more large cluster detail CSVs")
 parser.add_argument("--fastaseq", nargs="*", help="One or more unique CDR3 sequence CSVs/FASTAs")
+parser.add_argument("--cutadapt-logs", nargs="*", default=[],
+                    help="Per-sample Cutadapt reports (<sample>.cutadapt.log)")
+parser.add_argument("--translation-logs", nargs="*", default=[],
+                    help="Per-sample translation logs (<sample>_AA_translated.fasta.log)")
+parser.add_argument("--cdr3-summaries", nargs="*", default=[],
+                    help="Per-sample nanoCDR-X summaries (<sample>_cdr3_summary.tsv)")
 parser.add_argument("--output", default="nanorepertoire_report.html", help="Output HTML file path")
 parser.add_argument("--identity-threshold", type=float, default=90.0,
                     help="CD-HIT sequence identity threshold used for clustering, as a percentage "
@@ -191,6 +200,22 @@ for s, cdr3s in cdr3_by_sample.items():
 counts_by_sample = defaultdict(list)
 for r in clusterbig:
     counts_by_sample[r.get("Sample", "Unknown")].append(to_int(r.get("Count", r.get("count", 0))))
+
+# Sequence accounting: how many sequences of each sample reach every step, and
+# where the others were lost. Built only when the per-sample logs are given.
+cutadapt_by_sample = {sample_name(p, CUTADAPT_SUFFIX): parse_cutadapt_log(p) for p in args.cutadapt_logs}
+translation_by_sample = {sample_name(p, TRANSLATION_SUFFIX): parse_translation_log(p) for p in args.translation_logs}
+cdr3_summary_by_sample = {}
+for p in args.cdr3_summaries:
+    cdr3_summary_by_sample.update(parse_cdr3_summary(p))
+accounting, accounting_warnings = {}, {}
+if cutadapt_by_sample or translation_by_sample or cdr3_summary_by_sample:
+    accounting_samples = sorted(set(cutadapt_by_sample) | set(translation_by_sample)
+                                | set(cdr3_summary_by_sample) | set(counts_by_sample))
+    for s in accounting_samples:
+        accounting[s], accounting_warnings[s] = account(
+            cutadapt_by_sample.get(s), translation_by_sample.get(s),
+            counts_by_sample.get(s), cdr3_summary_by_sample.get(s))
 
 # Diversity metrics table
 div_metrics = []
@@ -644,6 +669,59 @@ metrics_table = f"""
 </table>
 </div>"""
 
+# Sequence accounting table: one column per sample, steps in bold, the losses
+# between two steps indented below them.
+accounting_section = ""
+if accounting:
+    acc_samples = sorted(accounting)
+    acc_rows = ""
+    for key, description, unit, kind in ACCOUNTING_ROWS:
+        if key == "read_pairs":
+            acc_rows += f'<tr class="acc-block"><td colspan="{len(acc_samples) + 1}">Reads</td></tr>'
+        if key == "clusters":
+            acc_rows += (f'<tr class="acc-block"><td colspan="{len(acc_samples) + 1}">'
+                         f'Cluster representatives</td></tr>')
+        cells = ""
+        for s in acc_samples:
+            value = accounting[s].get(key)
+            if value is None:
+                cells += '<td><span style="color:#95a5a6">NA</span></td>'
+            elif kind == "step":
+                pct = percentage(accounting[s], key)
+                cells += f"<td><strong>{value:,}</strong>" + (f" <span class=\"acc-pct\">({pct:.1f}%)</span>" if pct is not None else "") + "</td>"
+            else:
+                cells += f"<td>{value:,}</td>"
+        label = {"step": f"<strong>{description}</strong>",
+                 "loss": f"− {description}",
+                 "note": description}[kind]
+        acc_rows += f'<tr class="acc-{kind}"><td>{label} <span class="acc-unit">{unit}</span></td>{cells}</tr>'
+    warning_items = "".join(f"<li><strong>{s}</strong>: {w}</li>"
+                            for s in acc_samples for w in accounting_warnings[s])
+    acc_warnings = (f'<div class="acc-warning"><strong>Counts that do not chain:</strong><ul>{warning_items}</ul></div>'
+                    if warning_items else "")
+    accounting_section = f"""
+<div id="accounting" class="section">
+  <div class="section-header">
+    <h2>Sequence accounting</h2>
+  </div>
+  <div class="section-intro">
+    How many sequences of each sample reach every step of the pipeline, and where the others were lost.
+    Rows in bold are the steps; the rows below a step, marked with −, are the sequences lost before the next one,
+    with the reason. The upper block counts reads: read pairs until FLASH merges each pair into one read, then
+    reads and translated sequences. The lower block counts <strong>cluster representatives</strong>: CD-HIT keeps
+    one representative per cluster and only representatives are annotated by nanoCDR-X, so these numbers are not
+    comparable with the upper block. Percentages are relative to the first row of each block. NA means that the
+    count could not be read. The same counts are written to <code>sequence_accounting.tsv</code> next to this report.
+  </div>
+  {acc_warnings}
+  <div style="overflow-x:auto">
+  <table class="metrics-table accounting-table">
+    <thead><tr><th>Step</th>{"".join(f"<th>{s}</th>" for s in acc_samples)}</tr></thead>
+    <tbody>{acc_rows}</tbody>
+  </table>
+  </div>
+</div>"""
+
 # ─────────────────────────────────────────────────────────────────────────────
 # 5. CSS
 # ─────────────────────────────────────────────────────────────────────────────
@@ -726,6 +804,15 @@ body{font-family:'Inter',sans-serif;background:#f0f4f8;color:#2c3e50}
 .badge-med {display:inline-block;padding:3px 10px;border-radius:20px;font-size:.78em;font-weight:600;background:#fef6e4;color:#d68910}
 .badge-low {display:inline-block;padding:3px 10px;border-radius:20px;font-size:.78em;font-weight:600;background:#e8f8f0;color:#27ae60}
 
+.accounting-table td:not(:first-child),.accounting-table th:not(:first-child){text-align:right;white-space:nowrap}
+.accounting-table tr.acc-block td{background:#eef2f7;font-weight:600;color:#2c3e50;font-size:.84em;text-transform:uppercase;letter-spacing:.6px}
+.accounting-table tr.acc-loss td,.accounting-table tr.acc-note td{color:#7f8c8d;font-size:.92em}
+.accounting-table tr.acc-loss td:first-child,.accounting-table tr.acc-note td:first-child{padding-left:34px}
+.acc-unit{color:#95a5a6;font-size:.85em;font-weight:400}
+.acc-pct{color:#95a5a6;font-size:.88em}
+.acc-warning{background:#fdecea;border-left:4px solid #c0392b;padding:12px 18px;border-radius:0 8px 8px 0;font-size:.9em;margin-bottom:16px}
+.acc-warning ul{margin:6px 0 0 18px}
+
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:22px}
 .methods-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px}
 .methods-card{background:white;border-radius:16px;padding:26px;box-shadow:0 2px 14px rgba(0,0,0,.06)}
@@ -785,6 +872,7 @@ html = f"""<!DOCTYPE html>
 <!-- NAVIGATION ─────────────────────────────────────── -->
 <nav class="nav-bar">
   <a href="#summary">Summary</a>
+  {'<a href="#accounting">Sequence accounting</a>' if accounting else ''}
   <a href="#clusters"><span class="nav-num">1</span>Clonal Clusters</a>
   <a href="#cdr3"><span class="nav-num">2</span>CDR3 Diversity</a>
   <a href="#aminoacids"><span class="nav-num">3</span>Amino Acids</a>
@@ -827,6 +915,8 @@ html = f"""<!DOCTYPE html>
     </div>
   </div>
 </div>
+
+{accounting_section}
 
 <!-- ══════════════════════════════════════════════════
      SECTION 1: CLONAL CLUSTERS
@@ -1047,4 +1137,7 @@ qc_dir = os.path.dirname(os.path.abspath(output_html))
 write_summary_tsv(boundary_qc, os.path.join(qc_dir, "cdr3_boundary_qc.tsv"))
 write_distribution_tsv(boundary_qc, os.path.join(qc_dir, "cdr3_boundary_offsets.tsv"))
 print("Writing CDR3 boundary QC to cdr3_boundary_qc.tsv and cdr3_boundary_offsets.tsv ...")
+if accounting:
+    write_accounting_tsv(accounting, os.path.join(qc_dir, "sequence_accounting.tsv"))
+    print("Writing the sequence accounting to sequence_accounting.tsv ...")
 print(f"✅ Done! Open: {output_html}")

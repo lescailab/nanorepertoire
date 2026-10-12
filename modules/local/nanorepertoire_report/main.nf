@@ -12,11 +12,15 @@ process NANOREPERTOIRE_REPORT {
     path cdrhists
     path clusterbig
     path fastaseq
+    path cutadapt_logs
+    path translation_logs
+    path cdr3_summaries
 
     output:
     path "*.html", emit: report
     path "cdr3_boundary_qc.tsv", emit: boundary_qc
     path "cdr3_boundary_offsets.tsv", emit: boundary_offsets
+    path "sequence_accounting.tsv", emit: accounting
     path "versions.yml", emit: versions
 
     when:
@@ -32,6 +36,9 @@ process NANOREPERTOIRE_REPORT {
         --cdrhists ${cdrhists} \\
         --clusterbig ${clusterbig} \\
         --fastaseq ${fastaseq} \\
+        --cutadapt-logs ${cutadapt_logs} \\
+        --translation-logs ${translation_logs} \\
+        --cdr3-summaries ${cdr3_summaries} \\
         --identity-threshold ${params.cdhit_identity * 100} \\
         --word-size ${params.cdhit_word_size} \\
         --output ${prefix}.html \\

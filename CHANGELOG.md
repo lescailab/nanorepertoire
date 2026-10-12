@@ -13,6 +13,7 @@ Second major release focused on repertoire analysis robustness, reporting refact
 - Added CO2 footprint reporting with `nf-co2footprint` plugin and documentation for generated trace artifacts.
 - Added support for remote CSV test input from bucket-based test data.
 - Added `<sample>_cdr3_summary.tsv` to `NANOCDRX`, counting the cluster representatives excluded by length, excluded for non-standard residues, sent to nanoCDR-X, and with or without a CDR3.
+- Added a sequence accounting table to the interactive report, and `report/sequence_accounting.tsv`: for each sample, the number of read pairs, merged reads, translated sequences, clustered sequences, clusters, annotated representatives and distinct CDR3s, with the sequences lost between two steps and the reason. The counts are read from the Cutadapt reports, the translation logs, the cluster sizes and the nanoCDR-X summaries, and the report flags neighbouring counts that do not agree.
 
 ### `Changed`
 

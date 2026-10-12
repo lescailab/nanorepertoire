@@ -38,6 +38,7 @@ workflow FASTQ_TO_FASTA {
     emit:
     // emitted channels
     trimmed_fastq = CUTADAPT.out.reads              // channel: [[id], [reads_forward, reads_reverse]]
+    cutadaptlog   = CUTADAPT.out.log                // channel: [[id], [ cutadapt_log]]
     merged        = FLASH.out.merged                // channel: [[id], [ fastq_merged ]]
     renamed       = RENAME.out.renamed              // channel: [[id], [ fastq_renamed]]
     translated    = NANOTRANSLATE.out.fasta         // channel: [[id], [ fasta]]

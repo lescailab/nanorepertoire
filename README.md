@@ -97,11 +97,15 @@ The file-by-file description of the output directories, including the schema of 
 
 ## What the interactive report shows
 
-`nanorepertoire_report.html` contains twelve panels. This section states, for each one, what is plotted, how it is computed, how it should be read, and what it cannot support. Symbols used throughout: `S` is the number of CD-HIT clusters of a sample, `c_i` the number of sequences in cluster `i`, `N = Σ c_i` the number of clustered sequences, and `p_i = c_i / N` the frequency of clone `i`.
+`nanorepertoire_report.html` contains a sequence accounting table and twelve panels. This section states, for each one, what is plotted, how it is computed, how it should be read, and what it cannot support. Symbols used throughout: `S` is the number of CD-HIT clusters of a sample, `c_i` the number of sequences in cluster `i`, `N = Σ c_i` the number of clustered sequences, and `p_i = c_i / N` the frequency of clone `i`.
 
 ### Summary cards
 
 Five figures at the top of the report: the number of sequences for which the CDR3 caller returned a CDR3 (rows of `fastaSeq.csv` whose `CDR3` is not `NA`); the total number of clusters over all samples, annotated with the identity threshold actually used in the run; the number of **distinct** CDR3 sequences (`Unique_CDR3s` summed over samples); the mean CDR3 length with its standard deviation and median; and the number of libraries analysed. The first and third cards answer different questions and will not agree: one counts sequences, the other counts distinct paratopes.
+
+### Sequence accounting
+
+A table with one column per sample and one row per step of the pipeline: read pairs sequenced, read pairs after Cutadapt, reads merged by FLASH, translated VHH sequences, sequences in clusters, then clusters, representatives annotated by nanoCDR-X, representatives with a CDR3 and distinct CDR3s. Below each step, indented, are the sequences lost before the next one and the reason (pairs not merged, no VHH motif, region out of frame, stop codon, undetermined residue, representatives outside the length accepted by nanoCDR-X, no CDR3 called, and so on). Percentages are relative to the first row of each block. The upper block counts reads; the lower one counts cluster representatives, so the two are not comparable. If two neighbouring counts do not agree (for example if nanoCDR-X received fewer representatives than CD-HIT produced clusters) the report says so above the table. The counts are also written to `sequence_accounting.tsv`.
 
 ### 1. Clonal cluster analysis
 

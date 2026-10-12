@@ -18,6 +18,18 @@ nextflow_process {
                 input[2] = file("$projectDir/tests/data/report/cdrhists.csv", checkIfExists: true)
                 input[3] = file("$projectDir/tests/data/report/clusterbig.csv", checkIfExists: true)
                 input[4] = file("$projectDir/tests/data/report/fastaSeq.csv", checkIfExists: true)
+                input[5] = [
+                    file("$projectDir/tests/data/report/sample01.cutadapt.log", checkIfExists: true),
+                    file("$projectDir/tests/data/report/sample02.cutadapt.log", checkIfExists: true)
+                ]
+                input[6] = [
+                    file("$projectDir/tests/data/report/sample01_AA_translated.fasta.log", checkIfExists: true),
+                    file("$projectDir/tests/data/report/sample02_AA_translated.fasta.log", checkIfExists: true)
+                ]
+                input[7] = [
+                    file("$projectDir/tests/data/report/sample01_cdr3_summary.tsv", checkIfExists: true),
+                    file("$projectDir/tests/data/report/sample02_cdr3_summary.tsv", checkIfExists: true)
+                ]
                 """
             }
         }
@@ -26,6 +38,7 @@ nextflow_process {
             def report = path(process.out.report[0]).text
             def qc = path(process.out.boundary_qc[0]).readLines()
             def offsets = path(process.out.boundary_offsets[0]).readLines()
+            def accounting = path(process.out.accounting[0]).readLines()
 
             assertAll(
                 { assert process.success },
@@ -67,6 +80,17 @@ nextflow_process {
                 { assert qc.size() > 1 },
                 { assert offsets[0].split("\\t") == ["Sample", "Terminus", "Offset", "Sequences", "Pct"] },
                 { assert offsets.size() > 1 },
+
+                // Sequence accounting: counts read from the logs of the two samples.
+                { assert report.contains("Sequence accounting") },
+                { assert accounting[0] == "Sample\tStep\tDescription\tUnit\tCount" },
+                { assert accounting.contains("sample01\tread_pairs\tRead pairs sequenced\tread pairs\t10000") },
+                { assert accounting.contains("sample01\tmerged\tMerged reads (FLASH)\treads\t6206") },
+                { assert accounting.contains("sample01\ttranslated\tTranslated VHH sequences\tsequences\t4001") },
+                { assert accounting.contains("sample02\tunique\tDistinct CDR3 sequences\trepresentatives\t1316") },
+                // The cluster tables of this test are not those of the two samples, so the
+                // representatives counted by nanoCDR-X do not match the clusters: the report must say so.
+                { assert report.contains("Counts that do not chain") },
 
                 { assert path(process.out.versions[0]).exists() }
             )
