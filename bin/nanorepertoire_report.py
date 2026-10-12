@@ -172,13 +172,15 @@ var_len    = sum((x - mean_len)**2 for x in all_cdr3_lens) / len(all_cdr3_lens) 
 sd_len     = math.sqrt(var_len)
 median_len = sorted(all_cdr3_lens)[len(all_cdr3_lens)//2] if all_cdr3_lens else 0
 
-# Number of translated sequences for which the CDR3 caller returned a CDR3.
-# Rows with no called CDR3 carry "NA" in the CDR3 column of fastaSeq.csv.
-seqs_with_cdr3 = sum(
+# Number of cluster representatives for which nanoCDR-X returned a CDR3: fastaSeq.csv has
+# one row per representative, and rows with no called CDR3 carry "NA" in the CDR3 column.
+reps_with_cdr3 = sum(
     1 for r in fastaseq if (r.get("CDR3") or "").strip() not in ("", "NA")
 )
 total_clusters = sum(to_int(r["Clusters"]) for r in clustercounts)
-total_cdr3     = sum(to_int(r["Unique_CDR3s"]) for r in cdrcounts) or sum(len(set(v)) for v in cdr3_by_sample.values())
+# Distinct CDR3 sequences over all samples: a CDR3 found in several samples is counted once.
+# Summing the per-sample counts of cdrcounts.csv would count it once per sample.
+total_cdr3     = len({c for v in cdr3_by_sample.values() for c in v})
 
 # Shannon diversity (on CDR3 length distribution)
 def shannon(lens):
@@ -889,9 +891,9 @@ html = f"""<!DOCTYPE html>
   </div>
   <div class="kpi-grid">
     <div class="kpi-card">
-      <div class="kpi-label">Sequences with a called CDR3</div>
-      <div class="kpi-value">{seqs_with_cdr3:,}</div>
-      <div class="kpi-sub">Total across all samples</div>
+      <div class="kpi-label">Representatives with a CDR3</div>
+      <div class="kpi-value">{reps_with_cdr3:,}</div>
+      <div class="kpi-sub">Cluster representatives, all samples</div>
     </div>
     <div class="kpi-card">
       <div class="kpi-label">Total Clusters (CD-HIT)</div>
@@ -899,14 +901,14 @@ html = f"""<!DOCTYPE html>
       <div class="kpi-sub">{identity_pct} identity threshold</div>
     </div>
     <div class="kpi-card">
-      <div class="kpi-label">Unique CDR3 Sequences</div>
+      <div class="kpi-label">Distinct CDR3 sequences</div>
       <div class="kpi-value">{total_cdr3:,}</div>
-      <div class="kpi-sub">Distinct paratopes</div>
+      <div class="kpi-sub">All samples, each CDR3 counted once</div>
     </div>
     <div class="kpi-card">
       <div class="kpi-label">Mean CDR3 Length</div>
       <div class="kpi-value">{mean_len:.1f} AA</div>
-      <div class="kpi-sub">SD: {sd_len:.1f} · Median: {median_len}</div>
+      <div class="kpi-sub">SD: {sd_len:.1f} · Median: {median_len} · distinct CDR3s of each sample</div>
     </div>
     <div class="kpi-card">
       <div class="kpi-label">Samples Analysed</div>
@@ -929,7 +931,7 @@ html = f"""<!DOCTYPE html>
   <div class="section-intro">
     Amino acid sequences were clustered using <strong>CD-HIT</strong> at {identity_pct} identity, following the landmark approach of Deschaght et al. (2017).
     <strong>Expanded clonotypes</strong> (≥5 members) represent B‑cell lineages that have undergone antigen‑driven somatic expansion.
-    Large clusters (≥1000 members) are dominant clonal responses — prime candidates for high‑affinity nanobodies.
+    Large clusters (≥1000 members) are dominant clonal responses, prime candidates for high‑affinity nanobodies.
     The cluster size distribution mirrors the "clonotype expansion" readout of tools like MiXCR and IMGT/VQuest.
     <br><cite>Deschaght et al. 2017. Front. Immunol. doi:10.3389/fimmu.2017.00420 · Bolotin et al. 2015 (MiXCR). Nature Methods.</cite>
   </div>
@@ -962,21 +964,25 @@ html = f"""<!DOCTYPE html>
   <div class="section-intro">
     The <strong>CDR3</strong> (Complementarity-Determining Region 3) is the primary antigen-binding loop of VHH nanobodies.
     VHH CDR3s are typically <em>longer and more diverse</em> than VH CDR3s in conventional antibodies
-    (VHH mean ~19 AA vs VH ~12 AA — Spinelli et al. 2022), enabling access to deep epitope cavities and enzyme active sites.
+    (VHH mean ~19 AA vs VH ~12 AA; Spinelli et al. 2022), enabling access to deep epitope cavities and enzyme active sites.
     CDR3 length diversity correlates with repertoire breadth; antigen-enriched samples may show length skewing toward specific structural motifs.
     Shorter CDR3s (&lt;12 AA) tend to form flat β-strand paratopes; longer CDR3s (&gt;16 AA) adopt protruding finger-like conformations.
     <br><cite>Spinelli et al. 2022. Front. Immunol. doi:10.3389/fimmu.2022.927966 · Muyldermans 2013. Annu. Rev. Biochem.</cite>
   </div>
   <div class="grid-2">
     {make_fig("fig5", fig5_traces, fig5_layout,
-      "Total number of distinct CDR3 sequences per sample. Higher numbers indicate broader repertoire diversity.",
+      "Number of distinct CDR3 sequences per sample, among the cluster representatives: a CDR3 carried by several "
+      "clusters of the sample is counted once. Like every raw count it grows with sequencing depth, so samples "
+      "sequenced at different depths are compared with the clusters per 1000 sequences of section 1.",
       "Unique CDR3 Sequences per Sample")}
     {make_fig("fig3", fig3_traces, fig3_layout,
-      "Violin plot of CDR3 length distribution per sample. Box shows IQR; line shows median. VHH CDR3s typically peak at 15–23 AA.",
+      "Violin plot of CDR3 length distribution per sample. Box shows IQR; line shows median. VHH CDR3s typically peak at 15–23 AA. "
+      "Each distinct CDR3 of a sample counts once, whatever the size of its cluster.",
       "CDR3 Length Distribution (Violin)")}
   </div>
   {make_fig("fig4", fig4_traces, fig4_layout,
-    "Area chart of CDR3 length frequency per sample. Peaks at specific lengths may indicate dominant structural motifs or antigen-driven convergence. "
+    "Area chart of CDR3 length frequency per sample, counting each distinct CDR3 of a sample once, whatever the size of its cluster. "
+    "Peaks at specific lengths may indicate dominant structural motifs or antigen-driven convergence. "
     "Short CDR3s (&lt;12 AA): flat β-strand paratopes. Long CDR3s (&gt;16 AA): protruding loops for cavity/groove binding.",
     "CDR3 Length Frequency Profile")}
 
@@ -1013,13 +1019,14 @@ html = f"""<!DOCTYPE html>
   </div>
   <div class="section-intro">
     The amino acid (AA) composition of CDR3 loops reflects antigen-driven selection.
-    VHH CDR3s are characteristically enriched in <strong>Tyrosine (Y)</strong> and <strong>Serine (S)</strong> — enabling hydrogen bonding and Van der Waals contacts.
+    VHH CDR3s are characteristically enriched in <strong>Tyrosine (Y)</strong> and <strong>Serine (S)</strong>, enabling hydrogen bonding and Van der Waals contacts.
     <strong>Cysteine (C)</strong> pairs can form intra-CDR3 disulfide bonds with CDR1, creating a structural scaffold that extends paratope reach.
     Charged residues (R, D, E, K) mediate electrostatic complementarity. Convergent AA enrichment across samples suggests shared antigen pressure.
     <br><cite>Desmyter et al. 2002. J. Biol. Chem. doi:10.1074/jbc.D200025200 · Mitchell &amp; Colwell 2018. Proteins.</cite>
   </div>
   {make_fig("fig6", fig6_traces, fig6_layout,
-    "Heatmap of amino acid frequency (% of all CDR3 residues) per sample. Dark = high frequency. Key VHH residues: Y, S, G, T. Cysteine (C) involvement suggests disulfide-mediated loop stabilization.",
+    "Heatmap of amino acid frequency (% of all CDR3 residues) per sample, computed on the distinct CDR3s of the sample, "
+    "each counted once whatever the size of its cluster. Dark = high frequency. Key VHH residues: Y, S, G, T. Cysteine (C) involvement suggests disulfide-mediated loop stabilization.",
     "Amino Acid Frequency Heatmap")}
   {make_fig("fig7", fig7_traces, fig7_layout,
     "Side-by-side comparison of amino acid usage per sample. Differences across samples may reflect divergent antigen-binding strategies or B-cell selection biases.",

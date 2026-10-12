@@ -101,7 +101,7 @@ The file-by-file description of the output directories, including the schema of 
 
 ### Summary cards
 
-Five figures at the top of the report: the number of sequences for which the CDR3 caller returned a CDR3 (rows of `fastaSeq.csv` whose `CDR3` is not `NA`); the total number of clusters over all samples, annotated with the identity threshold actually used in the run; the number of **distinct** CDR3 sequences (`Unique_CDR3s` summed over samples); the mean CDR3 length with its standard deviation and median; and the number of libraries analysed. The first and third cards answer different questions and will not agree: one counts sequences, the other counts distinct paratopes.
+Five figures at the top of the report: the number of cluster representatives for which nanoCDR-X returned a CDR3 (rows of `fastaSeq.csv` whose `CDR3` is not `NA`); the total number of clusters over all samples, annotated with the identity threshold actually used in the run; the number of **distinct** CDR3 sequences over all samples, in which a CDR3 found in several samples is counted once (summing `Unique_CDR3s` over the samples would count it once per sample); the mean CDR3 length, with its standard deviation and median, over the distinct CDR3s of each sample; and the number of libraries analysed. The first and third cards answer different questions and will not agree: one counts cluster representatives, the other distinct CDR3 sequences. Neither counts reads: the reads behind each step are in the sequence accounting table.
 
 ### Sequence accounting
 
@@ -123,7 +123,7 @@ A table with one column per sample and one row per step of the pipeline: read pa
 
 ### 2. CDR3 diversity
 
-**Unique CDR3 Sequences per Sample** (bar). Number of distinct CDR3 amino-acid sequences per sample, from `cdrcounts.csv`. It is a richness measure of the paratope space and, like every raw count, it grows with sequencing depth; comparisons between libraries need the depth-normalised metrics of section 1.
+**Unique CDR3 Sequences per Sample** (bar). Number of distinct CDR3 amino-acid sequences per sample, among the cluster representatives, from `cdrcounts.csv`: a CDR3 carried by several clusters of the sample is counted once. It is a richness measure of the CDR3 space and, like every raw count, it grows with sequencing depth; comparisons between libraries need the depth-normalised metrics of section 1. The length and composition panels below are computed on the same distinct CDR3s, each counted once whatever the size of its cluster.
 
 **CDR3 Length Distribution (Violin)** (with embedded box plot). Distribution of the length in residues of the unique CDR3s of each sample; the box marks the interquartile range, the line the median, the width the density. VHH CDR3s are longer than the CDR3s of conventional VH domains (a mean around 19 residues has been reported for camelid VHH, against roughly 12 for human VH), and lengths above ~16 residues are associated with the protruding, finger-like loops able to reach cleft and cavity epitopes. Compare *medians and spread* between samples: a shift indicates that selection acted on paratope geometry, its absence that it did not. Only lengths of 1–40 residues are drawn, and the length depends on where the boundaries were called, which is why the annotation QC below matters.
 

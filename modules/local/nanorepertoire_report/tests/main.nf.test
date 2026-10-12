@@ -65,8 +65,11 @@ nextflow_process {
                 { assert report.contains("CDR3 length evenness (H')") },
 
                 // Corrected labels of the summary cards and of the identity panel.
-                { assert report.contains("Sequences with a called CDR3") },
+                { assert report.contains("Representatives with a CDR3") },
+                { assert !report.contains("Sequences with a called CDR3") },
                 { assert !report.contains("Novel paratopes detected") },
+                { assert report.contains("Distinct CDR3 sequences") },
+                { assert !report.contains("Distinct paratopes") },
                 { assert report.contains("Number of Clusters") },
                 { assert !report.contains("Number of Sequences (sampled)") },
 
