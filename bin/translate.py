@@ -1,10 +1,10 @@
 #!/usr/bin/env python
-# Translates the VHH region of merged reads: the region runs from a start motif to an end
-# motif, searched on both strands, and is kept only if in frame, without stop codons and
-# without undetermined residues. When the read holds more than one TVSS, the end is the one 7
-# residues after the tryptophan of WG.G. Reads with no exact motif on either strand are searched
-# again with anchors that tolerate one amino-acid substitution (see rescue()). Reads are
-# processed in parallel, in input order.
+# Translates the VHH region of merged reads: the region runs from a start motif to the next end
+# motif, searched on both strands, and is kept only if in frame, without stop codons, without
+# undetermined residues and at least MIN_VHH_LENGTH residues long. When the read holds more than
+# one TVSS, the end is the one 7 residues after the tryptophan of WG.G. Reads with no exact motif
+# on either strand are searched again with anchors that tolerate one amino-acid substitution (see
+# rescue()). Reads are processed in parallel, in input order.
 #
 # Usage: translate.py <reads.fastq> <output.fasta> [cpus]
 
@@ -33,6 +33,12 @@ def motif(peptide):
 START = re.compile('|'.join(motif(peptide) for peptide in ('MAQ', 'QVQ', 'EVQ', 'VQL', 'LQL')))
 # VHH end: every DNA encoding of TVSS (12 nt)
 END = re.compile(motif('TVSS'))
+
+# Shortest translation kept as a VHH. A complete VHH, from the framework-1 start to the framework-4
+# TVSS, is longer than 100 residues; shorter translations are primer dimers (MAQ followed directly by
+# TVSS) or fragments cut by a TVSS inside the VHH, or starting at an LQL of framework 3. 70 is also
+# the shortest sequence accepted by nanoCDR-X.
+MIN_VHH_LENGTH = 70
 
 # Rescue of reads in which no exact start or end motif is found on either strand. The VHH is
 # looked for in the six reading frames with anchors that tolerate one amino-acid substitution,
@@ -102,9 +108,14 @@ def read_fastq(file_handle):
         yield (headerline.rstrip(), sequenceline.rstrip(), plusline.rstrip(), qualityline.rstrip())
 
 def find_motifs(dna):
-    """Return the positions of the first start motif and of the first end motif in dna, -1 when absent."""
+    """Return the positions of the first start motif and of the first end motif after it, -1 when absent.
+
+    An end motif before the start motif delimits no region: the read is treated as having no end, so
+    that the other strand and the tolerant anchors are tried. Without a start, the first end of the
+    read is returned, for the count of reads with an end motif.
+    """
     start = START.search(dna)
-    end = END.search(dna)
+    end = END.search(dna, start.end()) if start else END.search(dna)
     return (start.start() if start else -1), (end.start() if end else -1)
 
 def process_read(read):
@@ -152,6 +163,9 @@ def process_read(read):
     if 'X' in translated:
         result['status'] = 'withundetermined'
         return result
+    if len(translated) < MIN_VHH_LENGTH:
+        result['status'] = 'tooshort'
+        return result
 
     result['status'] = 'passed'
     result['header'] = headerline
@@ -186,6 +200,7 @@ def main():
         notinframe = 0
         withstop = 0
         withundetermined = 0
+        tooshort = 0
         reversed_reads = 0
         nostartnoend = 0
         rescued_reads = 0
@@ -207,6 +222,8 @@ def main():
                             withstop += 1
                         elif result['status'] == 'withundetermined':
                             withundetermined += 1
+                        elif result['status'] == 'tooshort':
+                            tooshort += 1
                         elif result['status'] == 'rescued':
                             readspassing += 1
                             rescued_reads += 1
@@ -240,6 +257,8 @@ def main():
         log.write(f"{withstop}\n")
         log.write("failed because the translation contains an undetermined residue (X)\n")
         log.write(f"{withundetermined}\n")
+        log.write(f"failed because the translation is shorter than {MIN_VHH_LENGTH} residues\n")
+        log.write(f"{tooshort}\n")
         log.write("located on the reverse strand (reverse-complemented before translation)\n")
         log.write(f"{reversed_reads}\n")
 

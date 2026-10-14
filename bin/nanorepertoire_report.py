@@ -1089,7 +1089,8 @@ html = f"""<!DOCTYPE html>
       The VHH region of each merged read was translated from a start motif (MAQ, QVQ, EVQ, VQL or LQL) to the TVSS end
       motif that follows the framework-4 tryptophan (WG.G), on either strand; reads without exact motifs were searched
       again with anchors that tolerate one substitution, confirmed by residues conserved in the IMGT alpaca germline.
-      Regions out of frame, or with a stop codon or an undetermined residue, were discarded.</p>
+      Regions out of frame, with a stop codon or an undetermined residue, or shorter than 70 residues (primer
+      dimers and VHH fragments; a complete VHH is longer than 100 residues), were discarded.</p>
       <p>The CDR3 of each cluster representative was annotated with <strong>nanoCDR-X</strong> (Bagordo et al. 2026),
       a deep-learning model for nanobody CDR annotation.</p>
     </div>

@@ -37,7 +37,7 @@
                         "id": "nftest",
                         "single_end": false
                     },
-                    "nftest_AA_translated.fasta:md5,7a5899038d987850ba686d4dcfb03821"
+                    "nftest_AA_translated.fasta:md5,07fae07a258b946892ccae9b7c58a69a"
                 ]
             ],
             [
@@ -47,7 +47,7 @@
                         "single_end": false
                     },
                     [
-                        "nftest_AA_translated.fasta.log:md5,641b05efa1e1ad8a966114870701d8d3",
+                        "nftest_AA_translated.fasta.log:md5,146b17e48950ed3333d7d17d330b0f29",
                         "nftest_AA_translated.log:md5,d41d8cd98f00b204e9800998ecf8427e"
                     ]
                 ]
@@ -63,6 +63,6 @@
             "nf-test": "0.9.2",
             "nextflow": "25.04.8"
         },
-        "timestamp": "2026-10-12T12:57:33.689196"
+        "timestamp": "2026-10-14T10:40:28.105464"
     }
 }

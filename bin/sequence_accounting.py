@@ -34,8 +34,9 @@ TRANSLATION_LABELS = [
     ("failed because not in frame", "out_of_frame"),
     ("failed because there is a stop codon", "stop_codon"),
     ("failed because the translation contains an undetermined", "undetermined"),
+    ("failed because the translation is shorter than", "too_short"),
 ]
-TRANSLATION_FAILURES = ["no_motif", "out_of_frame", "stop_codon", "undetermined"]
+TRANSLATION_FAILURES = ["no_motif", "out_of_frame", "stop_codon", "undetermined", "too_short"]
 
 # key, description, unit, kind ("step", "loss" or "note")
 ROWS = [
@@ -48,6 +49,7 @@ ROWS = [
     ("out_of_frame", "VHH region not a multiple of three nucleotides", "reads", "loss"),
     ("stop_codon", "stop codon in the VHH region", "reads", "loss"),
     ("undetermined", "undetermined residue (X) in the translation", "reads", "loss"),
+    ("too_short", "translation shorter than 70 residues, not a complete VHH", "reads", "loss"),
     ("translated", "Translated VHH sequences", "sequences", "step"),
     ("rescued", "of which rescued with tolerant anchors", "sequences", "note"),
     ("not_clustered", "translated but missing from the clusters", "sequences", "loss"),
