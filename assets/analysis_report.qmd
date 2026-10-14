@@ -76,7 +76,7 @@ dotree <- ifelse(unlist(params$calcTree) == "true", TRUE, FALSE)
 
 # Introduction
 
-In this analysis, we aim to generate the total number of different nanobody CDR3s that exist in a library, and the relative abundance of each. We then perform further analysis to show which B cell lineages were affinity matured. For our initial analysis we follow some of the steps used by Deschaght et al (2017).
+In this analysis, we aim to generate the total number of different nanobody CDR3s that exist in a library, and the relative abundance of each. For our initial analysis we follow some of the steps used by Deschaght et al (2017).
 
 # Results
 

@@ -267,7 +267,7 @@ fig1_traces = []
 size_classes = [("large","≥1000 members","#d62728"),
                 ("medium","100–999 members","#ff7f0e"),
                 ("small","5–99 members","#1f77b4"),
-                ("singleton","Singletons (<5)","#aec7e8")]
+                ("singleton","1–4 members","#aec7e8")]
 for key, label, color in size_classes:
     fig1_traces.append({
         "x": samples,
@@ -929,26 +929,28 @@ html = f"""<!DOCTYPE html>
     <h2>Clonal Cluster Analysis</h2>
   </div>
   <div class="section-intro">
-    Amino acid sequences were clustered using <strong>CD-HIT</strong> at {identity_pct} identity, following the landmark approach of Deschaght et al. (2017).
-    <strong>Expanded clonotypes</strong> (≥5 members) represent B‑cell lineages that have undergone antigen‑driven somatic expansion.
-    Large clusters (≥1000 members) are dominant clonal responses, prime candidates for high‑affinity nanobodies.
-    The cluster size distribution mirrors the "clonotype expansion" readout of tools like MiXCR and IMGT/VQuest.
-    <br><cite>Deschaght et al. 2017. Front. Immunol. doi:10.3389/fimmu.2017.00420 · Bolotin et al. 2015 (MiXCR). Nature Methods.</cite>
+    Amino acid sequences were clustered using <strong>CD-HIT</strong> at {identity_pct} identity, following the approach of Deschaght et al. (2017).
+    The size of a cluster is the number of sequences assigned to it, and clusters are grouped into four size classes: 1 to 4, 5 to 99, 100 to 999 and at least 1000 members.
+    A large cluster can arise from several causes that this report cannot tell apart: clonal expansion of B cells in the animal, enrichment during a selection step
+    such as phage display panning, differences in transcript abundance between cells, PCR amplification bias, and repeated sequencing of the same molecule,
+    since reads are not deduplicated. Which cause prevails depends on the type of sample, and the size of a cluster does not measure binding affinity.
+    <br><cite>Deschaght et al. 2017. Front. Immunol. doi:10.3389/fimmu.2017.00420 · Li &amp; Godzik 2006 (CD-HIT). Bioinformatics. doi:10.1093/bioinformatics/btl158</cite>
   </div>
 
   <div style="margin-bottom:20px">{metrics_table}</div>
 
   {make_fig("fig1", fig1_traces, fig1_layout,
-    "Breakdown of clusters by size class per sample. Singletons represent rare or noisy sequences. "
-    "Expanded clones (≥5 members, orange/red) indicate B-cell lineages selected by antigen exposure.",
-    "Clonal Expansion Profile")}
+    "Clusters of each sample split into four size classes: 1 to 4, 5 to 99, 100 to 999 and at least 1000 members. "
+    "The height of the bars grows with sequencing depth, so compare the proportions between samples rather than the counts.",
+    "Cluster Size Classes")}
 
   <div class="grid-2">
     {make_fig("fig2", fig2_traces, fig2_layout,
       "Cluster counts at four size thresholds (log scale). Reveals the hierarchical repertoire structure from singletons to dominant clones.",
       "Cluster Abundance at Size Thresholds")}
     {make_fig("fig10", fig10_traces, fig10_layout,
-      "The 10 most abundant clusters per sample. Dominant clones in immunized animals likely represent the most affinity-matured antigen binders.",
+      "The 10 most abundant clusters per sample. Their size counts sequences, not binding affinity, and can come from any of the causes listed above; "
+      "their representatives are a starting list for expression and binding tests.",
       "Top-10 Largest Clonotypes per Sample")}
   </div>
 </div>
@@ -962,12 +964,11 @@ html = f"""<!DOCTYPE html>
     <h2>CDR3 Diversity Analysis</h2>
   </div>
   <div class="section-intro">
-    The <strong>CDR3</strong> (Complementarity-Determining Region 3) is the primary antigen-binding loop of VHH nanobodies.
-    VHH CDR3s are typically <em>longer and more diverse</em> than VH CDR3s in conventional antibodies
-    (VHH mean ~19 AA vs VH ~12 AA; Spinelli et al. 2022), enabling access to deep epitope cavities and enzyme active sites.
-    CDR3 length diversity correlates with repertoire breadth; antigen-enriched samples may show length skewing toward specific structural motifs.
-    Shorter CDR3s (&lt;12 AA) tend to form flat β-strand paratopes; longer CDR3s (&gt;16 AA) adopt protruding finger-like conformations.
-    <br><cite>Spinelli et al. 2022. Front. Immunol. doi:10.3389/fimmu.2022.927966 · Muyldermans 2013. Annu. Rev. Biochem.</cite>
+    The <strong>CDR3</strong> (Complementarity-Determining Region 3) is one of the three hypervariable loops that contribute to the antigen-binding surface of a VHH.
+    In 90 antigen-bound crystal structures, nanobody CDR3s were on average longer than those of conventional VH domains (15.2 against 12.1 residues)
+    and more diverse in sequence and in structure (Mitchell &amp; Colwell 2018). Those lengths follow the loop definition of that study,
+    so they are not directly comparable with the CDR3 lengths called in this report.
+    <br><cite>Mitchell &amp; Colwell 2018. Proteins. doi:10.1002/prot.25497</cite>
   </div>
   <div class="grid-2">
     {make_fig("fig5", fig5_traces, fig5_layout,
@@ -976,14 +977,12 @@ html = f"""<!DOCTYPE html>
       "sequenced at different depths are compared with the clusters per 1000 sequences of section 1.",
       "Unique CDR3 Sequences per Sample")}
     {make_fig("fig3", fig3_traces, fig3_layout,
-      "Violin plot of CDR3 length distribution per sample. Box shows IQR; line shows median. VHH CDR3s typically peak at 15–23 AA. "
+      "Violin plot of CDR3 length distribution per sample. Box shows IQR; line shows median. "
       "Each distinct CDR3 of a sample counts once, whatever the size of its cluster.",
       "CDR3 Length Distribution (Violin)")}
   </div>
   {make_fig("fig4", fig4_traces, fig4_layout,
-    "Area chart of CDR3 length frequency per sample, counting each distinct CDR3 of a sample once, whatever the size of its cluster. "
-    "Peaks at specific lengths may indicate dominant structural motifs or antigen-driven convergence. "
-    "Short CDR3s (&lt;12 AA): flat β-strand paratopes. Long CDR3s (&gt;16 AA): protruding loops for cavity/groove binding.",
+    "Area chart of CDR3 length frequency per sample, counting each distinct CDR3 of a sample once, whatever the size of its cluster.",
     "CDR3 Length Frequency Profile")}
 
   <div class="section-header" style="margin-top:34px">
@@ -1018,18 +1017,16 @@ html = f"""<!DOCTYPE html>
     <h2>CDR3 Amino Acid Composition</h2>
   </div>
   <div class="section-intro">
-    The amino acid (AA) composition of CDR3 loops reflects antigen-driven selection.
-    VHH CDR3s are characteristically enriched in <strong>Tyrosine (Y)</strong> and <strong>Serine (S)</strong>, enabling hydrogen bonding and Van der Waals contacts.
-    <strong>Cysteine (C)</strong> pairs can form intra-CDR3 disulfide bonds with CDR1, creating a structural scaffold that extends paratope reach.
-    Charged residues (R, D, E, K) mediate electrostatic complementarity. Convergent AA enrichment across samples suggests shared antigen pressure.
-    <br><cite>Desmyter et al. 2002. J. Biol. Chem. doi:10.1074/jbc.D200025200 · Mitchell &amp; Colwell 2018. Proteins.</cite>
+    Frequency of each standard amino acid (AA) among the residues of the CDR3s of each sample.
+    The composition depends on where the CDR3 boundaries were placed, so it is read together with the annotation QC of section 2.
+    A difference between samples describes the CDR3 sequences found in them; this report does not test what causes it.
   </div>
   {make_fig("fig6", fig6_traces, fig6_layout,
     "Heatmap of amino acid frequency (% of all CDR3 residues) per sample, computed on the distinct CDR3s of the sample, "
-    "each counted once whatever the size of its cluster. Dark = high frequency. Key VHH residues: Y, S, G, T. Cysteine (C) involvement suggests disulfide-mediated loop stabilization.",
+    "each counted once whatever the size of its cluster. Dark = high frequency.",
     "Amino Acid Frequency Heatmap")}
   {make_fig("fig7", fig7_traces, fig7_layout,
-    "Side-by-side comparison of amino acid usage per sample. Differences across samples may reflect divergent antigen-binding strategies or B-cell selection biases.",
+    "Side-by-side comparison of amino acid usage per sample, computed on the same distinct CDR3s as the heatmap.",
     "Side-by-Side Amino Acid Usage")}
 </div>
 
@@ -1105,7 +1102,7 @@ html = f"""<!DOCTYPE html>
         <li>One thread, so that the clusters do not depend on the number of threads</li>
         <li>Four size thresholds analysed: 1, ≥5, ≥100, ≥1000</li>
       </ul>
-      <p>This follows the validated approach of Deschaght et al. (2017) for large nanobody repertoires.</p>
+      <p>This follows the approach of Deschaght et al. (2017) for large nanobody repertoires.</p>
     </div>
 
     <div class="methods-card">
@@ -1113,7 +1110,7 @@ html = f"""<!DOCTYPE html>
       <p><strong>Shannon H' (abundance):</strong> −Σ p<sub>i</sub> ln p<sub>i</sub> over the clone frequencies p<sub>i</sub> = cluster size / clustered sequences. <strong>Clonality</strong> is 1 − H'/ln(S), with S the number of clusters: 0 when every clone is equally abundant, approaching 1 as the library concentrates into one lineage (undefined, and reported as NA, when S = 1). <strong>Simpson</strong> is the Gini–Simpson index 1 − Σ p<sub>i</sub>², <strong>Gini</strong> the Gini coefficient of the cluster sizes, <strong>D50</strong> the smallest number of clones covering half of the sequences, and <strong>Top1/Top10</strong> the share of the library held by the largest one or ten clones.</p>
       <p><strong>Clusters per 1000 sequences:</strong> richness normalised by sequencing depth. Absolute cluster counts are not comparable between libraries sequenced at different depths; this ratio is.</p>
       <p><strong>CDR3 length evenness (H'):</strong> Shannon entropy of the CDR3 <em>length</em> distribution. It measures how evenly paratope lengths are spread and is reported separately from the abundance-based indices above, which it must not be confused with.</p>
-      <p><strong>% Expanded Clonotypes:</strong> fraction of clusters with ≥5 members; reflects the proportion of somatically expanded B-cell lineages.</p>
+      <p><strong>% Expanded Clonotypes:</strong> fraction of clusters with ≥5 members. It describes how the sequences are distributed among the clusters; the possible causes of a large cluster are listed in section 1.</p>
       <p><strong>Intra-clonal homogeneity:</strong> distribution, across clusters, of the mean percent identity of the non-representative members to the cluster representative. Singleton clusters are excluded, the quantity being undefined for them. It is a descriptive summary bounded below by the {identity_pct} clustering threshold, not a germline-referenced mutation rate.</p>
     </div>
 
@@ -1121,10 +1118,7 @@ html = f"""<!DOCTYPE html>
       <h3>📚 Key References</h3>
       <ul class="ref-list">
         <li>Deschaght et al. 2017. <em>Front. Immunol.</em> doi:10.3389/fimmu.2017.00420</li>
-        <li>Spinelli et al. 2022. <em>Front. Immunol.</em> doi:10.3389/fimmu.2022.927966</li>
-        <li>Muyldermans S. 2013. <em>Annu. Rev. Biochem.</em> doi:10.1146/annurev-biochem-071812-105327</li>
         <li>Bolotin et al. 2015. <em>Nature Methods</em>. doi:10.1038/nmeth.3364</li>
-        <li>Desmyter et al. 2002. <em>J. Biol. Chem.</em> doi:10.1074/jbc.D200025200</li>
         <li>Mitchell &amp; Colwell 2018. <em>Proteins</em>. doi:10.1002/prot.25497</li>
         <li>Li &amp; Godzik 2006. <em>Bioinformatics</em>. doi:10.1093/bioinformatics/btl158 (CD-HIT)</li>
       </ul>
