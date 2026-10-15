@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-import csv, json, math, argparse, sys, os
+import csv, json, math, argparse, sys, os, re
+from html import escape as html_escape
 from collections import defaultdict, Counter
 from datetime import datetime
 
@@ -150,13 +151,6 @@ samples = list(expansion.keys())
 if not samples:
     samples = sorted(list(set([r.get("Sample", r.get("sample", "Unknown")) for r in clusterbig + cdrcounts + cdrhists + fastaseq])))
 
-PALETTE = {
-    samples[i]: c for i, c in enumerate(
-        ["#4E79A7","#F28E2B","#E15759","#76B7B2",
-         "#59A14F","#EDC948","#B07AA1","#FF9DA7"]
-    ) if i < len(samples)
-}
-
 # CDR3 analysis per sample
 cdr3_by_sample = defaultdict(list)
 for r in fastaseq:
@@ -245,7 +239,7 @@ for r in clustercounts:
 def fmt_metric(value, digits=3, suffix=""):
     """Render a metric, or NA when it is not defined for this sample."""
     if value is None:
-        return '<span style="color:#95a5a6">NA</span>'
+        return '<span class="na">NA</span>'
     if isinstance(value, int):
         return f"{value:,}{suffix}"
     return f"{value:.{digits}f}{suffix}"
@@ -259,31 +253,45 @@ for r in cdrhists:
 # 2. BUILD PLOTLY TRACES AS JSON
 # ─────────────────────────────────────────────────────────────────────────────
 
-def hex_alpha(hex_color, alpha_hex):
-    return hex_color + alpha_hex  # e.g. "#4E79A780"
+# ── Colour roles ──────────────────────────────────────────────────────────
+# Colours are not written into the traces. Each trace carries its role in
+# `meta` (a sample, a step of an ordered scale, a sequential scale) and the page
+# paints it from the colour tokens of the light or dark theme (NR.paint below),
+# so that a sample keeps the same colour in every figure and in both themes.
+SAMPLE_INDEX = {s: i for i, s in enumerate(samples)}
+N_SAMPLES = len(samples)
+
+
+def sample_role(s, mark):
+    return {"role": "sample", "i": SAMPLE_INDEX.get(s, 0), "n": N_SAMPLES, "mark": mark}
+
+
+def colour_slot(s):
+    """CSS slot of a sample: one hue per sample up to eight, then one hue for all."""
+    return SAMPLE_INDEX.get(s, 0) + 1 if N_SAMPLES <= 8 else 1
+
 
 # ── Fig 1: Cluster stacked bar ─────────────────────────────────────────────
 fig1_traces = []
-size_classes = [("large","≥1000 members","#d62728"),
-                ("medium","100–999 members","#ff7f0e"),
-                ("small","5–99 members","#1f77b4"),
-                ("singleton","1–4 members","#aec7e8")]
-for key, label, color in size_classes:
+size_classes = [("singleton", "1–4 members"),
+                ("small", "5–99 members"),
+                ("medium", "100–999 members"),
+                ("large", "≥1000 members")]
+for k, (key, label) in enumerate(size_classes):
     fig1_traces.append({
         "x": samples,
         "y": [expansion[s][key] for s in samples],
         "name": label,
         "type": "bar",
-        "marker": {"color": color},
-        "hovertemplate": "<b>%{x}</b><br>" + label + ": %{y:,}<extra></extra>"
+        "meta": {"role": "ordinal", "k": k},
+        "hovertemplate": "<b>%{x}</b><br>" + label + ": %{y:,} clusters<extra></extra>"
     })
 fig1_layout = {
     "barmode": "stack",
-    "title": {"text": "Cluster Size Distribution per Sample", "font": {"size": 16, "color": "#2c3e50"}},
-    "xaxis": {"title": "Sample"},
-    "yaxis": {"title": "Number of Clusters"},
-    "legend": {"title": {"text": "Size Class"}},
-    "plot_bgcolor": "#fafafa", "paper_bgcolor": "#ffffff"
+    "bargap": 0.45,
+    "xaxis": {"title": {"text": "Sample"}},
+    "yaxis": {"title": {"text": "Number of Clusters"}, "tickformat": ",d"},
+    "legend": {"title": {"text": "Size class"}, "traceorder": "normal"},
 }
 
 # ── Fig 2: Cluster count grouped bar (log scale) ───────────────────────────
@@ -293,73 +301,65 @@ thresholds = [
     ("Clusters_of_100","≥100"),
     ("Clusters_of_1000","≥1000")
 ]
-colors2 = ["#003f5c","#58508d","#bc5090","#ff6361"]
 fig2_traces = []
 cc_map = {r["Sample"]: r for r in clustercounts}
-for (col, label), color in zip(thresholds, colors2):
+for k, (col, label) in enumerate(thresholds):
     fig2_traces.append({
         "x": samples,
         "y": [to_int(cc_map[s][col]) for s in samples],
         "name": label,
         "type": "bar",
-        "marker": {"color": color},
-        "hovertemplate": "<b>%{x}</b><br>" + label + ": %{y:,}<extra></extra>"
+        "meta": {"role": "ordinal", "k": k},
+        "hovertemplate": "<b>%{x}</b><br>" + label + ": %{y:,} clusters<extra></extra>"
     })
 fig2_layout = {
     "barmode": "group",
-    "title": {"text": "Cluster Counts at Multiple Size Thresholds", "font": {"size": 16, "color": "#2c3e50"}},
-    "xaxis": {"title": "Sample"},
-    "yaxis": {"title": "Count (log scale)", "type": "log"},
-    "legend": {"title": {"text": "Threshold"}},
-    "plot_bgcolor": "#fafafa", "paper_bgcolor": "#ffffff"
+    "bargap": 0.3,
+    "xaxis": {"title": {"text": "Sample"}},
+    "yaxis": {"title": {"text": "Count (log scale)"}, "type": "log", "dtick": 1, "tickformat": ",d"},
+    "legend": {"title": {"text": "Threshold"}, "traceorder": "normal"},
 }
 
 # ── Fig 3: CDR3 length violin ──────────────────────────────────────────────
 fig3_traces = []
 for s in samples:
     lens = [len(c) for c in cdr3_by_sample.get(s, []) if 1 <= len(c) <= 40]
-    col  = PALETTE.get(s, "#888888")
     fig3_traces.append({
         "type": "violin",
         "y": lens,
         "name": s,
         "box": {"visible": True},
         "meanline": {"visible": True},
-        "fillcolor": col + "80",
-        "line": {"color": col},
+        "points": "outliers",
+        "spanmode": "hard",
+        "meta": sample_role(s, "violin"),
         "hovertemplate": f"<b>{s}</b><br>CDR3 Length: %{{y}} AA<extra></extra>"
     })
 fig3_layout = {
-    "title": {"text": "CDR3 Length Distribution per Sample (VHH)", "font": {"size": 16, "color": "#2c3e50"}},
-    "yaxis": {"title": "CDR3 Length (AA)", "range": [0, 42]},
-    "xaxis": {"title": "Sample"},
-    "violingap": 0.1,
-    "plot_bgcolor": "#fafafa", "paper_bgcolor": "#ffffff"
+    "yaxis": {"title": {"text": "CDR3 Length (AA)"}, "range": [0, 42]},
+    "xaxis": {"title": {"text": "Sample"}},
+    "violingap": 0.25,
+    "showlegend": False,
 }
 
 # ── Fig 4: CDR3 length frequency area chart ───────────────────────────────
 fig4_traces = []
 for s in samples:
-    col    = PALETTE.get(s, "#888888")
     sizes  = list(range(0, 46))
     counts = [hist_by_sample[s].get(sz, 0) for sz in sizes]
     fig4_traces.append({
         "x": sizes, "y": counts,
         "name": s,
-        "type": "scatter", "mode": "lines+markers",
-        "line": {"color": col, "width": 2},
-        "marker": {"color": col, "size": 4},
+        "type": "scatter", "mode": "lines",
         "fill": "tozeroy",
-        "fillcolor": col + "30",
-        "hovertemplate": f"<b>{s}</b><br>Length: %{{x}} AA<br>Count: %{{y:,}}<extra></extra>"
+        "meta": sample_role(s, "area"),
+        "hovertemplate": f"{s}: %{{y:,}}<extra></extra>"
     })
 fig4_layout = {
-    "title": {"text": "CDR3 Length Frequency Profile", "font": {"size": 16, "color": "#2c3e50"}},
-    "xaxis": {"title": "CDR3 Length (AA)", "range": [0, 45]},
-    "yaxis": {"title": "Unique CDR3s"},
+    "xaxis": {"title": {"text": "CDR3 Length (AA)"}, "range": [0, 45], "dtick": 5},
+    "yaxis": {"title": {"text": "Unique CDR3s"}, "tickformat": ",d"},
     "hovermode": "x unified",
     "legend": {"title": {"text": "Sample"}},
-    "plot_bgcolor": "#fafafa", "paper_bgcolor": "#ffffff"
 }
 
 # ── Fig 5: Unique CDR3s bar ────────────────────────────────────────────────
@@ -368,17 +368,17 @@ fig5_traces = [{
     "x": samples,
     "y": [cdr_map.get(s, 0) for s in samples],
     "type": "bar",
-    "marker": {"color": [PALETTE.get(s,"#888") for s in samples]},
+    "meta": {"role": "samplebars", "idx": [SAMPLE_INDEX[s] for s in samples], "n": N_SAMPLES},
     "text": [f"{cdr_map.get(s,0):,}" for s in samples],
     "textposition": "outside",
+    "cliponaxis": False,
     "hovertemplate": "<b>%{x}</b><br>Unique CDR3s: %{y:,}<extra></extra>"
 }]
 fig5_layout = {
-    "title": {"text": "Unique CDR3 Sequences per Sample", "font": {"size": 16, "color": "#2c3e50"}},
-    "xaxis": {"title": "Sample"},
-    "yaxis": {"title": "Unique CDR3s"},
+    "bargap": 0.45,
+    "xaxis": {"title": {"text": "Sample"}},
+    "yaxis": {"title": {"text": "Unique CDR3s"}, "tickformat": ",d"},
     "showlegend": False,
-    "plot_bgcolor": "#fafafa", "paper_bgcolor": "#ffffff"
 }
 
 # ── Fig 6: AA heatmap ─────────────────────────────────────────────────────
@@ -388,37 +388,36 @@ fig6_traces = [{
     "z": z_matrix,
     "x": AA_ORDER,
     "y": samples,
-    "colorscale": "Viridis",
+    "xgap": 2, "ygap": 2,
+    "meta": {"role": "sequential"},
     "hovertemplate": "<b>%{y}</b><br>%{x}: %{z:.2f}%<extra></extra>",
-    "colorbar": {"title": {"text": "Freq (%)"}}
+    "colorbar": {"title": {"text": "Freq (%)"}, "thickness": 12}
 }]
 fig6_layout = {
-    "title": {"text": "CDR3 Amino Acid Composition Heatmap", "font": {"size": 16, "color": "#2c3e50"}},
-    "xaxis": {"title": "Amino Acid"},
-    "yaxis": {"title": "Sample"},
-    "plot_bgcolor": "#fafafa", "paper_bgcolor": "#ffffff"
+    "xaxis": {"title": {"text": "Amino Acid"}, "showgrid": False, "showline": False, "ticks": ""},
+    "yaxis": {"title": {"text": "Sample"}, "showgrid": False, "showline": False, "ticks": "",
+              "autorange": "reversed"},
+    "showlegend": False,
 }
 
 # ── Fig 7: AA grouped bar ─────────────────────────────────────────────────
 fig7_traces = []
 for s in samples:
-    col  = PALETTE.get(s, "#888888")
     freq = aa_freq_by_sample.get(s, {})
     fig7_traces.append({
         "x": AA_ORDER,
         "y": [round(freq.get(aa, 0), 2) for aa in AA_ORDER],
         "name": s,
         "type": "bar",
-        "marker": {"color": col},
+        "meta": sample_role(s, "bar"),
         "hovertemplate": f"<b>{s}</b><br>%{{x}}: %{{y:.2f}}%<extra></extra>"
     })
 fig7_layout = {
     "barmode": "group",
-    "title": {"text": "CDR3 Amino Acid Usage (% of all CDR3 residues)", "font": {"size": 16, "color": "#2c3e50"}},
-    "xaxis": {"title": "Amino Acid"},
-    "yaxis": {"title": "Frequency (%)"},
+    "bargap": 0.25, "bargroupgap": 0.06,
+    "xaxis": {"title": {"text": "Amino Acid"}},
+    "yaxis": {"title": {"text": "Frequency (%)"}},
     "legend": {"title": {"text": "Sample"}},
-    "plot_bgcolor": "#fafafa", "paper_bgcolor": "#ffffff"
 }
 
 # ── Fig 8: Diversity bubble chart ─────────────────────────────────────────
@@ -426,18 +425,28 @@ fig7_layout = {
 # holding at least one sequence).
 fig8_metrics = [m for m in div_metrics
                 if m["Shannon_abundance"] is not None and m["Clonality"] is not None]
+fig8_x = [m["Shannon_abundance"] for m in fig8_metrics]
+fig8_max = max([m["Unique_CDR3s"] for m in fig8_metrics] + [1])
+if fig8_x:
+    pad = max((max(fig8_x) - min(fig8_x)) * 0.25, 0.3)
+    fig8_xrange = [min(fig8_x) - pad, max(fig8_x) + pad]
+else:
+    fig8_xrange = None
 fig8_traces = [{
-    "x": [m["Shannon_abundance"] for m in fig8_metrics],
+    "x": fig8_x,
     "y": [m["Clonality"] for m in fig8_metrics],
     "mode": "markers+text",
     "type": "scatter",
     "text": [m["Sample"] for m in fig8_metrics],
     "textposition": "top center",
+    "cliponaxis": False,
     "marker": {
-        "size": [math.sqrt(m["Unique_CDR3s"])/4 for m in fig8_metrics],
-        "color": [PALETTE.get(m["Sample"],"#888") for m in fig8_metrics],
-        "opacity": 0.8
+        "size": [max(m["Unique_CDR3s"], 1) for m in fig8_metrics],
+        "sizemode": "area",
+        "sizeref": 2.0 * fig8_max / (40 ** 2),
+        "sizemin": 8,
     },
+    "meta": {"role": "single"},
     "customdata": [[m["Unique_CDR3s"], m["Sample"], m["Clusters_per_1k_seqs"] or 0,
                     m["Top1_pct"] or 0] for m in fig8_metrics],
     "hovertemplate": (
@@ -450,12 +459,12 @@ fig8_traces = [{
     )
 }]
 fig8_layout = {
-    "title": {"text": "Repertoire Diversity Landscape", "font": {"size": 16, "color": "#2c3e50"}},
-    "xaxis": {"title": "Shannon Diversity Index (clone abundances)"},
-    "yaxis": {"title": "Clonality (1 − Pielou evenness)", "range": [0, 1]},
+    "xaxis": {"title": {"text": "Shannon Diversity Index (clone abundances)"}},
+    "yaxis": {"title": {"text": "Clonality (1 − Pielou evenness)"}, "range": [-0.12, 1.08]},
     "showlegend": False,
-    "plot_bgcolor": "#fafafa", "paper_bgcolor": "#ffffff"
 }
+if fig8_xrange:
+    fig8_layout["xaxis"]["range"] = fig8_xrange
 
 # ── Fig 9: Identity to representative histogram (intra-clonal homogeneity) ─
 # One value per *cluster*, not per sequence: Identity is the mean identity of
@@ -482,33 +491,31 @@ for r in clusterbig:
 
 n_informative = sum(len(v) for v in ident_by_sample.values())
 
+# The same bins for every sample, so that the overlaid histograms line up.
+identity_bin = max((100.0 - identity_threshold) / 40.0, 0.05)
 fig9_traces = []
 for s in samples:
-    col = PALETTE.get(s, "#888888")
     vals = ident_by_sample.get(s, [])
     fig9_traces.append({
         "x": vals,
         "type": "histogram",
         "name": f"{s} (n = {len(vals):,})",
-        "nbinsx": 50,
-        "marker": {"color": col + "BB", "line": {"color": col, "width": 0.5}},
-        "opacity": 0.7,
-        "hovertemplate": f"<b>{s}</b><br>Mean identity: %{{x:.1f}}%<br>Clusters: %{{y:,}}<extra></extra>"
+        "xbins": {"start": identity_threshold, "end": 100.0 + identity_bin, "size": identity_bin},
+        "meta": sample_role(s, "hist"),
+        "hovertemplate": f"<b>{s}</b><br>Mean identity: %{{x}}%<br>Clusters: %{{y:,}}<extra></extra>"
     })
 fig9_layout = {
     "barmode": "overlay",
-    "title": {"text": "Mean Member Identity to Cluster Representative", "font": {"size": 16, "color": "#2c3e50"}},
-    "xaxis": {"title": "Mean % Identity of Members to Representative",
+    "xaxis": {"title": {"text": "Mean % Identity of Members to Representative"},
               "range": [identity_threshold - 1, 100.5]},
-    "yaxis": {"title": "Number of Clusters"},
+    "yaxis": {"title": {"text": "Number of Clusters"}, "tickformat": ",d"},
     "legend": {"title": {"text": "Sample"}},
-    "plot_bgcolor": "#fafafa", "paper_bgcolor": "#ffffff"
 }
 
 # ── Fig 11: CDR3 boundary QC ──────────────────────────────────────────────
 # Compares the CDR3 called by nanoCDR-X with the motif-based definition
 # (start after the YYC anchor, end before the WGQ anchor). This measures the
-# annotation, it does not change it.
+# annotation, it does not change it. One panel per terminus, one colour per sample.
 boundary_qc = summarise_boundaries(
     (r.get("Sample", r.get("sample", "Unknown")), r.get("CDR3"), r.get("sequence"))
     for r in fastaseq
@@ -519,31 +526,35 @@ boundary_offsets = sorted({
     for dist in (s["n_offset_distribution"], s["c_offset_distribution"])
     for off in dist
 })
+offset_labels = [str(o) for o in boundary_offsets]
 fig11_traces = []
 for s in samples:
     qc = boundary_qc.get(s)
     if not qc or not qc["compared"]:
         continue
-    col = PALETTE.get(s, "#888888")
-    for terminus, dist, alpha in (("N", qc["n_offset_distribution"], "FF"),
-                                  ("C", qc["c_offset_distribution"], "80")):
+    for terminus, dist, xaxis in (("N", qc["n_offset_distribution"], "x"),
+                                  ("C", qc["c_offset_distribution"], "x2")):
         total = sum(dist.values()) or 1
         fig11_traces.append({
-            "x": [str(o) for o in boundary_offsets],
+            "x": offset_labels,
             "y": [100.0 * dist.get(o, 0) / total for o in boundary_offsets],
-            "name": f"{s} · {terminus}-terminus",
+            "name": s,
+            "legendgroup": s,
+            "showlegend": terminus == "N",
+            "xaxis": xaxis, "yaxis": "y",
             "type": "bar",
-            "marker": {"color": col + alpha},
+            "meta": sample_role(s, "bar"),
             "hovertemplate": (f"<b>{s}</b><br>{terminus}-terminal offset: %{{x}} residues"
                               "<br>%{y:.2f}% of compared sequences<extra></extra>")
         })
+fig11_axis = {"type": "category", "categoryorder": "array", "categoryarray": offset_labels}
 fig11_layout = {
     "barmode": "group",
-    "title": {"text": "CDR3 Boundary Offsets: caller vs motif definition", "font": {"size": 16, "color": "#2c3e50"}},
-    "xaxis": {"title": "Offset from the motif-based boundary (residues)", "type": "category"},
-    "yaxis": {"title": "% of compared sequences (log scale)", "type": "log"},
-    "legend": {"title": {"text": "Sample · terminus"}},
-    "plot_bgcolor": "#fafafa", "paper_bgcolor": "#ffffff"
+    "bargap": 0.3,
+    "xaxis":  dict(fig11_axis, domain=[0, 0.47], title={"text": "N-terminal offset (residues)"}),
+    "xaxis2": dict(fig11_axis, domain=[0.53, 1], anchor="y", title={"text": "C-terminal offset (residues)"}),
+    "yaxis": {"title": {"text": "% of compared sequences (log scale)"}, "type": "log", "dtick": 1},
+    "legend": {"title": {"text": "Sample"}},
 }
 
 boundary_rows = ""
@@ -562,7 +573,7 @@ for s in samples:
         f"<td>{fmt_metric(qc['median_reference_length'], 1)}</td></tr>"
     )
 boundary_table = f"""
-<div style="overflow-x:auto">
+<div class="table-wrap">
 <table class="metrics-table">
   <thead><tr>
     <th>Sample</th><th>Sequences compared</th><th>Exact agreement</th>
@@ -573,64 +584,77 @@ boundary_table = f"""
 </table>
 </div>"""
 
-# ── Fig 10: Top-10 clusters per sample horizontal bar ─────────────────────
+# ── Fig 10: Top-10 clusters per sample, one small panel per sample ─────────
 top10_by_sample = defaultdict(list)
 for r in clusterbig:
     top10_by_sample[r["Sample"]].append((to_int(r.get("Count",0)), r.get("Representative","?")))
 
-fig10_traces = []
-for s in samples:
-    top = sorted(top10_by_sample[s], reverse=True)[:10]
-    if not top: continue
-    col = PALETTE.get(s, "#888888")
-    labels = [f"Rank {i+1} ({rep})" for i, (cnt, rep) in enumerate(top)]
-    counts = [cnt for cnt, _ in top]
-    fig10_traces.append({
-        "x": counts,
-        "y": labels,
-        "name": s,
-        "type": "bar",
-        "orientation": "h",
-        "marker": {"color": col},
-        "hovertemplate": f"<b>{s}</b><br>%{{y}}<br>Members: %{{x:,}}<extra></extra>"
-    })
-fig10_layout = {
-    "barmode": "group",
-    "title": {"text": "Top-10 Largest Clonotypes per Sample", "font": {"size": 16, "color": "#2c3e50"}},
-    "xaxis": {"title": "Cluster Size (sequences)"},
-    "yaxis": {"title": "", "autorange": "reversed"},
-    "legend": {"title": {"text": "Sample"}},
-    "height": 520,
-    "plot_bgcolor": "#fafafa", "paper_bgcolor": "#ffffff"
-}
+
+def top10_panel(desc, title):
+    """The ten largest clusters of each sample, as one small ranked list per sample."""
+    cards = ""
+    for s in samples:
+        top = sorted(top10_by_sample[s], reverse=True)[:10]
+        if not top:
+            continue
+        clustered = sum(counts_by_sample.get(s, [])) or 1
+        largest = top[0][0] or 1
+        rows = ""
+        for rank, (cnt, rep) in enumerate(top, 1):
+            rows += (
+                f'<li><span class="t10-rank">{rank}</span>'
+                f'<span class="t10-id" title="Representative {html_escape(str(rep))}">{html_escape(str(rep))}</span>'
+                f'<span class="t10-bar"><span style="width:{100.0 * cnt / largest:.1f}%"></span></span>'
+                f'<span class="t10-val">{cnt:,}</span>'
+                f'<span class="t10-pct">{100.0 * cnt / clustered:.1f}%</span></li>'
+            )
+        cards += (
+            f'<div class="t10-card" style="--c:var(--series-{colour_slot(s)})">'
+            f'<div class="t10-head"><span class="swatch"></span>{html_escape(s)}</div>'
+            f'<div class="t10-cols"><span>#</span><span>Representative</span><span></span>'
+            f'<span>Members</span><span>Share</span></div>'
+            f'<ol>{rows}</ol></div>'
+        )
+    return f"""
+<figure class="chart-card">
+  <figcaption class="chart-head"><h3>{title}</h3><p>{desc}
+  Share is the fraction of the clustered sequences of the sample held by the cluster.</p></figcaption>
+  <div class="t10-grid">{cards}</div>
+</figure>
+"""
+
+# Beyond eight samples every sample has the same colour, so a legend would not tell
+# them apart: the samples are then named in the tooltips and in the tables.
+if N_SAMPLES > 8:
+    for lay in (fig4_layout, fig7_layout, fig9_layout, fig11_layout):
+        lay["showlegend"] = False
+    fig5_traces[0]["textposition"] = "none"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 3. HELPER: JSON‐serialize a figure pair
 # ─────────────────────────────────────────────────────────────────────────────
+# Height of each plot in pixels; the heatmap grows with the number of samples.
+FIG_HEIGHT = {"fig1": 400, "fig2": 400, "fig3": 400, "fig4": 380, "fig5": 400,
+              "fig6": max(240, 110 + 38 * N_SAMPLES), "fig7": 380, "fig8": 420,
+              "fig9": 420, "fig11": 380}
+
+
 def make_fig(fig_id, traces, layout, desc="", title=""):
+    head = (f'<figcaption class="chart-head"><h3>{title}</h3><p>{desc}</p></figcaption>'
+            if title else "")
     return f"""
-<div class="chart-card">
-  {'<div class="chart-card-header"><h3>' + title + '</h3><p>' + desc + '</p></div>' if title else ''}
-  <div class="chart-body" id="{fig_id}" style="height:460px;"></div>
-</div>
+<figure class="chart-card">
+  {head}
+  <div class="chart-body" id="{fig_id}" style="height:{FIG_HEIGHT.get(fig_id, 420)}px"></div>
+</figure>
 <script>
-  Plotly.newPlot('{fig_id}',
-    {json.dumps(traces)},
-    {{...{json.dumps(layout)}, margin:{{t:60,l:60,r:30,b:60}}}},
-    {{responsive:true, displayModeBar:false}}
-  );
+  Plotly.newPlot('{fig_id}', ...NR.prepare('{fig_id}', {json.dumps(traces)}, {json.dumps(layout)}, {json.dumps(title or fig_id)}));
 </script>
 """
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 4. METRICS TABLE
 # ─────────────────────────────────────────────────────────────────────────────
-def badge(val, thresholds=((25,"badge-high"),(10,"badge-med"),(0,"badge-low"))):
-    for t, cls in thresholds:
-        if val >= t:
-            return f'<span class="{cls}">{val}%</span>'
-    return f'<span class="badge-low">{val}%</span>'
-
 table_rows = ""
 for m in div_metrics:
     table_rows += (
@@ -647,12 +671,12 @@ for m in div_metrics:
         f"<td>{fmt_metric(m['Top1_pct'], 2, '%')}</td>"
         f"<td>{fmt_metric(m['Top10_pct'], 2, '%')}</td>"
         f"<td>{m['Shannon_len']:.3f}</td>"
-        f"<td>{badge(m['Pct_expanded'])}</td>"
+        f"<td>{m['Pct_expanded']}%</td>"
         f"<td>{m['Pct_large']:.2f}%</td></tr>"
     )
 
 metrics_table = f"""
-<div style="overflow-x:auto">
+<div class="table-wrap">
 <table class="metrics-table">
   <thead><tr>
     <th>Sample</th><th>Unique CDR3s</th><th>Clusters</th><th>Clustered sequences</th>
@@ -687,7 +711,7 @@ if accounting:
         for s in acc_samples:
             value = accounting[s].get(key)
             if value is None:
-                cells += '<td><span style="color:#95a5a6">NA</span></td>'
+                cells += '<td><span class="na">NA</span></td>'
             elif kind == "step":
                 pct = percentage(accounting[s], key)
                 cells += f"<td><strong>{value:,}</strong>" + (f" <span class=\"acc-pct\">({pct:.1f}%)</span>" if pct is not None else "") + "</td>"
@@ -716,7 +740,7 @@ if accounting:
     count could not be read. The same counts are written to <code>sequence_accounting.tsv</code> next to this report.
   </div>
   {acc_warnings}
-  <div style="overflow-x:auto">
+  <div class="table-wrap">
   <table class="metrics-table accounting-table">
     <thead><tr><th>Step</th>{"".join(f"<th>{s}</th>" for s in acc_samples)}</tr></thead>
     <tbody>{acc_rows}</tbody>
@@ -728,111 +752,322 @@ if accounting:
 # 5. CSS
 # ─────────────────────────────────────────────────────────────────────────────
 CSS = """
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+:root{
+  color-scheme:light;
+  --page:#f4f4f1; --surface-1:#fcfcfb; --surface-2:#f0efec;
+  --text-primary:#0b0b0b; --text-secondary:#52514e; --text-muted:#6f6e69;
+  --grid:#e1e0d9; --axis:#c3c2b7; --border:rgba(11,11,11,.10); --border-strong:rgba(11,11,11,.18);
+  --accent:#2a78d6; --critical:#d03b3b; --critical-wash:rgba(208,59,59,.08);
+  --series-1:#2a78d6; --series-2:#eb6834; --series-3:#1baf7a; --series-4:#eda100;
+  --series-5:#e87ba4; --series-6:#008300; --series-7:#4a3aa7; --series-8:#e34948;
+  --ordinal-1:#86b6ef; --ordinal-2:#3987e5; --ordinal-3:#1c5cab; --ordinal-4:#0d366b;
+  --seq-1:#cde2fb; --seq-2:#86b6ef; --seq-3:#3987e5; --seq-4:#1c5cab; --seq-5:#0d366b;
+  --font:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:where(:not([data-theme="light"])){
+    color-scheme:dark;
+    --page:#0d0d0d; --surface-1:#1a1a19; --surface-2:#242422;
+    --text-primary:#ffffff; --text-secondary:#c3c2b7; --text-muted:#9a9890;
+    --grid:#2c2c2a; --axis:#46463f; --border:rgba(255,255,255,.10); --border-strong:rgba(255,255,255,.20);
+    --accent:#3987e5; --critical:#e66767; --critical-wash:rgba(230,103,103,.10);
+    --series-1:#3987e5; --series-2:#d95926; --series-3:#199e70; --series-4:#c98500;
+    --series-5:#d55181; --series-6:#008300; --series-7:#9085e9; --series-8:#e66767;
+    --ordinal-1:#184f95; --ordinal-2:#2a78d6; --ordinal-3:#6da7ec; --ordinal-4:#b7d3f6;
+    --seq-1:#1f2a3a; --seq-2:#184f95; --seq-3:#2a78d6; --seq-4:#6da7ec; --seq-5:#cde2fb;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --page:#0d0d0d; --surface-1:#1a1a19; --surface-2:#242422;
+  --text-primary:#ffffff; --text-secondary:#c3c2b7; --text-muted:#9a9890;
+  --grid:#2c2c2a; --axis:#46463f; --border:rgba(255,255,255,.10); --border-strong:rgba(255,255,255,.20);
+  --accent:#3987e5; --critical:#e66767; --critical-wash:rgba(230,103,103,.10);
+  --series-1:#3987e5; --series-2:#d95926; --series-3:#199e70; --series-4:#c98500;
+  --series-5:#d55181; --series-6:#008300; --series-7:#9085e9; --series-8:#e66767;
+  --ordinal-1:#184f95; --ordinal-2:#2a78d6; --ordinal-3:#6da7ec; --ordinal-4:#b7d3f6;
+  --seq-1:#1f2a3a; --seq-2:#184f95; --seq-3:#2a78d6; --seq-4:#6da7ec; --seq-5:#cde2fb;
+}
+
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Inter',sans-serif;background:#f0f4f8;color:#2c3e50}
+html{scroll-behavior:smooth;scroll-padding-top:64px}
+body{font-family:var(--font);background:var(--page);color:var(--text-primary);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+strong{font-weight:600}
+code{font-family:var(--mono);font-size:.88em;background:var(--surface-2);padding:1px 5px;border-radius:4px}
+a{color:var(--accent)}
 
-.report-header{
-  background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);
-  color:white;padding:48px 60px 36px;border-bottom:4px solid #e94560
-}
-.report-header h1{font-size:2.3em;font-weight:700;margin-bottom:6px}
-.report-header .subtitle{font-size:1.05em;opacity:.75;font-weight:300}
-.report-header .meta{margin-top:22px;display:flex;gap:32px;flex-wrap:wrap}
-.report-header .meta-item{font-size:.85em;opacity:.7}
-.report-header .meta-item strong{display:block;font-size:1.2em;opacity:1;color:#e94560}
+/* Header */
+.report-header{background:var(--surface-1);border-bottom:1px solid var(--border)}
+.header-inner{max-width:1240px;margin:0 auto;padding:36px 32px 26px}
+.header-top{display:flex;align-items:flex-start;justify-content:space-between;gap:24px}
+.report-header h1{font-size:2rem;font-weight:650;letter-spacing:-.02em;line-height:1.15}
+.report-header .subtitle{color:var(--text-secondary);margin-top:6px;font-size:1rem}
+.run-meta{display:flex;flex-wrap:wrap;gap:12px 40px;margin-top:22px;padding-top:18px;border-top:1px solid var(--border)}
+.run-meta dt{font-size:.72rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-muted);font-weight:600}
+.run-meta dd{font-size:.92rem;color:var(--text-primary);margin-top:2px}
+.theme-toggle{font:inherit;font-size:.82rem;color:var(--text-secondary);background:var(--surface-2);border:1px solid var(--border);
+  border-radius:8px;padding:6px 12px;cursor:pointer;white-space:nowrap}
+.theme-toggle:hover{color:var(--text-primary);border-color:var(--border-strong)}
 
-.nav-bar{
-  background:#16213e;position:sticky;top:0;z-index:1000;
-  display:flex;padding:0 60px;box-shadow:0 2px 12px rgba(0,0,0,.3);overflow-x:auto
-}
-.nav-bar a{
-  color:rgba(255,255,255,.7);text-decoration:none;padding:13px 15px;
-  font-size:.84em;font-weight:500;white-space:nowrap;
-  border-bottom:3px solid transparent;transition:.2s
-}
-.nav-bar a:hover{color:#e94560;border-bottom-color:#e94560}
+/* Navigation */
+.nav-bar{position:sticky;top:0;z-index:100;background:color-mix(in srgb,var(--surface-1) 92%,transparent);
+  backdrop-filter:saturate(1.4) blur(8px);border-bottom:1px solid var(--border)}
+.nav-inner{max-width:1240px;margin:0 auto;padding:0 20px;display:flex;overflow-x:auto;scrollbar-width:none}
+.nav-bar a{color:var(--text-secondary);text-decoration:none;padding:13px 12px 11px;font-size:.86rem;font-weight:500;
+  white-space:nowrap;border-bottom:2px solid transparent;display:inline-flex;align-items:center;gap:7px}
+.nav-bar a:hover{color:var(--text-primary)}
+.nav-bar a.active{color:var(--text-primary);border-bottom-color:var(--accent)}
+.nav-num{font-size:.72rem;font-weight:650;color:var(--text-muted);border:1px solid var(--border-strong);border-radius:5px;
+  min-width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center}
+.nav-bar a.active .nav-num{color:var(--accent);border-color:var(--accent)}
 
-.container{max-width:1380px;margin:0 auto;padding:40px 60px}
+/* Layout */
+.container{max-width:1240px;margin:0 auto;padding:36px 32px 24px}
+.section{margin-bottom:56px}
+.section-header{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.section-number{font-size:.8rem;font-weight:650;color:var(--accent);border:1.5px solid var(--accent);border-radius:7px;
+  width:28px;height:28px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.section-header h2{font-size:1.4rem;font-weight:650;letter-spacing:-.01em}
+.section-intro{color:var(--text-secondary);font-size:.95rem;line-height:1.65;max-width:92ch;margin-bottom:22px}
+.section-intro cite{display:block;margin-top:8px;font-style:normal;font-size:.82rem;color:var(--text-muted)}
+.grid-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
 
-.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(195px,1fr));gap:18px;margin-bottom:38px}
-.kpi-card{
-  background:white;border-radius:16px;padding:26px 22px;
-  box-shadow:0 2px 14px rgba(0,0,0,.06);border-left:5px solid #e94560;
-  transition:transform .2s,box-shadow .2s;cursor:default
-}
-.kpi-card:hover{transform:translateY(-3px);box-shadow:0 6px 22px rgba(0,0,0,.12)}
-.kpi-card:nth-child(2){border-left-color:#3498db}
-.kpi-card:nth-child(3){border-left-color:#2ecc71}
-.kpi-card:nth-child(4){border-left-color:#f39c12}
-.kpi-card:nth-child(5){border-left-color:#9b59b6}
-.kpi-label{font-size:.78em;text-transform:uppercase;letter-spacing:.8px;color:#7f8c8d;font-weight:600;margin-bottom:9px}
-.kpi-value{font-size:2.15em;font-weight:700;color:#2c3e50;line-height:1}
-.kpi-sub{font-size:.8em;color:#95a5a6;margin-top:6px}
+/* Summary tiles */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px}
+.kpi-card{background:var(--surface-1);border:1px solid var(--border);border-radius:12px;padding:18px 18px 16px}
+.kpi-label{font-size:.74rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);font-weight:600}
+.kpi-value{font-size:2rem;font-weight:650;letter-spacing:-.02em;line-height:1.1;margin-top:8px}
+.kpi-sub{font-size:.8rem;color:var(--text-secondary);margin-top:6px;line-height:1.4}
 
-.section{margin-bottom:54px}
-.section-header{display:flex;align-items:center;gap:14px;margin-bottom:20px;padding-bottom:14px;border-bottom:2px solid #e8ecef}
-.section-number{
-  background:linear-gradient(135deg,#e94560,#c0392b);color:white;
-  width:38px;height:38px;border-radius:10px;display:flex;align-items:center;
-  justify-content:center;font-size:1em;font-weight:700;flex-shrink:0
-}
-.section-header h2{font-size:1.45em;font-weight:600;color:#2c3e50}
-.section-intro{
-  background:#eef2f7;border-left:4px solid #3498db;padding:14px 18px;
-  border-radius:0 8px 8px 0;font-size:.9em;color:#34495e;margin-bottom:20px;line-height:1.65
-}
-.section-intro cite{font-style:italic;color:#95a5a6;font-size:.92em}
-.nav-num {
-  background: linear-gradient(135deg, #e94560, #c0392b);
-  color: white; width: 22px; height: 22px; border-radius: 6px;
-  display: inline-flex; align-items: center; justify-content: center;
-  font-size: 0.75em; font-weight: 700; margin-right: 8px; vertical-align: middle;
-}
+/* Figures */
+.chart-card{background:var(--surface-1);border:1px solid var(--border);border-radius:12px;margin:0 0 20px;overflow:hidden;break-inside:avoid}
+.chart-head{padding:16px 20px 4px}
+.chart-head h3{font-size:1rem;font-weight:600}
+.chart-head p{font-size:.86rem;color:var(--text-secondary);margin-top:4px;line-height:1.5;max-width:110ch}
+.chart-body{padding:4px 8px 8px}
 
-.chart-card{background:white;border-radius:16px;box-shadow:0 2px 14px rgba(0,0,0,.06);overflow:hidden;margin-bottom:22px}
-.chart-card-header{padding:18px 22px 0}
-.chart-card-header h3{font-size:1em;font-weight:600;color:#2c3e50}
-.chart-card-header p{font-size:.84em;color:#7f8c8d;margin-top:4px;line-height:1.5}
-.chart-body{padding:8px}
+/* Top-10 panels */
+.t10-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px;padding:12px 20px 20px}
+.t10-card{border:1px solid var(--border);border-radius:10px;padding:12px 14px;background:var(--surface-1)}
+.t10-head{font-weight:600;font-size:.92rem;display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.swatch{width:10px;height:10px;border-radius:3px;background:var(--c)}
+.t10-cols,.t10-card li{display:grid;grid-template-columns:22px minmax(64px,1fr) 1.4fr 68px 52px;gap:8px;align-items:center}
+.t10-cols{font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);padding-bottom:4px;border-bottom:1px solid var(--border)}
+.t10-cols span:nth-child(n+4){text-align:right}
+.t10-card ol{list-style:none}
+.t10-card li{font-size:.84rem;padding:4px 0;border-bottom:1px solid var(--border)}
+.t10-card li:last-child{border-bottom:none}
+.t10-rank{color:var(--text-muted);font-variant-numeric:tabular-nums}
+.t10-id{font-family:var(--mono);font-size:.8rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.t10-bar{height:8px;background:var(--surface-2);border-radius:4px;overflow:hidden}
+.t10-bar span{display:block;height:100%;background:var(--c);border-radius:0 4px 4px 0}
+.t10-val,.t10-pct{text-align:right;font-variant-numeric:tabular-nums}
+.t10-pct{color:var(--text-secondary)}
 
-.metrics-table{width:100%;border-collapse:collapse;font-size:.88em}
-.metrics-table thead tr{background:#2c3e50;color:white}
-.metrics-table th{padding:11px 15px;text-align:left;font-weight:600;font-size:.84em;letter-spacing:.4px}
-.metrics-table td{padding:10px 15px;border-bottom:1px solid #f0f4f8}
-.metrics-table tbody tr:nth-child(even){background:#f8f9fb}
-.metrics-table tbody tr:hover{background:#eef2f7}
-.badge-high{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.78em;font-weight:600;background:#fde8e8;color:#c0392b}
-.badge-med {display:inline-block;padding:3px 10px;border-radius:20px;font-size:.78em;font-weight:600;background:#fef6e4;color:#d68910}
-.badge-low {display:inline-block;padding:3px 10px;border-radius:20px;font-size:.78em;font-weight:600;background:#e8f8f0;color:#27ae60}
+/* Tables */
+.table-wrap{overflow-x:auto;background:var(--surface-1);border:1px solid var(--border);border-radius:12px;margin-bottom:20px}
+.metrics-table{width:100%;border-collapse:collapse;font-size:.86rem;font-variant-numeric:tabular-nums}
+.metrics-table th{text-align:right;font-weight:600;font-size:.74rem;text-transform:uppercase;letter-spacing:.04em;
+  color:var(--text-muted);padding:11px 11px;border-bottom:1px solid var(--border-strong);background:var(--surface-1);vertical-align:bottom}
+.metrics-table td{text-align:right;padding:9px 11px;border-bottom:1px solid var(--border);white-space:nowrap}
+.metrics-table th:first-child,.metrics-table td:first-child{text-align:left;position:sticky;left:0;background:var(--surface-1)}
+.metrics-table tbody tr:last-child td{border-bottom:none}
+.metrics-table tbody tr:hover td{background:var(--surface-2)}
+.na{color:var(--text-muted)}
 
-.accounting-table td:not(:first-child),.accounting-table th:not(:first-child){text-align:right;white-space:nowrap}
-.accounting-table tr.acc-block td{background:#eef2f7;font-weight:600;color:#2c3e50;font-size:.84em;text-transform:uppercase;letter-spacing:.6px}
-.accounting-table tr.acc-loss td,.accounting-table tr.acc-note td{color:#7f8c8d;font-size:.92em}
-.accounting-table tr.acc-loss td:first-child,.accounting-table tr.acc-note td:first-child{padding-left:34px}
-.acc-unit{color:#95a5a6;font-size:.85em;font-weight:400}
-.acc-pct{color:#95a5a6;font-size:.88em}
-.acc-warning{background:#fdecea;border-left:4px solid #c0392b;padding:12px 18px;border-radius:0 8px 8px 0;font-size:.9em;margin-bottom:16px}
+.accounting-table tr.acc-block td{background:var(--surface-2);font-weight:600;color:var(--text-secondary);font-size:.74rem;
+  text-transform:uppercase;letter-spacing:.06em;padding-top:8px;padding-bottom:8px}
+.accounting-table tr.acc-loss td,.accounting-table tr.acc-note td{color:var(--text-secondary);font-size:.92em}
+.accounting-table tr.acc-loss td:first-child,.accounting-table tr.acc-note td:first-child{padding-left:32px}
+.accounting-table td:first-child{white-space:normal;min-width:300px}
+.acc-unit{color:var(--text-muted);font-size:.85em;font-weight:400}
+.acc-pct{color:var(--text-muted);font-size:.9em}
+.acc-warning{display:flex;gap:12px;background:var(--critical-wash);border:1px solid var(--critical);border-radius:10px;
+  padding:12px 16px;font-size:.9rem;margin-bottom:16px}
+.acc-warning::before{content:"!";flex-shrink:0;width:20px;height:20px;border-radius:50%;background:var(--critical);color:#fff;
+  font-weight:700;font-size:.8rem;display:flex;align-items:center;justify-content:center;margin-top:1px}
 .acc-warning ul{margin:6px 0 0 18px}
 
-.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:22px}
-.methods-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px}
-.methods-card{background:white;border-radius:16px;padding:26px;box-shadow:0 2px 14px rgba(0,0,0,.06)}
-.methods-card h3{font-size:1em;font-weight:600;margin-bottom:10px;color:#2c3e50}
-.methods-card p{color:#555;font-size:.87em;line-height:1.7;margin-bottom:8px}
-.methods-card ul{padding-left:18px;color:#555;font-size:.85em;line-height:1.85}
-.ref-list{font-size:.82em;color:#7f8c8d;list-style:none;line-height:1.9}
-.ref-list li::before{content:"📄 "}
+/* Methods */
+.methods-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;align-items:start}
+.methods-card{background:var(--surface-1);border:1px solid var(--border);border-radius:12px;padding:20px 22px}
+.methods-card h3{font-size:1rem;font-weight:600;margin-bottom:10px}
+.methods-card p{color:var(--text-secondary);font-size:.9rem;line-height:1.65;margin-bottom:8px}
+.methods-card ul{padding-left:18px;color:var(--text-secondary);font-size:.9rem;line-height:1.75}
+.ref-list{list-style:none;padding-left:0!important}
+.ref-list li{padding:4px 0;border-bottom:1px solid var(--border)}
+.ref-list li:last-child{border-bottom:none}
 
-.footer{background:#2c3e50;color:rgba(255,255,255,.55);text-align:center;padding:26px 60px;font-size:.81em;margin-top:38px}
+.footer{max-width:1240px;margin:0 auto;padding:22px 32px 40px;color:var(--text-muted);font-size:.8rem;border-top:1px solid var(--border)}
 
-@media(max-width:900px){
-  .container{padding:22px 18px}
-  .report-header{padding:30px 18px}
-  .report-nav{padding:0 18px}
+@media (max-width:900px){
+  .header-inner,.container{padding-left:16px;padding-right:16px}
   .grid-2,.methods-grid{grid-template-columns:1fr}
-  .card-grid{grid-template-columns:repeat(2,1fr)}
+  .t10-grid{padding:10px 12px 14px}
+  .report-header h1{font-size:1.6rem}
 }
+@media print{
+  .nav-bar,.theme-toggle{display:none}
+  body{background:#fff}
+  .chart-card,.kpi-card,.methods-card,.table-wrap{border-color:#ccc}
+  .section{break-inside:auto}
+}
+"""
+
+# Plotly.js is embedded in the page when the plotly package is installed (it ships the
+# library), so that the report opens without a network connection; otherwise it is
+# loaded from the Plotly CDN as before.
+try:
+    from plotly.offline import get_plotlyjs
+    _plotly_js = get_plotlyjs()
+    _plotly_version = re.search(r"plotly\.js v([0-9.]+)", _plotly_js[:600])
+    PLOTLY_VERSION = _plotly_version.group(1) if _plotly_version else "embedded"
+    PLOTLY_TAG = f"<script>{_plotly_js}</script>"
+except ImportError:
+    PLOTLY_VERSION = "2.27.0"
+    PLOTLY_TAG = '<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>'
+
+# Figure theme: reads the colour tokens of the page, paints every trace by its role and
+# repaints all figures when the light or dark theme changes.
+NR_JS = """
+window.NR = (function () {
+  var specs = {};
+  var root = document.documentElement;
+  function tok(name) { return getComputedStyle(root).getPropertyValue(name).trim(); }
+  function palette() {
+    var range = function (n, prefix) { var out = []; for (var i = 1; i <= n; i++) out.push(tok(prefix + i)); return out; };
+    return {
+      series: range(8, '--series-'), ordinal: range(4, '--ordinal-'), seq: range(5, '--seq-'),
+      surface: tok('--surface-1'), ink: tok('--text-primary'), ink2: tok('--text-secondary'),
+      muted: tok('--text-muted'), grid: tok('--grid'), axis: tok('--axis'), border: tok('--border-strong')
+    };
+  }
+  function rgba(hex, a) {
+    var h = hex.replace('#', '');
+    if (h.length === 3) h = h.split('').map(function (c) { return c + c; }).join('');
+    var v = parseInt(h, 16);
+    return 'rgba(' + ((v >> 16) & 255) + ',' + ((v >> 8) & 255) + ',' + (v & 255) + ',' + a + ')';
+  }
+  function slot(p, i, n) { return n <= 8 ? p.series[i % 8] : p.series[0]; }
+  function clone(x) { return JSON.parse(JSON.stringify(x)); }
+  function paint(traces, p) {
+    return traces.map(function (t0) {
+      var t = clone(t0), m = t.meta || {}, c;
+      if (m.role === 'sample') {
+        c = slot(p, m.i, m.n);
+        if (m.mark === 'bar') t.marker = {color: c, line: {color: p.surface, width: 1}};
+        if (m.mark === 'hist') t.marker = {color: rgba(c, m.n <= 8 ? 0.5 : 0.2), line: {color: c, width: 1}};
+        if (m.mark === 'area') {
+          if (m.n <= 8) { t.line = {color: c, width: 2}; t.fillcolor = rgba(c, 0.10); }
+          else { t.line = {color: rgba(c, 0.6), width: 1.5}; t.fillcolor = rgba(c, 0.03); }
+        }
+        if (m.mark === 'violin') { t.line = {color: c, width: 1.5}; t.fillcolor = rgba(c, 0.28); t.marker = {color: c, size: 3}; }
+      } else if (m.role === 'samplebars') {
+        t.marker = {color: m.idx.map(function (i) { return slot(p, i, m.n); }), line: {color: p.surface, width: 1}};
+        t.textfont = {color: p.ink2, size: 12};
+      } else if (m.role === 'ordinal') {
+        t.marker = {color: p.ordinal[m.k], line: {color: p.surface, width: 1.5}};
+      } else if (m.role === 'sequential') {
+        t.colorscale = p.seq.map(function (col, i) { return [i / (p.seq.length - 1), col]; });
+        var cb = t.colorbar || {};
+        cb.outlinewidth = 0; cb.tickfont = {color: p.muted, size: 11};
+        cb.title = Object.assign({}, cb.title, {font: {color: p.ink2, size: 12}});
+        t.colorbar = cb;
+      } else if (m.role === 'single') {
+        t.marker = Object.assign({}, t.marker, {color: rgba(p.series[0], 0.7), line: {color: p.surface, width: 2}});
+        t.textfont = {color: p.ink, size: 12};
+      }
+      return t;
+    });
+  }
+  function axis(p, a) {
+    a = a || {};
+    var out = Object.assign({
+      gridcolor: p.grid, linecolor: p.axis, showline: true, zeroline: false, ticks: 'outside',
+      tickcolor: p.axis, ticklen: 4, tickfont: {color: p.muted, size: 11}, automargin: true
+    }, a);
+    out.title = Object.assign({font: {color: p.ink2, size: 12}, standoff: 10}, a.title);
+    return out;
+  }
+  function layout(spec, p) {
+    var l = clone(spec);
+    Object.keys(l).forEach(function (k) { if (/^[xy]axis[0-9]*$/.test(k)) l[k] = axis(p, l[k]); });
+    if (!l.xaxis) l.xaxis = axis(p, {});
+    if (!l.yaxis) l.yaxis = axis(p, {});
+    var legend = Object.assign({orientation: 'h', x: 0, xanchor: 'left', y: 1.02, yanchor: 'bottom',
+      bgcolor: 'rgba(0,0,0,0)', font: {color: p.ink2, size: 12}}, spec.legend || {});
+    legend.title = Object.assign({font: {color: p.muted, size: 12}}, (spec.legend || {}).title);
+    return Object.assign(l, {
+      paper_bgcolor: p.surface, plot_bgcolor: p.surface,
+      font: {family: getComputedStyle(document.body).fontFamily, color: p.ink2, size: 12},
+      margin: Object.assign({t: spec.showlegend === false ? 14 : 44, r: 18, b: 50, l: 60}, spec.margin || {}),
+      legend: legend,
+      hoverlabel: {bgcolor: p.surface, bordercolor: p.border, font: {color: p.ink, size: 12}}
+    });
+  }
+  function config(name) {
+    return {
+      responsive: true, displaylogo: false, displayModeBar: 'hover',
+      modeBarButtonsToRemove: ['select2d', 'lasso2d', 'autoScale2d', 'toggleSpikelines',
+                               'hoverClosestCartesian', 'hoverCompareCartesian'],
+      toImageButtonOptions: {format: 'svg', filename: String(name).replace(/[^A-Za-z0-9]+/g, '_').toLowerCase()}
+    };
+  }
+  function prepare(id, traces, spec, name) {
+    specs[id] = {traces: traces, spec: spec, name: name};
+    var p = palette();
+    return [paint(traces, p), layout(spec, p), config(name)];
+  }
+  function repaint() {
+    var p = palette();
+    Object.keys(specs).forEach(function (id) {
+      var s = specs[id];
+      Plotly.react(id, paint(s.traces, p), layout(s.spec, p), config(s.name));
+    });
+  }
+  var LABELS = {auto: 'Theme: auto', light: 'Theme: light', dark: 'Theme: dark'};
+  function readPref() { try { return localStorage.getItem('nr-theme') || 'auto'; } catch (e) { return 'auto'; } }
+  function setTheme(pref, persist) {
+    if (pref === 'auto') root.removeAttribute('data-theme'); else root.setAttribute('data-theme', pref);
+    if (persist) { try { localStorage.setItem('nr-theme', pref); } catch (e) {} }
+    var b = document.getElementById('theme-toggle');
+    if (b) b.textContent = LABELS[pref];
+    if (Object.keys(specs).length) repaint();
+  }
+  setTheme(readPref(), false);
+  document.addEventListener('DOMContentLoaded', function () {
+    var b = document.getElementById('theme-toggle');
+    if (b) {
+      b.textContent = LABELS[readPref()];
+      b.addEventListener('click', function () {
+        var order = ['auto', 'light', 'dark'];
+        setTheme(order[(order.indexOf(readPref()) + 1) % 3], true);
+      });
+    }
+    if (window.matchMedia) {
+      var mq = window.matchMedia('(prefers-color-scheme: dark)');
+      var onChange = function () { if (readPref() === 'auto') repaint(); };
+      if (mq.addEventListener) mq.addEventListener('change', onChange); else if (mq.addListener) mq.addListener(onChange);
+    }
+    // Highlight, in the navigation bar, the section being read.
+    var links = Array.prototype.slice.call(document.querySelectorAll('.nav-bar a'));
+    if ('IntersectionObserver' in window && links.length) {
+      var byId = {};
+      links.forEach(function (a) { byId[a.getAttribute('href').slice(1)] = a; });
+      var obs = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (e.isIntersecting && byId[e.target.id]) {
+            links.forEach(function (a) { a.classList.remove('active'); });
+            byId[e.target.id].classList.add('active');
+          }
+        });
+      }, {rootMargin: '-45% 0px -50% 0px'});
+      Object.keys(byId).forEach(function (id) { var el = document.getElementById(id); if (el) obs.observe(el); });
+    }
+  });
+  return {prepare: prepare, repaint: repaint, setTheme: setTheme};
+})();
 """
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -840,39 +1075,40 @@ body{font-family:'Inter',sans-serif;background:#f0f4f8;color:#2c3e50}
 # ─────────────────────────────────────────────────────────────────────────────
 now = datetime.now().strftime("%B %d, %Y")
 
+sample_list = ", ".join(html_escape(s) for s in samples) if len(samples) <= 6 else f"{len(samples)} samples"
+
 html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <title>Nanobody Repertoire Report</title>
-  <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+  {PLOTLY_TAG}
 <style>{CSS}</style>
+<script>{NR_JS}</script>
 </head>
 <body>
 
 <!-- HEADER ─────────────────────────────────────────── -->
-<div class="report-header">
-  <h1>Nanorepertoire</h1>
-  <div class="subtitle">Nanobody Repertoire Analysis (VHH Sequencing · Clonotype &amp; CDR3 Analysis Report)</div>
-  <div class="meta" style="margin-top:20px; border-top:1px solid rgba(255,255,255,0.1); padding-top:15px; display:flex; gap:30px; flex-wrap:wrap;">
-    <div class="meta-item" style="font-size:0.85em; opacity:0.8; max-width:400px;">
-      <strong>Pipeline Execution Metrics</strong> 
-      <div style="font-size:0.9em; margin-top:4px; line-height: 1.4;">
-        If you are interested in detailed Start/End Times, CPU Efficiency, and CO₂ metrics, please see the dedicated reports produced upon completion of the pipeline. We sincerely thank the authors of the <strong>nf-co2footprint plugin</strong> and the Green Algorithms project for enabling these measurements.
+<header class="report-header">
+  <div class="header-inner">
+    <div class="header-top">
+      <div>
+        <h1>Nanorepertoire</h1>
+        <p class="subtitle">Nanobody Repertoire Analysis (VHH Sequencing · Clonotype &amp; CDR3 Analysis Report)</p>
       </div>
+      <button class="theme-toggle" id="theme-toggle" type="button">Theme: auto</button>
     </div>
-    <div class="meta-item" style="margin-left:auto; text-align:right; font-size:0.85em; opacity:0.8;">
-      <strong>Report Generated</strong>
-      <div style="margin-top:4px;">{now}</div>
-    </div>
+    <dl class="run-meta">
+      <div><dt>Report generated</dt><dd>{now}</dd></div>
+      <div><dt>Samples</dt><dd>{sample_list}</dd></div>
+      <div><dt>Clustering</dt><dd>CD-HIT, {identity_pct} identity, word size {word_size}</dd></div>
+    </dl>
   </div>
-</div>
+</header>
 
 <!-- NAVIGATION ─────────────────────────────────────── -->
-
-<!-- NAVIGATION ─────────────────────────────────────── -->
-<nav class="nav-bar">
+<nav class="nav-bar"><div class="nav-inner">
   <a href="#summary">Summary</a>
   {'<a href="#accounting">Sequence accounting</a>' if accounting else ''}
   <a href="#clusters"><span class="nav-num">1</span>Clonal Clusters</a>
@@ -880,13 +1116,13 @@ html = f"""<!DOCTYPE html>
   <a href="#aminoacids"><span class="nav-num">3</span>Amino Acids</a>
   <a href="#clonality"><span class="nav-num">4</span>Clonality</a>
   <a href="#methods"><span class="nav-num">5</span>Methods</a>
-</nav>
+</div></nav>
 
 <div class="container">
 
 <!-- SECTION 0: KPI CARDS ══════════════════════════════════════════════════ -->
 <div id="summary" class="section">
-  <div class="section-header" style="border-bottom:none; margin-bottom:5px;">
+  <div class="section-header">
     <h2>Summary</h2>
   </div>
   <div class="kpi-grid">
@@ -913,7 +1149,7 @@ html = f"""<!DOCTYPE html>
     <div class="kpi-card">
       <div class="kpi-label">Samples Analysed</div>
       <div class="kpi-value">{len(samples)}</div>
-      <div class="kpi-sub">Independent libraries</div>
+      <div class="kpi-sub">Libraries in this report</div>
     </div>
   </div>
 </div>
@@ -937,22 +1173,21 @@ html = f"""<!DOCTYPE html>
     <br><cite>Deschaght et al. 2017. Front. Immunol. doi:10.3389/fimmu.2017.00420 · Li &amp; Godzik 2006 (CD-HIT). Bioinformatics. doi:10.1093/bioinformatics/btl158</cite>
   </div>
 
-  <div style="margin-bottom:20px">{metrics_table}</div>
+  {metrics_table}
 
+  <div class="grid-2">
   {make_fig("fig1", fig1_traces, fig1_layout,
     "Clusters of each sample split into four size classes: 1 to 4, 5 to 99, 100 to 999 and at least 1000 members. "
     "The height of the bars grows with sequencing depth, so compare the proportions between samples rather than the counts.",
     "Cluster Size Classes")}
-
-  <div class="grid-2">
     {make_fig("fig2", fig2_traces, fig2_layout,
       "Cluster counts at four size thresholds (log scale). Reveals the hierarchical repertoire structure from singletons to dominant clones.",
       "Cluster Abundance at Size Thresholds")}
-    {make_fig("fig10", fig10_traces, fig10_layout,
+  </div>
+  {top10_panel(
       "The 10 most abundant clusters per sample. Their size counts sequences, not binding affinity, and can come from any of the causes listed above; "
       "their representatives are a starting list for expression and binding tests.",
       "Top-10 Largest Clonotypes per Sample")}
-  </div>
 </div>
 
 <!-- ══════════════════════════════════════════════════
@@ -1000,7 +1235,7 @@ html = f"""<!DOCTYPE html>
     and are counted separately. The full offset distribution is written to <code>cdr3_boundary_qc.tsv</code> and
     <code>cdr3_boundary_offsets.tsv</code> next to this report.
   </div>
-  <div style="margin-bottom:20px">{boundary_table}</div>
+  {boundary_table}
   {make_fig("fig11", fig11_traces, fig11_layout,
     "Distribution of the offsets between the called and the motif-based boundaries, per sample and per terminus, "
     "as a percentage of the sequences that could be compared. The y axis is logarithmic so that rare disagreements "
@@ -1023,7 +1258,7 @@ html = f"""<!DOCTYPE html>
   </div>
   {make_fig("fig6", fig6_traces, fig6_layout,
     "Heatmap of amino acid frequency (% of all CDR3 residues) per sample, computed on the distinct CDR3s of the sample, "
-    "each counted once whatever the size of its cluster. Dark = high frequency.",
+    "each counted once whatever the size of its cluster. The colour bar gives the scale.",
     "Amino Acid Frequency Heatmap")}
   {make_fig("fig7", fig7_traces, fig7_layout,
     "Side-by-side comparison of amino acid usage per sample, computed on the same distinct CDR3s as the heatmap.",
@@ -1079,7 +1314,7 @@ html = f"""<!DOCTYPE html>
   <div class="methods-grid">
 
     <div class="methods-card">
-      <h3>🔬 Pre-processing &amp; Translation</h3>
+      <h3>Pre-processing &amp; Translation</h3>
       <p>Paired-end FASTQ reads were adapter-trimmed with <strong>Cutadapt</strong> and merged with <strong>FLASH</strong>
       with its default settings (minimum overlap 10 bp, maximum expected overlap 65 bp, maximum mismatch density 0.25) and
       one thread, so that the reads keep their input order.
@@ -1093,7 +1328,7 @@ html = f"""<!DOCTYPE html>
     </div>
 
     <div class="methods-card">
-      <h3>🧩 CD-HIT Clustering</h3>
+      <h3>CD-HIT Clustering</h3>
       <p>Translated amino acid sequences were clustered with <strong>CD-HIT</strong>:</p>
       <ul>
         <li>Identity threshold: {identity_threshold/100:.2f} ({identity_pct})</li>
@@ -1106,7 +1341,7 @@ html = f"""<!DOCTYPE html>
     </div>
 
     <div class="methods-card">
-      <h3>📐 Diversity Metrics</h3>
+      <h3>Diversity Metrics</h3>
       <p><strong>Shannon H' (abundance):</strong> −Σ p<sub>i</sub> ln p<sub>i</sub> over the clone frequencies p<sub>i</sub> = cluster size / clustered sequences. <strong>Clonality</strong> is 1 − H'/ln(S), with S the number of clusters: 0 when every clone is equally abundant, approaching 1 as the library concentrates into one lineage (undefined, and reported as NA, when S = 1). <strong>Simpson</strong> is the Gini–Simpson index 1 − Σ p<sub>i</sub>², <strong>Gini</strong> the Gini coefficient of the cluster sizes, <strong>D50</strong> the smallest number of clones covering half of the sequences, and <strong>Top1/Top10</strong> the share of the library held by the largest one or ten clones.</p>
       <p><strong>Clusters per 1000 sequences:</strong> richness normalised by sequencing depth. Absolute cluster counts are not comparable between libraries sequenced at different depths; this ratio is.</p>
       <p><strong>CDR3 length evenness (H'):</strong> Shannon entropy of the CDR3 <em>length</em> distribution. It measures how evenly paratope lengths are spread and is reported separately from the abundance-based indices above, which it must not be confused with.</p>
@@ -1115,7 +1350,12 @@ html = f"""<!DOCTYPE html>
     </div>
 
     <div class="methods-card">
-      <h3>📚 Key References</h3>
+      <h3>Pipeline Execution Metrics</h3>
+      <p>If you are interested in detailed Start/End Times, CPU Efficiency, and CO₂ metrics, please see the dedicated reports produced upon completion of the pipeline. We sincerely thank the authors of the <strong>nf-co2footprint plugin</strong> and the Green Algorithms project for enabling these measurements.</p>
+    </div>
+
+    <div class="methods-card">
+      <h3>Key References</h3>
       <ul class="ref-list">
         <li>Deschaght et al. 2017. <em>Front. Immunol.</em> doi:10.3389/fimmu.2017.00420</li>
         <li>Bolotin et al. 2015. <em>Nature Methods</em>. doi:10.1038/nmeth.3364</li>
@@ -1129,10 +1369,10 @@ html = f"""<!DOCTYPE html>
 
 </div><!-- /container -->
 
-<div class="footer">
+<footer class="footer">
   Nanobody Repertoire Report &nbsp;·&nbsp; lescailab/nanorepertoire pipeline &nbsp;·&nbsp; {now}<br>
-  <span style="opacity:.5">Based on Deschaght 2017 framework · Charts powered by Plotly.js 2.27</span>
-</div>
+  Based on Deschaght 2017 framework · Charts powered by Plotly.js {PLOTLY_VERSION}
+</footer>
 
 </body>
 </html>"""
@@ -1149,4 +1389,4 @@ print("Writing CDR3 boundary QC to cdr3_boundary_qc.tsv and cdr3_boundary_offset
 if accounting:
     write_accounting_tsv(accounting, os.path.join(qc_dir, "sequence_accounting.tsv"))
     print("Writing the sequence accounting to sequence_accounting.tsv ...")
-print(f"✅ Done! Open: {output_html}")
+print(f"Done. Open: {output_html}")
