@@ -1165,7 +1165,7 @@ html = f"""<!DOCTYPE html>
     <h2>Clonal Cluster Analysis</h2>
   </div>
   <div class="section-intro">
-    Amino acid sequences were clustered using <strong>CD-HIT</strong> at {identity_pct} identity, following the approach of Deschaght et al. (2017).
+    Amino acid sequences were clustered using <strong>CD-HIT</strong> at {identity_pct} identity; Deschaght et al. (2017) clustered nanobody sequences in the same way, at 90% identity.
     The size of a cluster is the number of sequences assigned to it, and clusters are grouped into four size classes: 1 to 4, 5 to 99, 100 to 999 and at least 1000 members.
     A large cluster can arise from several causes that this report cannot tell apart: clonal expansion of B cells in the animal, enrichment during a selection step
     such as phage display panning, differences in transcript abundance between cells, PCR amplification bias, and repeated sequencing of the same molecule,
@@ -1337,7 +1337,7 @@ html = f"""<!DOCTYPE html>
         <li>One thread, so that the clusters do not depend on the number of threads</li>
         <li>Four size thresholds analysed: 1, ≥5, ≥100, ≥1000</li>
       </ul>
-      <p>This follows the approach of Deschaght et al. (2017) for large nanobody repertoires.</p>
+      <p>Deschaght et al. (2017) clustered nanobody sequences with CD-HIT at 0.90 identity, the default of this pipeline, and grouped the clusters into three size classes (1, 2 to 10 and more than 10 members); the four size classes used here are a different grouping.</p>
     </div>
 
     <div class="methods-card">
@@ -1351,16 +1351,21 @@ html = f"""<!DOCTYPE html>
 
     <div class="methods-card">
       <h3>Pipeline Execution Metrics</h3>
-      <p>If you are interested in detailed Start/End Times, CPU Efficiency, and CO₂ metrics, please see the dedicated reports produced upon completion of the pipeline. We sincerely thank the authors of the <strong>nf-co2footprint plugin</strong> and the Green Algorithms project for enabling these measurements.</p>
+      <p>Start and end times and CPU usage of every task are in the Nextflow execution report and timeline, in <code>pipeline_info/</code>. Estimated energy use and CO₂ emissions are in the reports of the <strong>nf-co2footprint plugin</strong> (Carl et al.), which follows the Green Algorithms method (Lannelongue et al. 2021). We sincerely thank the authors of the <strong>nf-co2footprint plugin</strong> and the Green Algorithms project for enabling these measurements.</p>
     </div>
 
     <div class="methods-card">
       <h3>Key References</h3>
       <ul class="ref-list">
         <li>Deschaght et al. 2017. <em>Front. Immunol.</em> doi:10.3389/fimmu.2017.00420</li>
-        <li>Bolotin et al. 2015. <em>Nature Methods</em>. doi:10.1038/nmeth.3364</li>
-        <li>Mitchell &amp; Colwell 2018. <em>Proteins</em>. doi:10.1002/prot.25497</li>
+        <li>Martin 2011. <em>EMBnet.journal</em>. doi:10.14806/ej.17.1.200 (Cutadapt)</li>
+        <li>Magoč &amp; Salzberg 2011. <em>Bioinformatics</em>. doi:10.1093/bioinformatics/btr507 (FLASH)</li>
         <li>Li &amp; Godzik 2006. <em>Bioinformatics</em>. doi:10.1093/bioinformatics/btl158 (CD-HIT)</li>
+        <li>Bagordo et al. 2026. <em>J. Chem. Inf. Model.</em> doi:10.1021/acs.jcim.6c00716 (nanoCDR-X)</li>
+        <li>Lefranc et al. 2003. <em>Dev. Comp. Immunol.</em> doi:10.1016/s0145-305x(02)00039-3 (IMGT numbering)</li>
+        <li>Mitchell &amp; Colwell 2018. <em>Proteins</em>. doi:10.1002/prot.25497</li>
+        <li>Bolotin et al. 2015. <em>Nature Methods</em>. doi:10.1038/nmeth.3364 (MiXCR)</li>
+        <li>Lannelongue et al. 2021. <em>Adv. Sci.</em> doi:10.1002/advs.202100707 (Green Algorithms)</li>
       </ul>
     </div>
 
@@ -1371,7 +1376,7 @@ html = f"""<!DOCTYPE html>
 
 <footer class="footer">
   Nanobody Repertoire Report &nbsp;·&nbsp; lescailab/nanorepertoire pipeline &nbsp;·&nbsp; {now}<br>
-  Based on Deschaght 2017 framework · Charts powered by Plotly.js {PLOTLY_VERSION}
+  Charts powered by Plotly.js {PLOTLY_VERSION}
 </footer>
 
 </body>

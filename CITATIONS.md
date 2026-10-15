@@ -62,6 +62,16 @@
 
   > Vander Heiden JA, Marquez S, Marthandan N, Bukhari SAC, Busse CE, Corrie B, Hershberg U, Kleinstein SH, Matsen FA 4th, Ralph DK, Rosenfeld AM, Schramm CA; AIRR Community; Christley S, Laserson U. AIRR Community Standardized Representations for Annotated Immune Repertoires. Front Immunol. 2018;9:2206. doi: 10.3389/fimmu.2018.02206. PubMed PMID: 30323809; PubMed Central PMCID: PMC6173121.
 
+## Carbon footprint
+
+- [nf-co2footprint](https://github.com/nextflow-io/nf-co2footprint)
+
+  > Carl J, Volkmann N, Mir-Pedrol J, Ewels P, Nahnsen S, Krakau S. nextflow-io/nf-co2footprint. nextflow-io. Available: https://github.com/nextflow-io/nf-co2footprint
+
+- [Green Algorithms](https://www.green-algorithms.org)
+
+  > Lannelongue L, Grealey J, Inouye M. Green Algorithms: Quantifying the Carbon Footprint of Computation. Adv Sci. 2021;8(12):2100707. doi: 10.1002/advs.202100707.
+
 ## Software packaging/containerisation tools
 
 - [Anaconda](https://anaconda.com)

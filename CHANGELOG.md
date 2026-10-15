@@ -20,11 +20,11 @@ Second major release focused on repertoire analysis robustness, reporting refact
 - Refactored reporting by introducing `repertoire_report` subworkflow and hybrid reporting integration.
 - Parameterized CD-HIT and renamed report stage to `AGGREGATE_STATS` for clearer module semantics.
 - Updated pipeline ownership references from `nf-core` to `lescailab` metadata where applicable.
-- Refined output routing for pipeline info and CO2-related artifacts to align with official plugin guidance.
 - `run_nanocdrx.py` writes every cluster representative to `<sample>_cdr3.tsv` exactly once, with the new statuses `cdr3-too-long`, `excluded-length` and `excluded-nonstandard`. Representatives containing non-standard residues are now excluded instead of having those residues deleted, which shortened their CDR3.
 - `run_nanocdrx.py` calls `predict_cdrs` once per sample instead of once per 500 sequences.
 - `NANOTRANSLATE` is faster and uses less memory: the start and end motifs are built from their amino acids instead of being listed one by one, each motif is searched once, reads are processed in groups instead of being loaded all at once, and the script uses the CPUs assigned by Nextflow instead of all those of the machine. The output is unchanged (verified byte by byte on two llama samples and an alpaca subset).
 - Redesigned the interactive report page (`nanorepertoire_report.html`) without changing its data: each sample keeps one colour across all figures, from a palette checked for colour blindness (a single colour above eight samples, without legends); light and dark themes; the Top-10 clusters are one ranked list per sample with the share of its clustered sequences; the identity histograms share their bins; the CDR3 boundary offsets have one panel per terminus. Plotly.js is embedded in the page when the plotly package is installed, as in the module container, so the report opens without a network connection; `plotly=6.7.0` is added to the conda environment of `NANOREPERTOIRE_REPORT`.
+- The interactive report cites every tool and method it names (Cutadapt, FLASH, nanoCDR-X, IMGT, Green Algorithms), no longer attributes its cluster size classes to Deschaght et al. 2017, and says where the execution and CO₂ reports are; `CITATIONS.md` lists nf-co2footprint and Green Algorithms.
 
 ### `Fixed`
 
@@ -39,6 +39,7 @@ Second major release focused on repertoire analysis robustness, reporting refact
 - Fixed `NANOTRANSLATE` discarding VHH whose first three residues or final `TVSS` differ by one amino acid from the start and end motifs (for example `QVR`, `QGQ`, `TVSA`, `IVSS`): reads with no exact motif on either strand are searched again in the six reading frames with anchors that tolerate one substitution, confirmed by residues conserved in the IMGT alpaca germline (the FR1 cysteine, the second cysteine and the `WG.G` motif of framework 4). The rescued reads are counted in the translation log and listed in a `.rescued` file next to `.notfound` and `.outframe`.
 - Fixed an 11-nt end motif in `NANOTRANSLATE` (`CTGTTAGCTCA`, a truncated encoding of `TVSS`): it never matched its intended `ACTGTTAGCTCA` and could match elsewhere in a read, leaving the VHH region out of frame. All end motifs are now the 12-nt encodings of `TVSS`.
 - The aggregated tables and the Quarto report list the samples sorted by name, instead of in the order in which the samples finished clustering.
+- Fixed the nf-co2footprint reports being written in the launch directory: they are now written in `pipeline_info/`, next to the Nextflow execution reports, and listed in `docs/output.md`.
 - Fixed the software versions report, which listed only FastQC and the reports: the versions of the `FASTQ_TO_FASTA` and `FASTA_CLUSTERING` steps were never collected. Also fixed the seqtk version recorded by `RENAME` and removed the pandas and plotly versions from `NANOREPERTOIRE_REPORT`, which does not use them.
 - Improved Docker compatibility on Apple Silicon and fixed ARM64 Wave container handling for report rendering.
 - Fixed resource-limit guard logic (`check_max`) and conda channel checks for Nextflow `25.10.4` + micromamba.
