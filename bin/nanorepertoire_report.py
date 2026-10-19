@@ -734,8 +734,8 @@ if accounting:
     How many sequences of each sample reach every step of the pipeline, and where the others were lost.
     Rows in bold are the steps; the rows below a step, marked with −, are the sequences lost before the next one,
     with the reason. The upper block counts reads: read pairs until FLASH merges each pair into one read, then
-    reads and translated sequences. The lower block counts <strong>cluster representatives</strong>: CD-HIT keeps
-    one representative per cluster and only representatives are annotated by nanoCDR-X, so these numbers are not
+    reads and translated sequences. The lower block counts <strong>cluster representatives</strong>: one sequence
+    per cluster, its most frequent one, is annotated by nanoCDR-X, so these numbers are not
     comparable with the upper block. Percentages are relative to the first row of each block. NA means that the
     count could not be read. The same counts are written to <code>sequence_accounting.tsv</code> next to this report.
   </div>
@@ -1323,8 +1323,10 @@ html = f"""<!DOCTYPE html>
       again with anchors that tolerate one substitution, confirmed by residues conserved in the IMGT alpaca germline.
       Regions out of frame, with a stop codon or an undetermined residue, or shorter than 70 residues (primer
       dimers and VHH fragments; a complete VHH is longer than 100 residues), were discarded.</p>
-      <p>The CDR3 of each cluster representative was annotated with <strong>nanoCDR-X</strong> (Bagordo et al. 2026),
-      a deep-learning model for nanobody CDR annotation.</p>
+      <p>The CDR3 of each cluster was annotated with <strong>nanoCDR-X</strong> (Bagordo et al. 2026),
+      a deep-learning model for nanobody CDR annotation, on the most frequent sequence of the cluster. CD-HIT makes
+      the longest sequence the representative of a cluster, and in large clusters the longest sequence is often an
+      atypical one, on which the CDR3 is read wrongly or not at all.</p>
     </div>
 
     <div class="methods-card">

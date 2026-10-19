@@ -3,6 +3,7 @@
 
 include { CDHIT_CDHIT } from '../../../modules/nf-core/cdhit/cdhit/main.nf'
 include { READCDHIT } from '../../../modules/local/readcdhit/main.nf'
+include { CLUSTER_MOSTFREQUENT } from '../../../modules/local/clustermostfrequent/main.nf'
 include { NANOCDRX } from '../../../modules/local/nanocdrx/main.nf'
 //include {MAFFT         } from '../../../modules/nf-core/mafft/main.nf'
 
@@ -24,12 +25,19 @@ workflow FASTA_CLUSTERING {
     READCDHIT(CDHIT_CDHIT.out.clusters)
     ch_versions = ch_versions.mix(READCDHIT.out.versions.first())
 
-    NANOCDRX(CDHIT_CDHIT.out.fasta)
+    // The CDR3 of each cluster is annotated on its most frequent sequence, not on the CD-HIT
+    // representative: CD-HIT makes the longest sequence the representative, and in large clusters
+    // the longest sequence is often an atypical one.
+    CLUSTER_MOSTFREQUENT(input_ch.join(CDHIT_CDHIT.out.clusters))
+    ch_versions = ch_versions.mix(CLUSTER_MOSTFREQUENT.out.versions.first())
+
+    NANOCDRX(CLUSTER_MOSTFREQUENT.out.fasta)
     ch_versions = ch_versions.mix(NANOCDRX.out.versions.first())
 
     emit:
     cluster = CDHIT_CDHIT.out.fasta // channel: [[id], [ fastq_merged ]]
     clusteread = READCDHIT.out.summaryonly // channel: [[id], [ fastq_renamed]]
+    mostfrequent = CLUSTER_MOSTFREQUENT.out.tsv // channel: [[id], [ most_frequent.tsv ]]
     cdrpredicted = NANOCDRX.out.fasta
     cdrtsv = NANOCDRX.out.tsvonly
     cdrhistograms = NANOCDRX.out.histonly

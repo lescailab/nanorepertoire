@@ -1,0 +1,55 @@
+{
+    "most-frequent-sequence-per-cluster": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test1",
+                            "single_end": false
+                        },
+                        "test1_most_frequent.fasta:md5,d8b169fe3833d41f0d62cdb0536bd87c"
+                    ]
+                ],
+                "1": [
+                    [
+                        {
+                            "id": "test1",
+                            "single_end": false
+                        },
+                        "test1_most_frequent.tsv:md5,32d27a6a4438b336a5c2ec0dd592005b"
+                    ]
+                ],
+                "2": [
+                    "versions.yml:md5,9f006a5b3b0296f5fc4d9b7934721096"
+                ],
+                "fasta": [
+                    [
+                        {
+                            "id": "test1",
+                            "single_end": false
+                        },
+                        "test1_most_frequent.fasta:md5,d8b169fe3833d41f0d62cdb0536bd87c"
+                    ]
+                ],
+                "tsv": [
+                    [
+                        {
+                            "id": "test1",
+                            "single_end": false
+                        },
+                        "test1_most_frequent.tsv:md5,32d27a6a4438b336a5c2ec0dd592005b"
+                    ]
+                ],
+                "versions": [
+                    "versions.yml:md5,9f006a5b3b0296f5fc4d9b7934721096"
+                ]
+            }
+        ],
+        "meta": {
+            "nf-test": "0.9.2",
+            "nextflow": "25.04.8"
+        },
+        "timestamp": "2026-10-19T19:44:15.79904"
+    }
+}

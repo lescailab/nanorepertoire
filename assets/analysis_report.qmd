@@ -164,7 +164,7 @@ kable(clustercounts) %>%
 
 ## CDR3 analysis
 
-The CDR3 of each cluster representative is annotated with nanoCDR-X (Bagordo et al. 2026). The reference definition is CDR3-IMGT, positions 105–117 of the IMGT unique numbering, between the conserved cysteine 104 and tryptophan 118, both excluded (Lefranc et al. 2003); the agreement of the nanoCDR-X calls with it is reported in the CDR3 annotation QC of the interactive report. We also compute the length distribution of these CDR3 sequences.
+The CDR3 of each cluster is annotated with nanoCDR-X (Bagordo et al. 2026) on the most frequent sequence of the cluster, not on the representative chosen by CD-HIT, which is the longest member and in large clusters is often an atypical sequence. The reference definition is CDR3-IMGT, positions 105–117 of the IMGT unique numbering, between the conserved cysteine 104 and tryptophan 118, both excluded (Lefranc et al. 2003); the agreement of the nanoCDR-X calls with it is reported in the CDR3 annotation QC of the interactive report. We also compute the length distribution of these CDR3 sequences.
 
 ```{r }
 #| label: cdrhistogram
@@ -207,7 +207,7 @@ ggplot(data = cdrhists) +
 
 ## Evolution of CDR3
 
-Every cluster is joined to the CDR3 of its representative and to the metadata of its sample (individual, immunisation, boost), and the result is written to `cdr3_boost_overview_table.tsv`. When the pipeline is run with `--calculate_tree`, the CDR3s of the clusters with more than `cluster_size_threshold` members are aligned with ClustalOmega for each individual, and a neighbour-joining tree is drawn below.
+Every cluster is joined to its CDR3 and to the metadata of its sample (individual, immunisation, boost), and the result is written to `cdr3_boost_overview_table.tsv`. When the pipeline is run with `--calculate_tree`, the CDR3s of the clusters with more than `cluster_size_threshold` members are aligned with ClustalOmega for each individual, and a neighbour-joining tree is drawn below.
 
 ```{r }
 #| label: fastaRep
@@ -383,4 +383,4 @@ Clustering of the translated sequences is performed using the software CD-HIT (L
 
 ## Extracting the CDR3 sequences
 
-The CDR3 is annotated on the cluster representatives with nanoCDR-X (Bagordo et al. 2026), a deep-learning model for nanobody CDR annotation. The reference definition of the CDR3 is CDR3-IMGT (Lefranc et al. 2003): the residues between the second conserved cysteine (IMGT position 104) and the J-region tryptophan (IMGT position 118), both excluded, which is also the `cdr3` field of the AIRR Community standard (Vander Heiden et al. 2018). The interactive report compares every nanoCDR-X call with this definition, locating the two anchors with sequence motifs.
+The CDR3 is annotated with nanoCDR-X (Bagordo et al. 2026), a deep-learning model for nanobody CDR annotation, on one sequence per cluster: its most frequent sequence. CD-HIT makes the longest sequence of a cluster its representative, and in large clusters the longest sequence is often an atypical one, for example with an extra stretch after framework 4, on which the CDR3 is read wrongly or not at all. The reference definition of the CDR3 is CDR3-IMGT (Lefranc et al. 2003): the residues between the second conserved cysteine (IMGT position 104) and the J-region tryptophan (IMGT position 118), both excluded, which is also the `cdr3` field of the AIRR Community standard (Vander Heiden et al. 2018). The interactive report compares every nanoCDR-X call with this definition, locating the two anchors with sequence motifs.

@@ -14,6 +14,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 
 - [FastQC](#fastqc) - Raw read QC
 - [Clustering summaries](#clustering-summaries) - Per-cluster tables produced from the CD-HIT output
+- [Most frequent sequence of each cluster](#most-frequent-sequence-of-each-cluster) - The sequence of each cluster on which its CDR3 is annotated
 - [CDR3 annotation](#cdr3-annotation) - Per-sample CDR3 calls from nanoCDR-X, with the outcome of every cluster representative
 - [Aggregated statistics](#aggregated-statistics) - Tabular exports shared by the two reports
 - [Repertoire report](#repertoire-report) - Interactive HTML report and its QC tables
@@ -54,6 +55,31 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 
 Because `Identity` is nullable, any downstream consumer must exclude `NA` rather than coerce it to a number: coercing to `0` places singletons at the origin of the identity histogram, and coercing to `100` asserts a perfect identity that was never measured. Values are bounded below by the clustering threshold (`--cdhit_identity`), since CD-HIT does not admit a sequence into a cluster below it.
 
+### Most frequent sequence of each cluster
+
+<details markdown="1">
+<summary>Output files</summary>
+
+- `cluster_most_frequent/`
+  - `*_most_frequent.fasta`: one sequence per cluster, the most frequent one, under the identifier of the CD-HIT representative. This is the input of nanoCDR-X.
+  - `*_most_frequent.tsv`: one row per cluster, with the sequence chosen and how often it occurs in the cluster.
+
+</details>
+
+CD-HIT makes the longest sequence of a cluster its representative. In large clusters the longest sequence is often an atypical one, for example with an extra stretch after framework 4, and the CDR3 read on it is wrong or missing. `bin/cluster_most_frequent.py` groups the members of each cluster by identical sequence and chooses the largest group; ties go to the member CD-HIT lists first in the cluster (CD-HIT lists members by decreasing length, then in input order), so the choice is the same in every run. The clusters, their sizes and their identifiers are those of CD-HIT.
+
+`*_most_frequent.tsv` has the following schema:
+
+| Column | Type | Description |
+| :--- | :--- | :--- |
+| `cluster_representative` | string | Identifier of the CD-HIT representative, used as the identifier of the cluster. |
+| `chosen_member` | string | Identifier of the first member carrying the chosen sequence. |
+| `cluster_size` | integer | Number of sequences in the cluster. |
+| `chosen_copies` | integer | Number of members identical to the chosen sequence. |
+| `chosen_share` | float | `chosen_copies / cluster_size`. |
+| `representative_length`, `chosen_length` | integer | Lengths, in residues, of the CD-HIT representative and of the chosen sequence. |
+| `same_as_representative` | `yes` or `no` | Whether the chosen sequence is identical to the CD-HIT representative. |
+
 ### CDR3 annotation
 
 <details markdown="1">
@@ -67,15 +93,15 @@ Because `Identity` is nullable, any downstream consumer must exclude `NA` rather
 
 </details>
 
-`bin/run_nanocdrx.py` runs nanoCDR-X on the cluster representatives written by CD-HIT, not on every sequence. Representatives shorter than 70 or longer than 150 residues (150 is the input length of the nanoCDR-X model), and representatives containing a residue outside the 20 standard amino acids, such as the `X` produced when a codon contains an undetermined base, are not sent to the model. They are kept in the outputs with their own status, so that every representative appears in `*_cdr3.tsv` exactly once. If nanoCDR-X fails, or does not return a result for every sequence it was given, the step stops with an error instead of producing partial output.
+`bin/run_nanocdrx.py` runs nanoCDR-X on one sequence per cluster, not on every sequence: the most frequent sequence of the cluster, chosen by `CLUSTER_MOSTFREQUENT` (see above), under the identifier of the CD-HIT representative. In the CDR3 outputs, "representative" means this sequence. Representatives shorter than 70 or longer than 150 residues (150 is the input length of the nanoCDR-X model), and representatives containing a residue outside the 20 standard amino acids, such as the `X` produced when a codon contains an undetermined base, are not sent to the model. They are kept in the outputs with their own status, so that every representative appears in `*_cdr3.tsv` exactly once. If nanoCDR-X fails, or does not return a result for every sequence it was given, the step stops with an error instead of producing partial output.
 
 `*_cdr3.tsv` has the following schema:
 
 | Column | Type | Description |
 | :--- | :--- | :--- |
-| `ID` | string | Identifier of the cluster representative, as in the CD-HIT output. |
+| `ID` | string | Identifier of the cluster: that of its CD-HIT representative, as in the CD-HIT output. |
 | `CDR3` | string or `NA` | CDR3 called by nanoCDR-X. `NA` when no CDR3 was called or the representative was not sent to the model. |
-| `sequence` | string | Amino-acid sequence of the representative. |
+| `sequence` | string | Amino-acid sequence annotated for the cluster: its most frequent sequence. |
 | `unique` | string | Status of the representative, one of the values below. Despite its name, the column holds a status, not a flag. |
 
 | Status | Meaning |
@@ -92,7 +118,7 @@ Because `Identity` is nullable, any downstream consumer must exclude `NA` rather
 | Column | Description |
 | :--- | :--- |
 | `sample` | Sample identifier. |
-| `input_sequences` | Cluster representatives read from the CD-HIT output. |
+| `input_sequences` | Clusters, one sequence each (the most frequent sequence of the cluster). |
 | `excluded_length`, `excluded_nonstandard` | Representatives not sent to the model, by reason. |
 | `sent_to_model` | Representatives passed to nanoCDR-X: `input_sequences − excluded_length − excluded_nonstandard`. |
 | `with_cdr3`, `no_cdr3` | Outcome of the model: `sent_to_model = with_cdr3 + no_cdr3`. |

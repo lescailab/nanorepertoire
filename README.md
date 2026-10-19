@@ -39,6 +39,7 @@ Processes raw sequencing data to produce translated FASTA sequences:
 Clusters and analyses translated nanobody sequences:
 - **CD-HIT** – clustering of identical or highly similar sequences (configurable identity threshold)
 - **ReadCDHIT** – extraction and summarization of cluster statistics
+- **Cluster_mostfrequent** – choice of the most frequent sequence of each cluster, on which its CDR3 is annotated (CD-HIT makes the longest sequence the representative, often an atypical one in large clusters)
 - **Nanocdr-x** – CDR3 extraction and analysis tool
 
 ### 3. `repertoire_report`

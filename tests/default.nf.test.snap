@@ -8,6 +8,9 @@
                 "CDHIT_CDHIT": {
                     "cdhit": "4.8.1"
                 },
+                "CLUSTER_MOSTFREQUENT": {
+                    "python": "3.9.1"
+                },
                 "CUTADAPT": {
                     "cutadapt": 4.9
                 },
@@ -52,6 +55,11 @@
                 "cdhit/sample01.fasta.clstr",
                 "cdhit/sample02.fasta",
                 "cdhit/sample02.fasta.clstr",
+                "cluster_most_frequent",
+                "cluster_most_frequent/sample01_most_frequent.fasta",
+                "cluster_most_frequent/sample01_most_frequent.tsv",
+                "cluster_most_frequent/sample02_most_frequent.fasta",
+                "cluster_most_frequent/sample02_most_frequent.tsv",
                 "cutadapt",
                 "cutadapt/sample01.cutadapt.log",
                 "cutadapt/sample01_1.trim.fastq.gz",
@@ -171,17 +179,21 @@
                 "report/sequence_accounting.tsv"
             ],
             [
-                "cdr3_boost_overview_table.tsv:md5,c3f9a15d588195739bfaa1ac3e8e75d5",
-                "cdrcounts.csv:md5,1b9b652beca340ffdbd1535a205a7f3b",
-                "cdrhists.csv:md5,b83a00e3c659a9bdeaeb833f4289ac5b",
+                "cdr3_boost_overview_table.tsv:md5,414490866828b4218422043d94332df6",
+                "cdrcounts.csv:md5,27084b233a7cdd7835a384524facbbaa",
+                "cdrhists.csv:md5,bc84ba82ec5a31c5994b5fc07b6f9ee4",
                 "clusterbig.csv:md5,085a50854026938923626f3664f87895",
                 "clustercounts.csv:md5,6175f1da53c28c8d98958e7abeb0ce55",
-                "fastaSeq.csv:md5,75b65014307c9ecad0a63dfa2cf51928",
+                "fastaSeq.csv:md5,22bf05142730c3fe7917e639a84ac401",
                 "sampledata.tsv:md5,7b9ed0cc1a792098c002149340e2f4fe",
                 "sample01.fasta:md5,6c3a7a7f5e379b3f4829da323dc4bf39",
                 "sample01.fasta.clstr:md5,103402ee91cca054e5bfa3e67b6f3e43",
                 "sample02.fasta:md5,28d83272a25c84432a8819c282d70f88",
                 "sample02.fasta.clstr:md5,bf090e7e6216ff92780285e695a9a2a4",
+                "sample01_most_frequent.fasta:md5,896dd9f27c780f1f20276e2041bace75",
+                "sample01_most_frequent.tsv:md5,6cd810f95437e78e00867710cdef1d99",
+                "sample02_most_frequent.fasta:md5,bf4a35f49c8855ec5f8d8862c3078789",
+                "sample02_most_frequent.tsv:md5,f2c9652263fffff1241b0e1cb85d5e6e",
                 "sample01_1.trim.fastq.gz:md5,59230cd0ddccbcc2570da094a0d11979",
                 "sample01_2.trim.fastq.gz:md5,7a43f31adca405c0730727ca226b10fc",
                 "sample02_1.trim.fastq.gz:md5,abc5f1bec32d1a8beb4eeba9c95d2d50",
@@ -207,14 +219,14 @@
                 "multiqc_citations.txt:md5,4c806e63a283ec1b7e78cdae3a923d4f",
                 "multiqc_fastqc.txt:md5,8d58a776c90456a1379d149dc52c19d3",
                 "multiqc_general_stats.txt:md5,d6ddb7a49d90c11d580e30759786b5a0",
-                "sample01_cdr3.fasta:md5,1fed4a4d0d8e7c2c4304c9d017fabbf3",
-                "sample01_cdr3.hist:md5,884ba1e31150c2a4098a6a657c4f1fad",
-                "sample01_cdr3.tsv:md5,3f0b294c022b0eb0b517ebe16c02d8cb",
-                "sample01_cdr3_summary.tsv:md5,99c310f0500efd358adea8407a6fbbb3",
-                "sample02_cdr3.fasta:md5,64448bea07bccc32833ba2d364d2a1b1",
-                "sample02_cdr3.hist:md5,59fb80790f28a8f0b76de1a0aeb14c5e",
-                "sample02_cdr3.tsv:md5,e3f4cf429ffc4639bcdba939dd22c1dc",
-                "sample02_cdr3_summary.tsv:md5,e758f312ea9e96c98d312df28c5d7ec2",
+                "sample01_cdr3.fasta:md5,16b6cc6b125de8756f794b8003593d9a",
+                "sample01_cdr3.hist:md5,b46bc6255f4db1e49e8f4ae83f20e48f",
+                "sample01_cdr3.tsv:md5,2b3ef7dfb8d17e9ee1fe127c1861c533",
+                "sample01_cdr3_summary.tsv:md5,09d31e0236c27606c60c372afd715b13",
+                "sample02_cdr3.fasta:md5,e9abfb4a9b9c59f02236927345eadaca",
+                "sample02_cdr3.hist:md5,c26de484a9c45f1fa8aa94b2f2ef344b",
+                "sample02_cdr3.tsv:md5,85e2d93e373e21fd136f40406dff3660",
+                "sample02_cdr3_summary.tsv:md5,e635ae15daa5cc56ce925925b1df6dd3",
                 "sample01_AA_translated.fasta:md5,07fae07a258b946892ccae9b7c58a69a",
                 "sample01_AA_translated.fasta.log:md5,146b17e48950ed3333d7d17d330b0f29",
                 "sample01_AA_translated.log:md5,d41d8cd98f00b204e9800998ecf8427e",
@@ -225,15 +237,15 @@
                 "sample02_clusters.summary:md5,9f2a7355884ef276a82811bb7043656c",
                 "sample01_renamed.fastq.gz:md5,8fdf247615c140abe7425e3ad26a1ad3",
                 "sample02_renamed.fastq.gz:md5,4f2f9bea1772f44373fb5b79a9374a67",
-                "cdr3_boundary_offsets.tsv:md5,67b5f2183684ef1ad8efd1008239bc00",
-                "cdr3_boundary_qc.tsv:md5,febb3f49e9fa11267dd323b39ff43b4e",
-                "sequence_accounting.tsv:md5,df916fcabdc6dc956985c112aaed3684"
+                "cdr3_boundary_offsets.tsv:md5,7906be3f137ed5441f44fe6ae89b7520",
+                "cdr3_boundary_qc.tsv:md5,073bc93c8b186f98cc26d88fd4cedd78",
+                "sequence_accounting.tsv:md5,88f19c1daebb4ea5098b924fb205dd6e"
             ]
         ],
         "meta": {
             "nf-test": "0.9.2",
             "nextflow": "25.04.8"
         },
-        "timestamp": "2026-10-19T19:42:47.020188"
+        "timestamp": "2026-10-19T19:53:43.911235"
     }
 }

@@ -14,6 +14,7 @@ Second major release focused on repertoire analysis robustness, reporting refact
 - Added support for remote CSV test input from bucket-based test data.
 - Added `<sample>_cdr3_summary.tsv` to `NANOCDRX`, counting the cluster representatives excluded by length, excluded for non-standard residues, sent to nanoCDR-X, and with or without a CDR3.
 - Added a sequence accounting table to the interactive report, and `report/sequence_accounting.tsv`: for each sample, the number of read pairs, merged reads, translated sequences, clustered sequences, clusters, annotated representatives and distinct CDR3s, with the sequences lost between two steps and the reason. The counts are read from the Cutadapt reports, the translation logs, the cluster sizes and the nanoCDR-X summaries, and the report flags neighbouring counts that do not agree.
+- Added `CLUSTER_MOSTFREQUENT` and `bin/cluster_most_frequent.py`, which choose the most frequent sequence of each CD-HIT cluster (ties go to the member CD-HIT lists first) and write it, under the identifier of the CD-HIT representative, to `cluster_most_frequent/<sample>_most_frequent.fasta`, the input of `NANOCDRX`, with a per-cluster table `<sample>_most_frequent.tsv`.
 
 ### `Changed`
 
@@ -29,6 +30,7 @@ Second major release focused on repertoire analysis robustness, reporting refact
 
 ### `Fixed`
 
+- Fixed the CDR3 of large clusters being read on an atypical sequence: nanoCDR-X annotated the CD-HIT representative, which is the longest sequence of the cluster, and in large clusters the longest sequence is often an atypical one, for example with an extra stretch after framework 4. In the largest cluster of the llama `after` sample with the previous CD-HIT setting (121,504 sequences) the representative is 150 residues long, while 97.4% of the members are 128 residues long and 91.7% carry the CDR3 `AADQTPLRYSYSTRVDAYDY`; nanoCDR-X read `AADQTPLRYYYSTRVDAYDYWGQGTQVT` on the representative. The CDR3 is now annotated on the most frequent sequence of each cluster (`CLUSTER_MOSTFREQUENT`): on the two llama samples, with CD-HIT `-g 1 -det 1`, the clusters whose annotated sequence has a CDR3 that neither runs into framework 4 nor is missing or shorter than four residues hold 100% and 99.8% of the sequences, against 36.2% and 74.9% with the representative.
 - Fixed `NANOCDRX` silently discarding whole 500-sequence batches: a single sequence longer than 150 residues, the input length of the nanoCDR-X model, made `predict_cdrs` fail on its batch, and the failure was ignored. The length filter is now 70-150 residues, and a failing or incomplete `predict_cdrs` run stops the step with an error.
 - Fixed CDR3s longer than 50 residues being labelled `non-unique`.
 - Fixed the nanoCDR-X version recorded in `versions.yml`, which was read from a `--version` option that `predict_cdrs` does not have.
