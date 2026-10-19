@@ -20,6 +20,7 @@ Second major release focused on repertoire analysis robustness, reporting refact
 
 - Refactored reporting by introducing `repertoire_report` subworkflow and hybrid reporting integration.
 - Parameterized CD-HIT and renamed report stage to `AGGREGATE_STATS` for clearer module semantics.
+- `CDHIT_CDHIT`, the slowest step of the pipeline, uses up to 16 CPUs, capped by `check_max` and the resource limits of the profile: with `-g 1 -det 1` the clusters no longer depend on the number of threads.
 - `CDHIT_CDHIT` runs with `-g 1`, which puts each sequence in the cluster of its most similar representative instead of the first one found above the identity threshold, as in Deschaght et al. 2017. The clusters and their representatives are unchanged; the cluster sizes change (on the llama `before` sample, Shannon 6.372 with the previous setting, 6.644 with `-g 1`).
 - Updated pipeline ownership references from `nf-core` to `lescailab` metadata where applicable.
 - `run_nanocdrx.py` writes every cluster representative to `<sample>_cdr3.tsv` exactly once, with the new statuses `cdr3-too-long`, `excluded-length` and `excluded-nonstandard`. Representatives containing non-standard residues are now excluded instead of having those residues deleted, which shortened their CDR3.
