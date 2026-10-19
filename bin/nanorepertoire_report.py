@@ -1334,7 +1334,7 @@ html = f"""<!DOCTYPE html>
         <li>Identity threshold: {identity_threshold/100:.2f} ({identity_pct})</li>
         <li>Word size: {word_size}</li>
         <li>Global identity alignment (CD-HIT default <code>-G 1</code>); no minimum alignment coverage is imposed</li>
-        <li>One thread, so that the clusters do not depend on the number of threads</li>
+        <li>Each sequence joins the cluster of its most similar representative (<code>-g 1</code>); identity ties go to the cluster created first (<code>-det 1</code>, reproducible build of CD-HIT 4.8.1 in lescailab/cdhit), so that the clusters do not depend on the number of threads or on the memory available</li>
         <li>Four size thresholds analysed: 1, ≥5, ≥100, ≥1000</li>
       </ul>
       <p>Deschaght et al. (2017) clustered nanobody sequences with CD-HIT at 0.90 identity, the default of this pipeline, and grouped the clusters into three size classes (1, 2 to 10 and more than 10 members); the four size classes used here are a different grouping.</p>

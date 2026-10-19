@@ -32,6 +32,8 @@
 
   > Fu L, Niu B, Zhu Z, Wu S, Li W. CD-HIT: accelerated for clustering the next-generation sequencing data. Bioinformatics. 2012 Dec 1;28(23):3150-2. doi: 10.1093/bioinformatics/bts565. PubMed PMID: 23060610; PubMed Central PMCID: PMC3516142.
 
+  The pipeline runs CD-HIT 4.8.1 built from the reproducible branch of [lescailab/cdhit](https://github.com/lescailab/cdhit/tree/reproducible) (commit 61418a4), which adds the `-det` option for reproducible multi-threaded clustering.
+
 - [seqtk](https://github.com/lh3/seqtk)
 
   > Li H. seqtk: Toolkit for processing sequences in FASTA/Q formats. GitHub. https://github.com/lh3/seqtk.

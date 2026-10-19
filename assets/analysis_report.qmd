@@ -379,7 +379,7 @@ The VHH region of each merged read is translated with an in-house Python script 
 
 ## Clustering the aminoacid sequences
 
-Clustering of the translated sequences is performed using the software CD-HIT (Li and Godzik 2006). For more information, please visit their [website](https://github.com/weizhongli/cdhit/wiki). This run used an identity threshold of `r params$cdhitIdentity` (parameter `cdhit_identity`; the default, 0.9, is the threshold of Deschaght et al.) and a word size of `r params$cdhitWordSize`, with global identity and one thread, so that the clusters do not depend on the number of threads.
+Clustering of the translated sequences is performed using the software CD-HIT (Li and Godzik 2006). For more information, please visit their [website](https://github.com/weizhongli/cdhit/wiki). This run used an identity threshold of `r params$cdhitIdentity` (parameter `cdhit_identity`; the default, 0.9, is the threshold of Deschaght et al.) and a word size of `r params$cdhitWordSize`, with global identity. Each sequence joins the cluster of its most similar representative (`-g 1`), and identity ties go to the cluster created first (`-det 1`, from the reproducible build of CD-HIT 4.8.1 in [lescailab/cdhit](https://github.com/lescailab/cdhit/tree/reproducible)), so that the clusters do not depend on the number of threads or on the memory available.
 
 ## Extracting the CDR3 sequences
 
