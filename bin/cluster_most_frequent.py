@@ -5,8 +5,8 @@ CD-HIT makes the longest sequence of a cluster its representative. In large clus
 sequence is often an atypical one (an extra stretch after framework 4, a repeated start), and the
 CDR3 read on it is wrong or missing. This script picks instead the most frequent sequence of the
 cluster: the members are grouped by identical sequence and the largest group wins; ties go to the
-member CD-HIT lists first in the cluster (CD-HIT lists members by decreasing length, then in input
-order), so the choice is deterministic.
+member CD-HIT lists first in the cluster (CD-HIT lists the members of a cluster in input order), so
+the choice is deterministic.
 
 Outputs, for ``PREFIX``:
 

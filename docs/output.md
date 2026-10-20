@@ -66,7 +66,7 @@ Because `Identity` is nullable, any downstream consumer must exclude `NA` rather
 
 </details>
 
-CD-HIT makes the longest sequence of a cluster its representative. In large clusters the longest sequence is often an atypical one, for example with an extra stretch after framework 4, and the CDR3 read on it is wrong or missing. `bin/cluster_most_frequent.py` groups the members of each cluster by identical sequence and chooses the largest group; ties go to the member CD-HIT lists first in the cluster (CD-HIT lists members by decreasing length, then in input order), so the choice is the same in every run. The clusters, their sizes and their identifiers are those of CD-HIT.
+CD-HIT makes the longest sequence of a cluster its representative. In large clusters the longest sequence is often an atypical one, for example with an extra stretch after framework 4, and the CDR3 read on it is wrong or missing. `bin/cluster_most_frequent.py` groups the members of each cluster by identical sequence and chooses the largest group; ties go to the member CD-HIT lists first in the cluster, which is the one that comes first in the input file (CD-HIT lists the members of a cluster in input order), so the choice is the same in every run. The clusters, their sizes and their identifiers are those of CD-HIT.
 
 `*_most_frequent.tsv` has the following schema:
 
