@@ -181,7 +181,7 @@ def process_read(read):
             result['rescued'] = f"{headerline}\t{strand}\t{vhh[:3]}\t{vhh[-4:]}\t{len(vhh)}\t{vhh}\n"
             return result
         result['status'] = 'nostartnoend'
-        result['notfound'] = f"sequenza non trovata\t{dna}\n"
+        result['notfound'] = f"sequence not found\t{dna}\n"
         return result
 
     endbase = framework4_end(dna, startbase, endbase)
