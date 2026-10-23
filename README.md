@@ -39,7 +39,6 @@ Processes raw sequencing data to produce translated FASTA sequences:
 Clusters and analyses translated nanobody sequences:
 - **CD-HIT** – clustering of identical or highly similar sequences (configurable identity threshold)
 - **ReadCDHIT** – extraction and summarization of cluster statistics
-- **Cluster_mostfrequent** – choice of the most frequent sequence of each cluster, on which its CDR3 is annotated (CD-HIT makes the longest sequence the representative, often an atypical one in large clusters)
 - **Nanocdr-x** – CDR3 extraction and analysis tool
 
 ### 3. `repertoire_report`
@@ -106,7 +105,7 @@ Five figures at the top of the report: the number of cluster representatives for
 
 ### Sequence accounting
 
-A table with one column per sample and one row per step of the pipeline: read pairs sequenced, read pairs after Cutadapt, reads merged by FLASH, translated VHH sequences, sequences in clusters, then clusters, representatives annotated by nanoCDR-X, representatives with a CDR3 and distinct CDR3s. Below each step, indented, are the sequences lost before the next one and the reason (pairs not merged, no VHH motif, region out of frame, stop codon, undetermined residue, translation shorter than 70 residues, representatives outside the length accepted by nanoCDR-X, no CDR3 called, and so on). Percentages are relative to the first row of each block. The upper block counts reads; the lower one counts cluster representatives, so the two are not comparable. If two neighbouring counts do not agree (for example if nanoCDR-X received fewer representatives than CD-HIT produced clusters) the report says so above the table. The counts are also written to `sequence_accounting.tsv`.
+A table with one column per sample and one row per step of the pipeline: read pairs sequenced, read pairs after Cutadapt, reads merged by FLASH, translated VHH sequences, sequences in clusters, then clusters, representatives annotated by nanoCDR-X, representatives with a CDR3 and distinct CDR3s. Below each step, indented, are the sequences lost before the next one and the reason (pairs not merged, no VHH motif, region out of frame, stop codon, undetermined residue, translation shorter than 70 or longer than 150 residues, translation running on after framework 4, representatives outside the length accepted by nanoCDR-X, no CDR3 called, and so on). Percentages are relative to the first row of each block. The upper block counts reads; the lower one counts cluster representatives, so the two are not comparable. If two neighbouring counts do not agree (for example if nanoCDR-X received fewer representatives than CD-HIT produced clusters) the report says so above the table. The counts are also written to `sequence_accounting.tsv`.
 
 ### 1. Clonal cluster analysis
 

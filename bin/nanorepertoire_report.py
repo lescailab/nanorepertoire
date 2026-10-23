@@ -734,8 +734,8 @@ if accounting:
     How many sequences of each sample reach every step of the pipeline, and where the others were lost.
     Rows in bold are the steps; the rows below a step, marked with −, are the sequences lost before the next one,
     with the reason. The upper block counts reads: read pairs until FLASH merges each pair into one read, then
-    reads and translated sequences. The lower block counts <strong>cluster representatives</strong>: one sequence
-    per cluster, its most frequent one, is annotated by nanoCDR-X, so these numbers are not
+    reads and translated sequences. The lower block counts <strong>cluster representatives</strong>: CD-HIT keeps
+    one representative per cluster and only representatives are annotated by nanoCDR-X, so these numbers are not
     comparable with the upper block. Percentages are relative to the first row of each block. NA means that the
     count could not be read. The same counts are written to <code>sequence_accounting.tsv</code> next to this report.
   </div>
@@ -1319,14 +1319,14 @@ html = f"""<!DOCTYPE html>
       with its default settings (minimum overlap 10 bp, maximum expected overlap 65 bp, maximum mismatch density 0.25) and
       one thread, so that the reads keep their input order.
       The VHH region of each merged read was translated from a start motif (MAQ, QVQ, EVQ, VQL or LQL) to the TVSS end
-      motif that follows the framework-4 tryptophan (WG.G), on either strand; reads without exact motifs were searched
+      motif that follows the framework-4 tryptophan (WG.G), or to the end of the first framework 4 when its TVSS differs
+      by one residue, on either strand; reads without exact motifs were searched
       again with anchors that tolerate one substitution, confirmed by residues conserved in the IMGT alpaca germline.
-      Regions out of frame, with a stop codon or an undetermined residue, or shorter than 70 residues (primer
-      dimers and VHH fragments; a complete VHH is longer than 100 residues), were discarded.</p>
-      <p>The CDR3 of each cluster was annotated with <strong>nanoCDR-X</strong> (Bagordo et al. 2026),
-      a deep-learning model for nanobody CDR annotation, on the most frequent sequence of the cluster. CD-HIT makes
-      the longest sequence the representative of a cluster, and in large clusters the longest sequence is often an
-      atypical one, on which the CDR3 is read wrongly or not at all.</p>
+      Regions out of frame, with a stop codon or an undetermined residue, shorter than 70 residues (primer
+      dimers and VHH fragments; a complete VHH is longer than 100 residues), longer than 150 residues (two VHH joined)
+      or running on after a complete framework 4 were discarded.</p>
+      <p>The CDR3 of each cluster representative was annotated with <strong>nanoCDR-X</strong> (Bagordo et al. 2026),
+      a deep-learning model for nanobody CDR annotation.</p>
     </div>
 
     <div class="methods-card">

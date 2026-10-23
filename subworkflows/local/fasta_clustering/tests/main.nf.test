@@ -20,10 +20,10 @@ nextflow_workflow {
             workflow {
                 """
                 // input_ch
-                input[0] = Channel.of([
+                input[0] = [
                     [id:'test', immunisation:'test_imm', boost:'test_boost'],
                     file("https://raw.githubusercontent.com/lescailab/testdata/master/nanobodies/test01_aa.fasta", checkIfExists: true)
-                ])
+                ]
                 """
             }
         }

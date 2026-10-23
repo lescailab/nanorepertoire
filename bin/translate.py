@@ -2,9 +2,12 @@
 # Translates the VHH region of merged reads: the region runs from a start motif to the next end
 # motif, searched on both strands, and is kept only if in frame, without stop codons, without
 # undetermined residues and at least MIN_VHH_LENGTH residues long. When the read holds more than
-# one TVSS, the end is the one 7 residues after the tryptophan of WG.G. Reads with no exact motif
-# on either strand are searched again with anchors that tolerate one amino-acid substitution (see
-# rescue()). Reads are processed in parallel, in input order.
+# one TVSS, the end is the one 7 residues after the tryptophan of WG.G; the VHH ends at its first
+# framework 4 when that is followed by a TVSS with at most one substitution (see framework4_end()).
+# Translations longer than MAX_VHH_LENGTH, or running on after a complete framework 4, are
+# discarded. Reads with no exact motif on either strand are searched again with anchors that
+# tolerate one amino-acid substitution (see rescue()). Reads are processed in parallel, in input
+# order.
 #
 # Usage: translate.py <reads.fastq> <output.fasta> [cpus]
 
@@ -39,6 +42,9 @@ END = re.compile(motif('TVSS'))
 # TVSS) or fragments cut by a TVSS inside the VHH, or starting at an LQL of framework 3. 70 is also
 # the shortest sequence accepted by nanoCDR-X.
 MIN_VHH_LENGTH = 70
+# Longest translation kept as a VHH: longer translations are two VHH joined or carry a tail after
+# framework 4. 150 is also the longest sequence accepted by nanoCDR-X.
+MAX_VHH_LENGTH = 150
 
 # Rescue of reads in which no exact start or end motif is found on either strand. The VHH is
 # looked for in the six reading frames with anchors that tolerate one amino-acid substitution,
@@ -51,6 +57,9 @@ MIN_VHH_LENGTH = 70
 #   followed 7 residues later by a tetrapeptide at most one residue away from TVSS.
 RESCUE_STARTS = ('QVQ', 'EVQ', 'QLQ')
 FR4_ANCHOR = re.compile(r'WG.G')
+# Conserved core of framework 4 (J-TRP and the following residues): unlike WG.G alone, it is not
+# found inside a CDR3
+FR4_CORE = re.compile(r'[WR]G.GTQV|WGQ.TQV')
 
 
 def near(peptide, targets):
@@ -82,13 +91,37 @@ def rescue(dna):
 END_ANY = re.compile('(?=' + motif('TVSS') + ')')
 
 
-def framework4_end(dna, startbase, endbase):
-    """Position of the first TVSS in frame with the start whose residue 7 before it starts WG.G.
+def first_fr4(protein, start=80):
+    """Position of the first framework 4 of protein at or after start, -1 when absent.
 
-    In the IMGT germline TVSS starts 7 residues after the tryptophan of WG.G (J-TRP, IMGT 118);
-    an earlier TVSS inside the VHH would cut the protein. When no TVSS is in that position,
-    the first end motif of the read is kept (endbase).
+    A framework 4 is FR4_CORE, or seven residues at most two away from WGQGTQV followed, 7 residues
+    after the first one, by a tetrapeptide at most one away from TVSS (framework 4 with
+    substitutions in its core, e.g. RGQGIQVTVSP or WCQGTQVTVAS).
     """
+    for pos in range(start, len(protein) - 6):
+        if FR4_CORE.match(protein, pos):
+            return pos
+        if sum(a != b for a, b in zip(protein[pos:pos + 7], 'WGQGTQV')) <= 2 \
+                and near(protein[pos + 7:pos + 11], ('TVSS',)):
+            return pos
+    return -1
+
+
+def framework4_end(dna, startbase, endbase):
+    """Position of the end motif of the VHH that starts at startbase.
+
+    The VHH ends at its first framework 4 (first_fr4(), at least 80 residues after the start) when
+    the tetrapeptide 7 residues after it is at most one residue away from TVSS: a later TVSS would
+    leave a tail after framework 4. Otherwise, the end is the first TVSS in frame with the start
+    whose residue 7 before it starts WG.G: in the IMGT germline TVSS starts 7 residues after the
+    tryptophan of WG.G (J-TRP, IMGT 118), and an earlier TVSS inside the VHH would cut the protein.
+    When no TVSS is in that position, the first end motif of the read is kept (endbase).
+    """
+    coding = dna[startbase:]
+    protein = translate(coding[:len(coding) // 3 * 3])
+    core = first_fr4(protein)
+    if core != -1 and near(protein[core + 7:core + 11], ('TVSS',)):
+        return startbase + 3 * (core + 7)
     for match in END_ANY.finditer(dna, startbase):
         end = match.start()
         if (end - startbase) % 3 == 0 and end - 21 >= startbase and FR4_ANCHOR.fullmatch(translate(dna[end - 21:end - 9])):
@@ -139,6 +172,9 @@ def process_read(read):
         rescued = rescue(dna)
         if rescued:
             vhh, strand = rescued
+            if len(vhh) > MAX_VHH_LENGTH:
+                result['status'] = 'toolong'
+                return result
             result['status'] = 'rescued'
             result['header'] = headerline
             result['translated'] = vhh + "\n"
@@ -165,6 +201,15 @@ def process_read(read):
         return result
     if len(translated) < MIN_VHH_LENGTH:
         result['status'] = 'tooshort'
+        return result
+    if len(translated) > MAX_VHH_LENGTH:
+        result['status'] = 'toolong'
+        return result
+    # More than 13 residues from the first framework 4 to the end: the translation runs on after a
+    # complete framework 4 (its TVSS differs in two or more residues)
+    core = first_fr4(translated)
+    if core != -1 and len(translated) - core > 13:
+        result['status'] = 'fr4tail'
         return result
 
     result['status'] = 'passed'
@@ -201,6 +246,8 @@ def main():
         withstop = 0
         withundetermined = 0
         tooshort = 0
+        toolong = 0
+        fr4tail = 0
         reversed_reads = 0
         nostartnoend = 0
         rescued_reads = 0
@@ -224,6 +271,10 @@ def main():
                             withundetermined += 1
                         elif result['status'] == 'tooshort':
                             tooshort += 1
+                        elif result['status'] == 'toolong':
+                            toolong += 1
+                        elif result['status'] == 'fr4tail':
+                            fr4tail += 1
                         elif result['status'] == 'rescued':
                             readspassing += 1
                             rescued_reads += 1
@@ -259,6 +310,10 @@ def main():
         log.write(f"{withundetermined}\n")
         log.write(f"failed because the translation is shorter than {MIN_VHH_LENGTH} residues\n")
         log.write(f"{tooshort}\n")
+        log.write(f"failed because the translation is longer than {MAX_VHH_LENGTH} residues\n")
+        log.write(f"{toolong}\n")
+        log.write("failed because the translation runs on after a complete framework 4\n")
+        log.write(f"{fr4tail}\n")
         log.write("located on the reverse strand (reverse-complemented before translation)\n")
         log.write(f"{reversed_reads}\n")
 

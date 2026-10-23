@@ -35,8 +35,11 @@ TRANSLATION_LABELS = [
     ("failed because there is a stop codon", "stop_codon"),
     ("failed because the translation contains an undetermined", "undetermined"),
     ("failed because the translation is shorter than", "too_short"),
+    ("failed because the translation is longer than", "too_long"),
+    ("failed because the translation runs on after", "fr4_tail"),
 ]
-TRANSLATION_FAILURES = ["no_motif", "out_of_frame", "stop_codon", "undetermined", "too_short"]
+TRANSLATION_FAILURES = ["no_motif", "out_of_frame", "stop_codon", "undetermined", "too_short", "too_long",
+                        "fr4_tail"]
 
 # key, description, unit, kind ("step", "loss" or "note")
 ROWS = [
@@ -50,6 +53,8 @@ ROWS = [
     ("stop_codon", "stop codon in the VHH region", "reads", "loss"),
     ("undetermined", "undetermined residue (X) in the translation", "reads", "loss"),
     ("too_short", "translation shorter than 70 residues, not a complete VHH", "reads", "loss"),
+    ("too_long", "translation longer than 150 residues", "reads", "loss"),
+    ("fr4_tail", "translation running on after framework 4", "reads", "loss"),
     ("translated", "Translated VHH sequences", "sequences", "step"),
     ("rescued", "of which rescued with tolerant anchors", "sequences", "note"),
     ("not_clustered", "translated but missing from the clusters", "sequences", "loss"),
