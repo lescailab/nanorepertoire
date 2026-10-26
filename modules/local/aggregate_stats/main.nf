@@ -48,19 +48,28 @@ process AGGREGATE_STATS {
     echo "ID\tindividual\timmunisation\tboost" > sampledata.tsv
     ${sampleRows}
 
-    ln -s '$moduleDir/nibsc_report.css' .
-
-    quarto render analysis_report.qmd \\
-        -P clusterList:'${clusterList}' \\
-        -P histoList:'${histoList}' \\
-        -P tableList:'${tableList}' \\
-        -P sampleData:'sampledata.tsv' \\
-        -P sizeThreshold:'${params.cluster_size_threshold}' \\
-        -P cdhitIdentity:'${params.cdhit_identity}' \\
-        -P cdhitWordSize:'${params.cdhit_word_size}' \\
-        -P loopFile:'loop_tree.qmd' \\
-        -P calcTree:'${params.calculate_tree}' \\
-        --output '${report.baseName}.html'
+    # Quarto looks for a _quarto.yml project file in the folder of the document and in every folder
+    # above it. In a work directory mounted with Fusion it reaches /fusion/gs, where the lookup fails
+    # with "Invalid argument", so the report is rendered in a local temporary folder and its outputs
+    # are copied back.
+    render_dir=\$(mktemp -d)
+    cp -L * "\$render_dir"/
+    (
+        cd "\$render_dir"
+        quarto render analysis_report.qmd \\
+            -P clusterList:'${clusterList}' \\
+            -P histoList:'${histoList}' \\
+            -P tableList:'${tableList}' \\
+            -P sampleData:'sampledata.tsv' \\
+            -P sizeThreshold:'${params.cluster_size_threshold}' \\
+            -P cdhitIdentity:'${params.cdhit_identity}' \\
+            -P cdhitWordSize:'${params.cdhit_word_size}' \\
+            -P loopFile:'loop_tree.qmd' \\
+            -P calcTree:'${params.calculate_tree}' \\
+            --output '${report.baseName}.html'
+    )
+    cp "\$render_dir"/*.RData "\$render_dir"/*.html "\$render_dir"/*.csv "\$render_dir"/cdr3_boost_overview_table.tsv .
+    rm -rf "\$render_dir"
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
