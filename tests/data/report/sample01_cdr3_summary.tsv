@@ -1,0 +1,2 @@
+sample	input_sequences	excluded_length	excluded_nonstandard	sent_to_model	with_cdr3	no_cdr3	unique	non_unique	cdr3_too_long
+sample01	1059	0	0	1059	1059	0	648	411	0

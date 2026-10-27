@@ -5,3 +5,4 @@ channels:
   - defaults
 dependencies:
   - python=3.10
+  - conda-forge::plotly=6.7.0

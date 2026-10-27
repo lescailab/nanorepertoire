@@ -12,6 +12,7 @@ format:
   html:
     theme: default
     toc: true
+    embed-resources: true
 editor:
   options:
     chunk-output-type: console
@@ -21,6 +22,8 @@ params:
   tableList: null
   sampleData: null
   sizeThreshold: null
+  cdhitIdentity: null
+  cdhitWordSize: null
   loopFile: null
   calcTree: null
 ---
@@ -30,7 +33,7 @@ params:
 #| label: library installation
 #| include: false
 
-# Carica le librerie necessarie per l'analisi e imposta le opzioni di knitr per il rendering dei chunk di codice.
+# Load the libraries used by the analysis and set the knitr options for rendering the code chunks.
 library(knitr)
 library(ggplot2)
 library(tidyverse)
@@ -60,7 +63,7 @@ opts_chunk$set(
 ```{r }
 #| label: Data Preparation
 
-# Questa sezione legge i parametri passati al documento, tra cui le liste di file di cluster, istogrammi e tabelle, oltre ai dati campione e altri parametri di configurazione.
+# This section reads the parameters passed to the document: the lists of cluster, histogram and table files, the sample data and other configuration parameters.
 
 clusterfiles <- unlist(strsplit(params$clusterList, ","))
 histofiles <- unlist(strsplit(params$histoList, ","))
@@ -73,7 +76,7 @@ dotree <- ifelse(unlist(params$calcTree) == "true", TRUE, FALSE)
 
 # Introduction
 
-In this analysis, we aim to generate the total number of different nanobody CDR3s that exist in a library, and the relative abundance of each. We then perform further analysis to show which B cell lineages were affinity matured. For our initial analysis we follow some of the steps used by Deschaght et al (2017).
+In this analysis, we aim to generate the total number of different nanobody CDR3s that exist in a library, and the relative abundance of each. For our initial analysis we follow some of the steps used by Deschaght et al (2017).
 
 # Results
 
@@ -81,19 +84,17 @@ In the first section, we briefly summarise the characteristics of the clusters. 
 
 ## Clusters
 
-In the following, we review the distribution of members of clusters and their sequence identity to the representative.
+In the following, we review the distribution of members of clusters and their sequence identity to the representative. The first plot shows, for every cluster size (x), how many clusters have that size (y), on logarithmic axes so that every cluster is drawn, from the singletons to the largest clones.
 
 ```{r}
 #| label: ClusterMembership
 
-# Legge i dati di cluster da ciascun file nella lista e li combina in un unico dataframe.
+# Read the cluster data of each file in the list and combine them into one data frame.
 
 clusterbig <- data.frame()
 for (file in clusterfiles) {
     samplename <- gsub("_clusters.summary", "", file)
-    writeLines(paste0("-------> received sample name as = ", samplename))
     clusterdata <- read_csv(file)
-    head(clusterdata)
     clusterdata$Sample <- samplename
     clusterbig <- rbind(clusterbig, clusterdata)
     rm(clusterdata)
@@ -103,13 +104,18 @@ for (file in clusterfiles) {
 ```{r}
 #| label: ClusterSizePlot
 
-# Genera un istogramma delle dimensioni dei cluster.
+# Distribution of cluster sizes: for each size, how many clusters have it.
+# Logarithmic axes and no limits, so that every cluster appears, from singletons to the largest.
+# dplyr::count because seqinr, loaded later, has a different count function.
 
-ggplot(data = clusterbig) +
-    geom_histogram(aes(x = Count)) +
-    scale_x_continuous(limits = c(0, 500)) +
-    scale_y_continuous(limits = c(0, 5000)) +
-    xlab("Number of Cluster Members") +
+clusterbig %>%
+    dplyr::count(Sample, Count, name = "Clusters") %>%
+    ggplot(aes(x = Count, y = Clusters)) +
+    geom_point(size = 1) +
+    scale_x_log10(breaks = scales::breaks_log(n = 7), labels = scales::label_comma()) +
+    scale_y_log10(breaks = scales::breaks_log(n = 7), labels = scales::label_comma()) +
+    xlab("Number of Cluster Members (log scale)") +
+    ylab("Number of Clusters (log scale)") +
     ggtitle("Cluster Sizes") +
     facet_wrap(~Sample)
 ```
@@ -117,12 +123,13 @@ ggplot(data = clusterbig) +
 ```{r}
 #| label: clusterMembersPlot
 
-# Genera un grafico a dispersione che mostra l'identità della sequenza rispetto al rappresentante del cluster.
+# Scatter plot of the sequence identity to the cluster representative.
+# Singleton clusters have Identity = NA (no member to compare) and are excluded.
 
-ggplot(data = clusterbig) +
+ggplot(data = clusterbig %>% filter(!is.na(Identity))) +
     geom_point(aes(x = Count, y = Identity), position = "jitter") +
     xlab("Number of Cluster Members") +
-    ylab("Average Sequence Identity\nto Cluster Representative") +
+    ylab("Mean Sequence Identity of Members\nto Cluster Representative (%)") +
     facet_wrap(~Sample)
 ```
 
@@ -131,7 +138,9 @@ We summarise cluster counts based on the number of member sequences.
 ```{r}
 #| label: clustercountsTable
 
-# Crea una tabella che riassume il numero di cluster in base alla dimensione del cluster.
+# Table summarising the number of clusters by cluster size.
+# Total_sequences is the denominator needed to compute the clonal fractions
+# (share of the library taken by the dominant clone and by the first ten clones).
 
 clusterbig$five <- clusterbig$Count >= 5
 clusterbig$hundred <- clusterbig$Count >= 100
@@ -143,23 +152,10 @@ clustercounts <- clusterbig %>%
         Clusters = n(),
         Clusters_of_5 = sum(five),
         Clusters_of_100 = sum(hundred),
-        Clusters_of_1000 = sum(thousand)
-    )
-
-kable(clustercounts) %>%
-    kable_styling()
-
-clusterbig$five <- clusterbig$Count >= 5
-clusterbig$hundred <- clusterbig$Count >= 100
-clusterbig$thousand <- clusterbig$Count >= 1000
-
-clustercounts <- clusterbig %>%
-    group_by(Sample) %>%
-    summarize(
-        Clusters = n(),
-        Clusters_of_5 = sum(five),
-        Clusters_of_100 = sum(hundred),
-        Clusters_of_1000 = sum(thousand)
+        Clusters_of_1000 = sum(thousand),
+        Total_sequences = sum(Count),
+        Top1_count = max(Count),
+        Top10_count = sum(sort(Count, decreasing = TRUE)[1:min(10, n())])
     )
 
 kable(clustercounts) %>%
@@ -168,14 +164,12 @@ kable(clustercounts) %>%
 
 ## CDR3 analysis
 
-We have used a Python script to collect the CDR3 sequences only from the full amino acid sequence, using the context of the CDR3 which begins with amino acids which commence after a YYC and terminates with the amino acids which precede a WGQ. We also compute the length distribution of these CDR3 sequences.
-
-Note that this approach is not robust to amino acid sequences which do not follow this pattern, or contain the motifs in other positions.
+The CDR3 of each cluster representative is annotated with nanoCDR-X (Bagordo et al. 2026). The reference definition is CDR3-IMGT, positions 105–117 of the IMGT unique numbering, between the conserved cysteine 104 and tryptophan 118, both excluded (Lefranc et al. 2003); the agreement of the nanoCDR-X calls with it is reported in the CDR3 annotation QC of the interactive report. We also compute the length distribution of these CDR3 sequences.
 
 ```{r }
 #| label: cdrhistogram
 
-# Legge i dati degli istogrammi CDR3 da ciascun file e li combina in un unico dataframe.
+# Read the CDR3 histogram data of each file and combine them into one data frame.
 
 cdrhists <- data.frame()
 for (file in histofiles) {
@@ -190,7 +184,7 @@ for (file in histofiles) {
 ```{r}
 #| label: CDR3countsTable
 
-# Crea una tabella che riassume il numero di CDR3 unici per campione.
+# Table summarising the number of unique CDR3s per sample.
 
 cdrcounts <- cdrhists %>%
     group_by(Sample) %>%
@@ -203,7 +197,7 @@ kable(cdrcounts) %>%
 ```{r}
 #| label: CDR3sizeplot
 
-# Genera un istogramma della distribuzione delle dimensioni delle sequenze CDR3 uniche.
+# Histogram of the size distribution of the unique CDR3 sequences.
 
 ggplot(data = cdrhists) +
     geom_histogram(aes(x = Size, y = Count), stat = "identity") +
@@ -213,12 +207,12 @@ ggplot(data = cdrhists) +
 
 ## Evolution of CDR3
 
-To be completed. Currently, only outputting a table file.
+Every cluster is joined to the CDR3 of its representative and to the metadata of its sample (individual, immunisation, boost), and the result is written to `cdr3_boost_overview_table.tsv`. When the pipeline is run with `--calculate_tree`, the CDR3s of the clusters with more than `cluster_size_threshold` members are aligned with ClustalOmega for each individual, and a neighbour-joining tree is drawn below.
 
 ```{r }
 #| label: fastaRep
 
-# Legge i dati delle sequenze fasta da ciascun file e li combina in un unico dataframe.
+# Read the FASTA sequence data of each file and combine them into one data frame.
 
 fastaSeq <- data.frame()
 for (fasta in tablefiles) {
@@ -237,7 +231,7 @@ for (fasta in tablefiles) {
 ```{r}
 #| label:  mergeData
 
-# Unisce i dati dei cluster con i dati delle sequenze fasta.
+# Join the cluster data with the FASTA sequence data.
 
 boostEvol <- clusterbig
     clusterbig$Representative <- as.character(clusterbig$Representative)
@@ -252,12 +246,10 @@ boostEvol <- clusterbig %>%
     )
 ```
 
-temporarily taken from merged dataset, otherwise would be loaded from file.
-
 ```{r}
 #| label: sampleMetaData
 
-# Unisce i dati risultanti con i metadati del campione e salva il risultato in un file TSV.
+# Join the result with the sample metadata and save it to a TSV file.
 
 boostEvol <- boostEvol %>%
     left_join(sampleMetaData,
@@ -266,10 +258,10 @@ boostEvol <- boostEvol %>%
 write_tsv(boostEvol, "cdr3_boost_overview_table.tsv")
 ```
 
-```{r}
+```{r eval=dotree}
 #| label: MSAandTreeStore
 
-# Questa sezione esegue l'allineamento multiplo delle sequenze CDR3 e genera un albero filogenetico per ciascun individuo.
+# This section runs the multiple alignment of the CDR3 sequences and builds a phylogenetic tree for each individual.
 
 individualData <- list()
 treeDataList <- list()
@@ -349,7 +341,7 @@ out <- NULL
 #| label: run-summary-md
 #| include: false
 
-# Esegue il rendering dei documenti figlio per ciascun individuo, utilizzando i dati dell'evoluzione delle sequenze CDR3.
+# Render the child documents for each individual, using the data on the evolution of the CDR3 sequences.
 
 out <- NULL
 for (ind in unique(boostEvol$individual)) {
@@ -373,38 +365,22 @@ write_csv(clusterbig,    "clusterbig.csv")
 write_csv(fastaSeq,      "fastaSeq.csv")
 ```
 
-# Additional QC
-
-To be completed.
-
-```{r}
-#| label: viewlengthdist
-#| eval: false
-for (samplename in c("317-D1-Bst3_S1", "317-D1-Bst4_S2", "317-L1-Bst2_S3", "317-L1-Bst3_S4", "317-L1-Bst4_S5")) {
-    lengthfreqs <- read.csv(file = paste0(samplename, "_L001.hist"), sep = "\t", header = FALSE)
-    colnames(lengthfreqs) <- c("sequence_length", "count")
-    print(ggplot(data = lengthfreqs) +
-        geom_histogram(aes(x = sequence_length, y = count), stat = "identity") +
-        ggtitle(paste0("Distribution of merged sequence lengths for sample ", samplename)))
-}
-```
-
 # Methods
 
 The overall approach is inspired by the work *Large diversity of Functional Nanobodies from a Camelid Immune Library Revealed by an Alternative Analysis of Next-Generation sequencing data* by Pieter Deschaght and colleagues (doi: 10.3389/fimmu.2017.00420, published April 2017).
 
 ## Merging forward and reverse reads
 
-Forward and reverse reads have been merged using the software FLASH, with default settings except maximum overlap between the reads, which was set at 300bp. More information about the software is available at their [website](https://ccb.jhu.edu/software/FLASH/)
+Forward and reverse reads are merged with FLASH (Magoč and Salzberg 2011) with its default settings (minimum overlap 10 bp, maximum expected overlap 65 bp, maximum mismatch density 0.25) and one thread (`-t 1`), so that the merged reads are written in the order of the input reads and the clusters are the same in every run. More information about the software is available at their [website](https://ccb.jhu.edu/software/FLASH/)
 
 ## Translating cDNA to protein sequence
 
-Translation has been done with an in-house python script developed by T. Bleazard, and using Biopython. In order to identify the correct frame, we have set the starting sequence as *ATGGCACAG* and the end sequence as *ACCGTCTCCTCA*. Anything in between is translated into a protein sequence. If start or end cannot be identified, or if the sequence in between is not a multiple of codon triplets, the sequence will fail translation.
+The VHH region of each merged read is translated with an in-house Python script based on Biopython. The region starts at the first DNA encoding of one of the start motifs *MAQ*, *QVQ*, *EVQ*, *VQL* or *LQL*, and ends with the motif *TVSS*: the first *TVSS* in frame that starts 7 residues after the tryptophan of the framework-4 motif *WG.G*, its position in the IMGT germline, or the first *TVSS* of the read when none is in that position; when the first framework 4 of the read (*[WR]G.GTQV* or *WGQ.TQV*, or a heptapeptide at most two residues away from *WGQGTQV*) is followed 7 residues after its first residue by a tetrapeptide at most one residue away from *TVSS*, the region ends there. When the start or the end motif is missing on the forward strand, the reverse complement is searched. Reads in which no exact motif is found on either strand are searched again in the six reading frames with anchors that tolerate one amino-acid substitution, confirmed by residues conserved in the IMGT germline of the alpaca (the framework-1 cysteine, the second cysteine and the *WG.G* motif). A region that is not a multiple of three nucleotides, or whose translation contains a stop codon or an undetermined residue (X) or is shorter than 70 residues, is discarded: a complete VHH is longer than 100 residues, and shorter translations are primer dimers or fragments of the VHH. Translations longer than 150 residues (two VHH joined), and translations that run on for more than two residues after a complete framework 4, are discarded too. The translation log counts the reads in each of these cases, and the sequence accounting table of the interactive report shows them for every sample.
 
 ## Clustering the aminoacid sequences
 
-Clustering of the translated sequences is performed using the software CD-HIT. For more information, please visit their [website](https://github.com/weizhongli/cdhit/wiki). In our implementation we have selected an identity cutoff of 0.9, as per results of Deschaght et al.
+Clustering of the translated sequences is performed using the software CD-HIT (Li and Godzik 2006). For more information, please visit their [website](https://github.com/weizhongli/cdhit/wiki). This run used an identity threshold of `r params$cdhitIdentity` (parameter `cdhit_identity`; the default, 0.9, is the threshold of Deschaght et al.) and a word size of `r params$cdhitWordSize`, with global identity. Each sequence joins the cluster of its most similar representative (`-g 1`), and identity ties go to the cluster created first (`-det 1`, from the reproducible build of CD-HIT 4.8.1 in [lescailab/cdhit](https://github.com/lescailab/cdhit/tree/reproducible)), so that the clusters do not depend on the number of threads or on the memory available.
 
 ## Extracting the CDR3 sequences
 
-Using Biopython, and an in-house script originally written by T. Bleazard, we extract the CDR3 sequence from the translated protein sequence. The identification of CDR3 is crucial in this process: at the moment we extract a variable sequence between 3 amminoacids after the motif **T.{2}Y.{1}C** and the motif **.{6}TVSS**. We have chosen these motives based on multiple sequence alignments performed by Mitchel et al. in 2018 ( doi: 10.1002/prot.25497). We will consider more complex extraction algorithms in a future release. Note that - although the motifs we chose are the result of a multiple alignment and peer-reviewed work - this approach might not be robust to amino acid sequences which do not follow this pattern, or contain the motifs in other positions.
+The CDR3 is annotated on the cluster representatives with nanoCDR-X (Bagordo et al. 2026), a deep-learning model for nanobody CDR annotation. The reference definition of the CDR3 is CDR3-IMGT (Lefranc et al. 2003): the residues between the second conserved cysteine (IMGT position 104) and the J-region tryptophan (IMGT position 118), both excluded, which is also the `cdr3` field of the AIRR Community standard (Vander Heiden et al. 2018). The interactive report compares every nanoCDR-X call with this definition, locating the two anchors with sequence motifs.

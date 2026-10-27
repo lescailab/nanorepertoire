@@ -1,6 +1,7 @@
 .nextflow*
 work/
 data/
+!tests/data/
 results/
 .DS_Store
 testing/
@@ -8,3 +9,12 @@ testing*
 *.pyc
 null/
 co2footprint_*
+
+# Local working notebook for the resubmission (not part of the pipeline)
+lab_notebook/
+.nf-test/
+.nf-test.log
+
+# Rendered preview of the README
+README.html
+README_files/

@@ -34,25 +34,42 @@ process AGGREGATE_STATS {
     def clusterList = clustersummaries.join(',')
     def histoList = cdr3histograms.join(',')
     def tableList = cdr3tables.join(',')
+    // One line per sample; the sample name is meta.id. Columns left out of the samplesheet
+    // arrive as null or as an empty list and are written as NA, which R reads as missing.
+    def sampleRows = metadata.collect { map ->
+        def fields = [map.id, map.individualID, map.immunisation, map.boost].collect { value ->
+            (value == null || value == [] || value.toString().trim() == '') ? 'NA' : value
+        }
+        "echo '${fields.join('\t')}' >> sampledata.tsv"
+    }.join('\n')
 
     """
     # Create sampledata.tsv within the task execution context
     echo "ID\tindividual\timmunisation\tboost" > sampledata.tsv
-    ${metadata.collect { map ->
-        "echo '${map.sampleID}\t${map.individualID}\t${map.immunisation}\t${map.boost}' >> sampledata.tsv"
-    }.join('\n')}
+    ${sampleRows}
 
-    ln -s '$moduleDir/nibsc_report.css' .
-
-    quarto render analysis_report.qmd \\
-        -P clusterList:'${clusterList}' \\
-        -P histoList:'${histoList}' \\
-        -P tableList:'${tableList}' \\
-        -P sampleData:'sampledata.tsv' \\
-        -P sizeThreshold:'${params.cluster_size_threshold}' \\
-        -P loopFile:'loop_tree.qmd' \\
-        -P calcTree:'${params.calculate_tree}' \\
-        --output '${report.baseName}.html'
+    # Quarto looks for a _quarto.yml project file in the folder of the document and in every folder
+    # above it. In a work directory mounted with Fusion it reaches /fusion/gs, where the lookup fails
+    # with "Invalid argument", so the report is rendered in a local temporary folder and its outputs
+    # are copied back.
+    render_dir=\$(mktemp -d)
+    cp -L * "\$render_dir"/
+    (
+        cd "\$render_dir"
+        quarto render analysis_report.qmd \\
+            -P clusterList:'${clusterList}' \\
+            -P histoList:'${histoList}' \\
+            -P tableList:'${tableList}' \\
+            -P sampleData:'sampledata.tsv' \\
+            -P sizeThreshold:'${params.cluster_size_threshold}' \\
+            -P cdhitIdentity:'${params.cdhit_identity}' \\
+            -P cdhitWordSize:'${params.cdhit_word_size}' \\
+            -P loopFile:'loop_tree.qmd' \\
+            -P calcTree:'${params.calculate_tree}' \\
+            --output '${report.baseName}.html'
+    )
+    cp "\$render_dir"/*.RData "\$render_dir"/*.html "\$render_dir"/*.csv "\$render_dir"/cdr3_boost_overview_table.tsv .
+    rm -rf "\$render_dir"
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

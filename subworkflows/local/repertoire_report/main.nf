@@ -13,6 +13,9 @@ workflow REPERTOIRE_REPORT {
     cdrhistograms       // channel: [ val(meta), path(hist) ]
     cdrtsv              // channel: [ val(meta), path(tsv) ]
     metadata            // channel: [ val(meta) ]
+    cutadapt_logs       // channel: [ path(<sample>.cutadapt.log) ]
+    translation_logs    // channel: [ path(<sample>_AA_translated.fasta.log) ]
+    cdr3_summaries      // channel: [ path(<sample>_cdr3_summary.tsv) ]
 
     main:
 
@@ -33,11 +36,15 @@ workflow REPERTOIRE_REPORT {
         AGGREGATE_STATS.out.cdrcounts,
         AGGREGATE_STATS.out.cdrhists,
         AGGREGATE_STATS.out.clusterbig,
-        AGGREGATE_STATS.out.fastaseq
+        AGGREGATE_STATS.out.fastaseq,
+        cutadapt_logs,
+        translation_logs,
+        cdr3_summaries
     )
     ch_versions = ch_versions.mix(NANOREPERTOIRE_REPORT.out.versions)
 
     emit:
-    report   = NANOREPERTOIRE_REPORT.out.report  // path: *.html
-    versions = ch_versions                       // channel: [ versions.yml ]
+    report     = NANOREPERTOIRE_REPORT.out.report      // path: *.html
+    accounting = NANOREPERTOIRE_REPORT.out.accounting  // path: sequence_accounting.tsv
+    versions   = ch_versions                         // channel: [ versions.yml ]
 }

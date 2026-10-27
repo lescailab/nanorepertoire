@@ -4,8 +4,8 @@ process RENAME {
 
     conda "${moduleDir}/environment.yml"
     container "${workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container
-        ? 'https://depot.galaxyproject.org/singularity/seqtk:1.3--h5bf99c6_3'
-        : 'biocontainers/seqtk:1.5--h577a1d6_1' }"
+        ? 'https://depot.galaxyproject.org/singularity/seqtk:1.4--h577a1d6_3'
+        : 'biocontainers/seqtk:1.4--h577a1d6_3' }"
 
     input:
     tuple val(meta), path(reads)
@@ -28,7 +28,7 @@ process RENAME {
 
         cat <<-END_VERSIONS > versions.yml
         "${task.process}":
-            seqtk: \$(echo \$(seqtk 2>&1) | sed 's/^.*bVersion: //; s/ .*\$//')
+            seqtk: \$(echo \$(seqtk 2>&1) | sed 's/^.*Version: //; s/ .*\$//')
         END_VERSIONS
         """
     }

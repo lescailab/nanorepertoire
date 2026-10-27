@@ -34,5 +34,6 @@ workflow FASTA_CLUSTERING {
     cdrtsv = NANOCDRX.out.tsvonly
     cdrhistograms = NANOCDRX.out.histonly
     cdrmeta = NANOCDRX.out.metaonly
+    cdrsummary = NANOCDRX.out.summary // channel: [[id], [ cdr3_summary]]
     versions = ch_versions // channel: [ versions.yml ]
 }

@@ -33,12 +33,28 @@ input:
       type: file
       description: CSV file with corresponding FASTA sequences
       pattern: "*.csv"
+  - cutadapt_logs:
+      type: file
+      description: Per-sample Cutadapt reports, for the sequence accounting table
+      pattern: "*.cutadapt.log"
+  - translation_logs:
+      type: file
+      description: Per-sample translation logs, for the sequence accounting table
+      pattern: "*_AA_translated.fasta.log"
+  - cdr3_summaries:
+      type: file
+      description: Per-sample nanoCDR-X summaries, for the sequence accounting table
+      pattern: "*_cdr3_summary.tsv"
 
 output:
   - report:
       type: file
       description: Final generated HTML interactive report
       pattern: "*.html"
+  - accounting:
+      type: file
+      description: Number of sequences of each sample at every step of the pipeline, and of those lost between steps
+      pattern: "sequence_accounting.tsv"
   - versions:
       type: file
       description: File containing software versions

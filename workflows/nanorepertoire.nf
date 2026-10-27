@@ -41,18 +41,29 @@ workflow NANOREPERTOIRE {
         input,
         ch_adapterfile
     )
+    ch_versions = ch_versions.mix(FASTQ_TO_FASTA.out.versions)
 
     FASTA_CLUSTERING(
         FASTQ_TO_FASTA.out.translated
     )
+    ch_versions = ch_versions.mix(FASTA_CLUSTERING.out.versions)
 
     REPERTOIRE_REPORT(
         file("$projectDir/assets/analysis_report.qmd", checkIfExists: true),
         file("$projectDir/assets/loop_tree.qmd", checkIfExists: true),
-        FASTA_CLUSTERING.out.clusteread.collect(),
-        FASTA_CLUSTERING.out.cdrhistograms.collect(),
-        FASTA_CLUSTERING.out.cdrtsv.collect(),
-        input.map { it[0] }.collect()
+        // Sort by file name, so the aggregated tables list the samples in the same order on every run
+        FASTA_CLUSTERING.out.clusteread.collect(sort: { a, b -> a.name <=> b.name }),
+        FASTA_CLUSTERING.out.cdrhistograms.collect(sort: { a, b -> a.name <=> b.name }),
+        FASTA_CLUSTERING.out.cdrtsv.collect(sort: { a, b -> a.name <=> b.name }),
+        input.map { it[0] }.collect(),
+        // Per-sample counts for the sequence accounting table of the report
+        FASTQ_TO_FASTA.out.cutadaptlog.map { meta, log -> log }.collect(sort: { a, b -> a.name <=> b.name }),
+        FASTQ_TO_FASTA.out.translog
+            .map { meta, logs -> logs }
+            .flatten()
+            .filter { it.name.endsWith('_AA_translated.fasta.log') }
+            .collect(sort: { a, b -> a.name <=> b.name }),
+        FASTA_CLUSTERING.out.cdrsummary.map { meta, summary -> summary }.collect(sort: { a, b -> a.name <=> b.name })
     )
     ch_versions = ch_versions.mix(REPERTOIRE_REPORT.out.versions)
 

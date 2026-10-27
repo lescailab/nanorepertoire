@@ -39,11 +39,10 @@ Processes raw sequencing data to produce translated FASTA sequences:
 Clusters and analyses translated nanobody sequences:
 - **CD-HIT** – clustering of identical or highly similar sequences (configurable identity threshold)
 - **ReadCDHIT** – extraction and summarization of cluster statistics
-- **getCDR3** – extraction of CDR3 regions from translated nanobodies
 - **Nanocdr-x** – CDR3 extraction and analysis tool
 
 ### 3. `repertoire_report`
-Generates integrated reports and visual outputs by abstracting the reporting layer:
+Generates the reports. Statistical aggregation and visualisation are separate steps, so new panels can be added to the interactive report without touching the analytical modules:
 - **MultiQC** – aggregation of QC metrics across all initial samples
 - **Aggregate Stats (R-based)** – statistical data engine for production of summary tables (`.csv`, `.tsv`), serialized objects (`.RData`), and static scientific summaries.
 - **Nanorepertoire Report (Python-based)** – generation of a modern, interactive HTML dashboard based on the aggregated metrics.
@@ -52,7 +51,8 @@ Generates integrated reports and visual outputs by abstracting the reporting lay
 
 | Parameter | Default | Description |
 | :--- | :--- | :--- |
-| `--cdhit_identity` | `0.9` | Sequence identity threshold for CD-HIT clustering. |
+| `--cdhit_identity` | `0.9` | Sequence identity threshold for CD-HIT clustering. Also reported verbatim in the HTML report. |
+| `--cdhit_word_size` | `5` | Word size (`-n`) used by CD-HIT. Must be compatible with `--cdhit_identity`. |
 | `--cluster_size_threshold` | `1` | Minimum sequences per cluster for inclusion in reports. |
 | `--calculate_tree` | `false` | Enable/disable phylogenetic tree calculation. |
 | `--adapterfile` | `null` | Custom adapter file for Cutadapt. |
@@ -69,9 +69,14 @@ CONTROL_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz
 ```
 
 2. Run the pipeline:
+
+> [!WARNING]
+> This pipeline currently requires **Nextflow version 25.04.0** due to syntax updates in newer Nextflow versions. You must set the `NXF_VER` environment variable when running the pipeline.
+> We highly recommend using the `conda` profile for managing software dependencies.
+
 ```bash
-nextflow run lescailab/nanorepertoire \
-  -profile docker \
+NXF_VER=25.04.0 nextflow run lescailab/nanorepertoire \
+  -profile conda \
   --input samplesheet.csv \
   --outdir results/
 ```
@@ -84,8 +89,71 @@ The pipeline produces:
 - **QC Reports**: `multiqc_report.html` for technical quality metrics.
 - **Hybrid Reports**:
     - `analysis_report.html`: Static scientific summary (R/Quarto).
-    - `nanorepertoire_report.html`: Interactive, premium dashboard (Python/Plotly).
+    - `nanorepertoire_report.html`: Interactive dashboard (Python/Plotly), a single file that opens without a network connection when the plotly package is installed, as in the pipeline container.
     - `nanobodies_report.RData`: Serialized R object for downstream analysis.
+- **Annotation QC**: `cdr3_boundary_qc.tsv` and `cdr3_boundary_offsets.tsv`, comparing the called CDR3 boundaries with the IMGT definition of the CDR3 (CDR3-IMGT).
+
+The file-by-file description of the output directories, including the schema of every table, is in [`docs/output.md`](docs/output.md).
+
+## What the interactive report shows
+
+`nanorepertoire_report.html` contains a sequence accounting table and twelve panels. This section states, for each one, what is plotted, how it is computed, how it should be read, and what it cannot support. Symbols used throughout: `S` is the number of CD-HIT clusters of a sample, `c_i` the number of sequences in cluster `i`, `N = Σ c_i` the number of clustered sequences, and `p_i = c_i / N` the frequency of clone `i`.
+
+### Summary cards
+
+Five figures at the top of the report: the number of cluster representatives for which nanoCDR-X returned a CDR3 (rows of `fastaSeq.csv` whose `CDR3` is not `NA`); the total number of clusters over all samples, annotated with the identity threshold actually used in the run; the number of **distinct** CDR3 sequences over all samples, in which a CDR3 found in several samples is counted once (summing `Unique_CDR3s` over the samples would count it once per sample); the mean CDR3 length, with its standard deviation and median, over the distinct CDR3s of each sample; and the number of libraries analysed. The first and third cards answer different questions and will not agree: one counts cluster representatives, the other distinct CDR3 sequences. Neither counts reads: the reads behind each step are in the sequence accounting table.
+
+### Sequence accounting
+
+A table with one column per sample and one row per step of the pipeline: read pairs sequenced, read pairs after Cutadapt, reads merged by FLASH, translated VHH sequences, sequences in clusters, then clusters, representatives annotated by nanoCDR-X, representatives with a CDR3 and distinct CDR3s. Below each step, indented, are the sequences lost before the next one and the reason (pairs not merged, no VHH motif, region out of frame, stop codon, undetermined residue, translation shorter than 70 or longer than 150 residues, translation running on after framework 4, representatives outside the length accepted by nanoCDR-X, no CDR3 called, and so on). Percentages are relative to the first row of each block. The upper block counts reads; the lower one counts cluster representatives, so the two are not comparable. If two neighbouring counts do not agree (for example if nanoCDR-X received fewer representatives than CD-HIT produced clusters) the report says so above the table. The counts are also written to `sequence_accounting.tsv`.
+
+### 1. Clonal cluster analysis
+
+**Diversity metrics table.** One row per sample, computed by `bin/repertoire_metrics.py` from the cluster sizes in `clusterbig.csv`. It reports cluster richness `S`, the number of clustered sequences `N`, the depth-normalised richness `1000·S/N`, the Shannon index of the clone abundances `H' = −Σ p_i ln p_i`, clonality `1 − H'/ln(S)`, the Gini–Simpson index `1 − Σ p_i²`, the Gini coefficient of the cluster sizes, `D50` (the smallest number of clones covering half of the sequences), the fraction of the library held by the largest clone and by the ten largest clones, the Shannon entropy of the CDR3 *length* distribution, and the proportion of clusters with ≥ 5 and ≥ 1000 members.
+
+*How to read it.* Clonality is 0 when every clone is equally abundant and approaches 1 as the library concentrates into a single lineage; like the size of a cluster, it does not tell which of the causes listed under *Cluster Size Classes* produced the concentration. `D50` and the Top1/Top10 fractions say the same thing in units a wet-lab reader can act on ("the dominant clone is X% of the library"). Richness (`S`) rises with sequencing depth, so **only the depth-normalised richness should be compared between libraries** sequenced at different depths.
+
+*Caveats.* Clonality and evenness are undefined for a single cluster (`ln(S) = 0`) and are reported as `NA` rather than as 0 or 1. All abundance metrics are sensitive to the clustering threshold: a lower threshold merges clones and mechanically increases clonality. "CDR3 length evenness (H')" measures how evenly paratope **lengths** are spread and must not be read as a diversity index; it is kept because it is informative about length selection, and it is labelled separately for exactly that reason.
+
+**Cluster Size Classes** (stacked bar). Clusters of each sample split into four size classes: 1–4, 5–99, 100–999, ≥ 1000 members. These thresholds come from an earlier version of this pipeline; Deschaght et al. 2017 used three classes (1, 2 to 10 and more than 10 members). A large cluster can arise from several causes that the pipeline cannot tell apart: clonal expansion of B cells in the animal, enrichment during a selection step such as phage display panning, differences in transcript abundance between cells, PCR amplification bias, and repeated sequencing of the same molecule, since reads are not deduplicated. Which cause prevails depends on the type of sample, and the size of a cluster does not measure binding affinity. The absolute height of the bars scales with sequencing depth and carries no biological meaning on its own.
+
+**Cluster Abundance at Size Thresholds** (grouped bar, logarithmic y axis). The same information as cumulative counts (total, ≥ 5, ≥ 100, ≥ 1000), on a log scale so that four orders of magnitude are visible at once. The slope from one threshold to the next is the steepness of the clonal hierarchy: a shallow decay means abundance is spread over many lineages, a steep one means it is concentrated. A log axis cannot display a zero count, so a missing bar means "none", not "small".
+
+**Top-10 Largest Clonotypes per Sample** (one ranked list per sample). The ten largest clusters of each sample, sorted by size, with the identifier of their representative sequence, the number of members and the share of the clustered sequences of the sample. Their size counts sequences, not binding affinity, so the representatives are a starting list for expression and binding tests rather than a ranking of binders: the representative identifiers map back to `clusterbig.csv` and to the sequences in `fastaSeq.csv`. The ratio between rank 1 and rank 10 quantifies how much the library is dominated by a single lineage. Rank order is stable, absolute sizes are not: they depend on depth and on PCR.
+
+### 2. CDR3 diversity
+
+**Unique CDR3 Sequences per Sample** (bar). Number of distinct CDR3 amino-acid sequences per sample, among the cluster representatives, from `cdrcounts.csv`: a CDR3 carried by several clusters of the sample is counted once. It is a richness measure of the CDR3 space and, like every raw count, it grows with sequencing depth; comparisons between libraries need the depth-normalised metrics of section 1. The length and composition panels below are computed on the same distinct CDR3s, each counted once whatever the size of its cluster.
+
+**CDR3 Length Distribution (Violin)** (with embedded box plot). Distribution of the length in residues of the unique CDR3s of each sample; the box marks the interquartile range, the line the median, the width the density. In 90 antigen-bound crystal structures, nanobody CDR3s were on average longer than those of conventional VH domains (15.2 against 12.1 residues; Mitchell & Colwell 2018, *Proteins* 86:697–706, doi:10.1002/prot.25497), with the loop definition of that study, which is not directly comparable with the lengths called here. Compare *medians and spread* between samples: a shift describes a change in the CDR3s found, not its cause. Only lengths of 1–40 residues are drawn, and the length depends on where the boundaries were called, which is why the annotation QC below matters.
+
+**CDR3 Length Frequency Profile** (filled line chart). The same distribution as a frequency profile over lengths 0–45, from `cdrhists.csv`, with one curve per sample. Better than the violin for spotting multiple modes and for comparing the shoulders of two samples directly. Counts are of unique CDR3s, not of sequences, so a highly expanded clone contributes one observation, not thousands.
+
+**CDR3 annotation QC — summary table and CDR3 Boundary Offsets.** For every sequence with a called CDR3, `bin/cdr3_boundary_qc.py` re-derives the CDR3 as defined by IMGT (CDR3-IMGT, positions 105–117, between the conserved cysteine 104 and tryptophan 118, both excluded; Lefranc et al. 2003), locating the two anchors with sequence motifs — start immediately after the cysteine of the framework-3 anchor `T..Y.C` (the `YYC` motif), end immediately before the tryptophan of the framework-4 anchor `WG.G` (the `WGQ` motif), falling back to the C-terminal `TVSS` motif in reads where that tryptophan is substituted — and compares it residue by residue with the boundaries called by nanoCDR-X. The table reports the number of comparable sequences, the exact agreement, and the median offset at each terminus; the CDR3 Boundary Offsets panel shows the full offset distribution per sample, in one panel per terminus, on a logarithmic y axis so that rare disagreements stay visible next to the dominant zero-offset bar.
+
+*How to read it.* An offset of 0 means the two definitions agree exactly. A systematically **positive C-terminal offset** means the called CDR3 extends into framework 4, which is rich in alanine, threonine and valine and would inflate those residues in the composition panels and lengthen the length distributions. A negative N-terminal offset means the call reaches back into framework 3. Sequences in which neither anchor can be located are not comparable and are counted separately: they are not evidence of agreement. The reference locates the IMGT anchors with sequence motifs rather than by alignment, so it is an approximation, not ground truth, and this panel measures *consistency between two annotations*, not accuracy against a curated reference.
+
+### 3. CDR3 amino-acid composition
+
+**Amino Acid Frequency Heatmap.** Frequency of each of the twenty standard amino acids as a percentage of all residues of the unique CDR3s of a sample; rows are samples, columns are residues, colour is the percentage. **Side-by-Side Amino Acid Usage** (grouped bar) shows the same matrix per residue, which is the better view for reading off a difference between two samples at a single position.
+
+*How to read them.* Compare samples residue by residue. A difference describes the CDR3s found in the two samples; the report does not test what causes it.
+
+*Caveats.* Frequencies are computed over unique CDR3s, so they describe the sequence space rather than the abundance-weighted repertoire: a dominant clone counts once. Composition is conditional on the annotated boundaries, so it must be read together with the annotation QC above. Non-standard characters are excluded from both the numerator and the denominator.
+
+### 4. Clonality
+
+**Mean Member Identity to Cluster Representative** (overlaid histograms). One value per cluster: the mean percent identity, as reported by CD-HIT, of the non-representative members of a cluster to its representative. Singleton clusters are excluded, the quantity being undefined for them, and the number of informative clusters is stated in the caption; the x axis starts just below the clustering threshold.
+
+*How to read it.* This is a descriptive measure of **intra-clonal homogeneity**: values near 100% mean the members of a cluster are near-identical to their representative, lower values mean the cluster groups more heterogeneous sequences. A shift of the distribution towards 100% between conditions means the surviving lineages are internally more uniform.
+
+*Caveats — this panel is the easiest one to over-read.* The distribution is **truncated by construction**: CD-HIT admits no member below the identity threshold, so nothing can be observed to the left of it and the metric cannot quantify diversification beyond that window. Identity is measured against an empirically chosen cluster member, not against an inferred germline, so this is **not** a somatic hypermutation rate and is not equivalent to the V-gene mutation frequency of MiXCR or IMGT/V-QUEST; the analogy is conceptual only. Finally, without upstream deduplication, identity at 100% cannot be attributed to clonal expansion rather than to PCR duplication, and differences below 100% cannot be attributed to somatic mutation rather than to sequencing error.
+
+**Repertoire Diversity Landscape** (bubble chart). Each sample is one bubble: the Shannon index of the clone abundances on the x axis, clonality (1 − Pielou evenness) on the y axis, and the number of unique CDR3s as bubble area. Samples move to the lower right as sequences spread evenly over many clones and to the upper left as they concentrate into a few dominant lineages. Both axes derive from the same abundance vector and are therefore not independent; the hover text carries the depth-normalised richness and the dominant-clone fraction, which is what makes a comparison between libraries of different size legitimate. Samples for which the metrics are undefined are omitted from the panel and shown as `NA` in the table.
+
+### 5. Methods summary
+
+A summary of the pre-processing, clustering and metric definitions, with the identity threshold and word size of the run substituted into the text, and the key references.
 
 ## Credits
 

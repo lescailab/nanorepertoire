@@ -30,7 +30,8 @@ nextflow_process {
                     file('https://raw.githubusercontent.com/DavideBag/testdata/dev/nanobodies/report/test_cdr3.tsv', checkIfExists: true)
                 ]
                 input[5] = [
-                    [id: 'test', sampleID: 'sample1', individualID: 'ind1', immunisation: 'imm1', boost: 'boost1']
+                    [id: 'test', individualID: 'ind1', immunisation: 'imm1', boost: 'boost1'],
+                    [id: 'test2', individualID: [], immunisation: [], boost: []]
                 ]
                 """
             }
@@ -39,12 +40,23 @@ nextflow_process {
         then {
             assertAll(
                 { assert workflow.success},
-                { assert snapshot(workflow.stdout).match()},
+                { assert snapshot(
+                    process.out.clustercounts,
+                    process.out.cdrcounts,
+                    process.out.cdrhists,
+                    process.out.clusterbig,
+                    process.out.fastaseq
+                ).match() },
                 { assert path(process.out.clustercounts[0]).exists() },
                 { assert path(process.out.cdrcounts[0]).exists() },
                 { assert path(process.out.cdrhists[0]).exists() },
                 { assert path(process.out.clusterbig[0]).exists() },
-                { assert path(process.out.fastaseq[0]).exists() }
+                { assert path(process.out.fastaseq[0]).exists() },
+                { assert path(process.out.sampledata[0]).readLines() == [
+                    "ID\tindividual\timmunisation\tboost",
+                    "test\tind1\timm1\tboost1",
+                    "test2\tNA\tNA\tNA"
+                ] }
             )
         }
     }
