@@ -520,13 +520,22 @@ boundary_qc = summarise_boundaries(
     (r.get("Sample", r.get("sample", "Unknown")), r.get("CDR3"), r.get("sequence"))
     for r in fastaseq
 )
-boundary_offsets = sorted({
-    off
-    for s in boundary_qc.values()
-    for dist in (s["n_offset_distribution"], s["c_offset_distribution"])
-    for off in dist
-})
-offset_labels = [str(o) for o in boundary_offsets]
+# One bar per offset from -3 to 3 and grouped bars beyond: a large repertoire has over a hundred
+# distinct offsets, and one category each made every bar narrower than a pixel. The exact offsets
+# are written to cdr3_boundary_offsets.tsv.
+offset_bins = [("<= -10", None, -10), ("-9 to -4", -9, -4), ("-3", -3, -3), ("-2", -2, -2),
+               ("-1", -1, -1), ("0", 0, 0), ("1", 1, 1), ("2", 2, 2), ("3", 3, 3),
+               ("4 to 9", 4, 9), (">= 10", 10, None)]
+offset_labels = [label for label, _, _ in offset_bins]
+
+
+def binned_offsets(dist):
+    """Sequences in each offset bin, from a {offset: sequences} distribution."""
+    return [sum(n for off, n in dist.items()
+                if (low is None or off >= low) and (high is None or off <= high))
+            for _, low, high in offset_bins]
+
+
 fig11_traces = []
 for s in samples:
     qc = boundary_qc.get(s)
@@ -537,7 +546,7 @@ for s in samples:
         total = sum(dist.values()) or 1
         fig11_traces.append({
             "x": offset_labels,
-            "y": [100.0 * dist.get(o, 0) / total for o in boundary_offsets],
+            "y": [100.0 * n / total for n in binned_offsets(dist)],
             "name": s,
             "legendgroup": s,
             "showlegend": terminus == "N",
@@ -1239,7 +1248,7 @@ html = f"""<!DOCTYPE html>
   {make_fig("fig11", fig11_traces, fig11_layout,
     "Distribution of the offsets between the called and the motif-based boundaries, per sample and per terminus, "
     "as a percentage of the sequences that could be compared. The y axis is logarithmic so that rare disagreements "
-    "remain visible next to the dominant zero-offset bar.",
+    "remain visible next to the dominant zero-offset bar. Offsets of four residues or more are grouped.",
     "CDR3 Boundary Offsets")}
 </div>
 
